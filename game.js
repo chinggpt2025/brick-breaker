@@ -16,6 +16,26 @@ const CONFIG = {
     brickOffsetLeft: 24
 };
 
+// 种子随机数生成器 (Linear Congruential Generator)
+class SeededRNG {
+    constructor(seed) {
+        this.m = 0x80000000;
+        this.a = 1103515245;
+        this.c = 12345;
+        this.state = seed ? seed : Math.floor(Math.random() * (this.m - 1));
+    }
+
+    nextInt() {
+        this.state = (this.a * this.state + this.c) % this.m;
+        return this.state;
+    }
+
+    nextFloat() {
+        // 返回 [0, 1) 区间的浮点数
+        return this.nextInt() / (this.m - 1);
+    }
+}
+
 // 音效系统类
 class SoundManager {
     constructor() {
@@ -217,10 +237,15 @@ class BrickBreakerGame {
 
         // 游戏状态
         this.gameState = 'idle'; // idle, playing, paused, gameover, win
-        this.score = 0;
-        this.lives = 3;
         this.level = 1;
+        this.combo = 0; // 连击数
+        this.score = 0;
         this.highScore = parseInt(localStorage.getItem('brickBreakerHighScore')) || 0;
+
+        // 使用当天日期作为种子 (YYYYMMDD)
+        const today = new Date();
+        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        this.rng = new SeededRNG(parseInt(seedStr));
 
         // 初始化游戏对象
         this.initPaddle();
@@ -286,7 +311,7 @@ class BrickBreakerGame {
                     y: y,
                     status: 1, // 1 = 存在, 0 = 被击碎
                     color: BRICK_COLORS[r % BRICK_COLORS.length],
-                    isBomb: Math.random() < 0.1 // 10% 几率是炸弹
+                    isBomb: this.rng.nextFloat() < 0.1 // 使用种子随机数
                 };
             }
         }
@@ -367,8 +392,11 @@ class BrickBreakerGame {
         this.score = 0;
         this.lives = 3;
         this.level = 1;
+        this.combo = 0;
         this.initPaddle();
         this.initBall();
+        // 重置种子，确保每局开始炸弹位置一致（可选，或者每关不同）
+        // 这里不重置种子，让后续关卡保持随机性但在一局内固定
         this.initBricks();
         this.particlePool.reset();
         this.shakeTime = 0;
@@ -387,9 +415,10 @@ class BrickBreakerGame {
     }
 
     updateUI() {
-        document.getElementById('score').textContent = this.score;
+        document.getElementById('score').textContent = Math.floor(this.score);
         document.getElementById('lives').textContent = this.lives;
         document.getElementById('level').textContent = this.level;
+        document.getElementById('combo').textContent = this.combo > 0 ? `x${this.combo}` : '-';
     }
 
     // 创建粒子效果
@@ -471,6 +500,8 @@ class BrickBreakerGame {
             this.ball.dy = -Math.abs(speed * Math.cos(angle));
 
             this.sound.playPaddleHit();
+            this.combo = 0; // 碰到挡板，连击归零
+            this.updateUI();
         }
     }
 
@@ -492,7 +523,10 @@ class BrickBreakerGame {
                             this.explodeBrick(c, r);
                         } else {
                             brick.status = 0;
-                            this.score += 10;
+                            this.combo++; // 增加连击
+                            const points = 10 * (1 + (this.combo - 1) * 0.5); // 连击加分
+                            this.score += points;
+
                             this.sound.playBrickHit(r);
                             this.createParticles(
                                 brick.x + CONFIG.brickWidth / 2,
@@ -519,7 +553,8 @@ class BrickBreakerGame {
         if (brick.status === 0) return; // 防止重复爆炸
 
         brick.status = 0;
-        this.score += 20; // 炸弹得分更高
+        this.combo++;
+        this.score += 20 * (1 + (this.combo - 1) * 0.5); // 炸弹得分更高 + 连击
 
         // 视觉效果
         this.createParticles(
@@ -552,7 +587,7 @@ class BrickBreakerGame {
                         } else {
                             // 摧毁普通砖块
                             neighbor.status = 0;
-                            this.score += 10;
+                            this.score += 10 * (1 + (this.combo - 1) * 0.5);
                             this.createParticles(
                                 neighbor.x + CONFIG.brickWidth / 2,
                                 neighbor.y + CONFIG.brickHeight / 2,
