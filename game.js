@@ -676,12 +676,25 @@ class BrickBreakerGame {
             this.startGame();
         };
         document.getElementById('shareBtn').onclick = () => this.shareScore();
+
+        // 排行榜相关按钮
+        document.getElementById('saveScoreBtn').onclick = () => {
+            const name = document.getElementById('playerName').value;
+            this.saveToLeaderboard(name);
+        };
+        document.getElementById('viewLeaderboardBtn').onclick = () => this.showLeaderboard();
+        document.getElementById('closeLeaderboardBtn').onclick = () => this.hideLeaderboard();
+
+        // 重置名字输入区域
+        document.getElementById('nameInputSection').style.display = 'flex';
+        document.getElementById('playerName').value = '';
     }
 
     // 隐藏成绩卡片
     hideScoreCard() {
         document.getElementById('scoreCard').classList.add('hidden');
         document.getElementById('shareHint').classList.add('hidden');
+        document.getElementById('saveHint').classList.add('hidden');
     }
 
     // 复制成绩
@@ -700,6 +713,80 @@ class BrickBreakerGame {
                 document.getElementById('shareHint').classList.add('hidden');
             }, 2000);
         });
+    }
+
+    // 保存成绩到排行榜
+    saveToLeaderboard(name) {
+        const today = new Date();
+        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
+        // 读取现有数据
+        let data = JSON.parse(localStorage.getItem('brickBreaker_leaderboard') || '{}');
+
+        // 确保今天的数组存在
+        if (!data[seedStr]) {
+            data[seedStr] = [];
+        }
+
+        // 添加新成绩
+        data[seedStr].push({
+            name: name.trim() || '匿名玩家',
+            score: Math.floor(this.score),
+            maxCombo: this.maxCombo
+        });
+
+        // 排序并保留前 10 名
+        data[seedStr].sort((a, b) => b.score - a.score);
+        data[seedStr] = data[seedStr].slice(0, 10);
+
+        // 保存
+        localStorage.setItem('brickBreaker_leaderboard', JSON.stringify(data));
+
+        // 显示提示
+        document.getElementById('saveHint').classList.remove('hidden');
+        document.getElementById('nameInputSection').style.display = 'none';
+        setTimeout(() => {
+            document.getElementById('saveHint').classList.add('hidden');
+        }, 2000);
+    }
+
+    // 获取排行榜
+    getLeaderboard() {
+        const today = new Date();
+        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
+        const data = JSON.parse(localStorage.getItem('brickBreaker_leaderboard') || '{}');
+        return data[seedStr] || [];
+    }
+
+    // 显示排行榜
+    showLeaderboard() {
+        const today = new Date();
+        const seedStr = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
+        document.getElementById('leaderboardSeed').textContent = seedStr;
+
+        const list = document.getElementById('leaderboardList');
+        const leaderboard = this.getLeaderboard();
+
+        if (leaderboard.length === 0) {
+            list.innerHTML = '<li class="leaderboard-empty">暂无记录，成为第一名吧！</li>';
+        } else {
+            list.innerHTML = leaderboard.map((entry, index) => `
+                <li>
+                    <span class="rank">${index + 1}.</span>
+                    <span class="name">${entry.name}</span>
+                    <span class="lb-score">${entry.score.toLocaleString()}</span>
+                </li>
+            `).join('');
+        }
+
+        document.getElementById('leaderboardModal').classList.remove('hidden');
+    }
+
+    // 隐藏排行榜
+    hideLeaderboard() {
+        document.getElementById('leaderboardModal').classList.add('hidden');
     }
 
     // 绘制挡板

@@ -77,12 +77,31 @@
                         <button class="card-btn primary" id="playAgainBtn">🔄 再玩一次</button>
                         <button class="card-btn secondary" id="shareBtn">📋 复制成绩</button>
                     </div>
+                    <div class="name-input-section" id="nameInputSection">
+                        <input type="text" id="playerName" placeholder="输入昵称保存成绩" maxlength="12">
+                        <button class="card-btn save-btn" id="saveScoreBtn">💾 保存</button>
+                    </div>
+                    <button class="leaderboard-link" id="viewLeaderboardBtn">🏆 查看排行榜</button>
                     <p class="share-hint hidden" id="shareHint">✅ 已复制到剪贴板！</p>
+                    <p class="share-hint hidden" id="saveHint">✅ 成绩已保存！</p>
                 </div>
             </div>
         </div>
 
-        <script src="game.js"></script>
+        <!-- Leaderboard Modal -->
+        <div class="leaderboard-modal hidden" id="leaderboardModal">
+            <div class="leaderboard-content">
+                <h2>🏆 今日排行榜</h2>
+                <p class="leaderboard-seed" id="leaderboardSeed">#20251209</p>
+                <ol class="leaderboard-list" id="leaderboardList">
+                    <!-- Populated by JS -->
+                </ol>
+                <button class="card-btn primary" id="closeLeaderboardBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
 </body>
 
 </html>
