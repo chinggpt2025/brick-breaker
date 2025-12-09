@@ -360,10 +360,16 @@ class BrickBreakerGame {
                 // 如果 pattern 是 null，表示全部填满
                 const hasBrick = pattern ? (pattern[r] ? pattern[r][c] : 0) : 1;
 
-                // 根据行数决定血量：前2行1血，中间2行2血，最后1行3血
+
+                // 根据行数决定血量：前2行1血，中间2行2血，最后1行混合1血和3血
                 let maxHits = 1;
-                if (r >= 2 && r < 4) maxHits = 2;
-                if (r >= 4) maxHits = 3;
+                if (r >= 2 && r < 4) {
+                    maxHits = 2;
+                } else if (r >= 4) {
+                    // 最底部一行：50% 機率 3 血，50% 機率 1 血
+                    maxHits = this.rng.nextFloat() < 0.5 ? 3 : 1;
+                }
+
 
                 // 炸弹砖只有1血
                 const isBomb = hasBrick && this.rng.nextFloat() < 0.1;
