@@ -16,6 +16,142 @@ const CONFIG = {
     brickOffsetLeft: 24
 };
 
+// 多語言配置
+const LANGUAGES = {
+    'zh-TW': {
+        name: '繁體中文',
+        ui: {
+            score: '分數',
+            lives: '生命',
+            level: '關卡',
+            combo: '連擊',
+            highScore: '最高分',
+            soundOn: '🔊 音效',
+            soundOff: '🔇 靜音',
+            endlessOn: '♾️ 無盡模式: 開',
+            endlessOff: '♾️ 無盡模式: 關',
+            language: '🌐 語言'
+        },
+        controls: {
+            arrows: '⬅️ ➡️ 方向鍵控制擋板',
+            spaceStart: '按 <kbd>空格鍵</kbd> 開始/暫停遊戲',
+            mute: '按 <kbd>M</kbd> 靜音'
+        },
+        messages: {
+            title: '打磚塊',
+            start: '按空格鍵開始遊戲',
+            paused: '暫停',
+            pauseMsg: '按空格鍵繼續',
+            gameOver: '遊戲結束',
+            gameOverMsg: '再接再厲！',
+            win: '恭喜過關！',
+            winMsg: '準備挑戰下一關',
+            loseLife: '💔 失去一條生命',
+            livesLeft: (n) => `剩餘 ${n} 條生命  按空格鍵繼續`
+        },
+        powerups: {
+            expand: '擴大擋板',
+            multiball: '多球',
+            pierce: '穿透球',
+            slow: '減速',
+            shrink: '縮小擋板'
+        },
+        scoreCard: {
+            title: (isWin) => isWin ? '🎉 恭喜過關！' : '💀 遊戲結束',
+            finalScore: '最終分數',
+            maxCombo: '最高連擊',
+            playAgain: '再玩一次',
+            share: '分享成績',
+            enterName: '輸入名稱',
+            saveScore: '儲存成績',
+            viewLeaderboard: '查看排行榜'
+        },
+        leaderboard: {
+            title: '🏆 排行榜',
+            rank: '排名',
+            name: '名稱',
+            score: '分數',
+            combo: '連擊',
+            close: '關閉',
+            loading: '載入中...',
+            empty: '目前還沒有成績記錄'
+        }
+    },
+    'en': {
+        name: 'English',
+        ui: {
+            score: 'Score',
+            lives: 'Lives',
+            level: 'Level',
+            combo: 'Combo',
+            highScore: 'High Score',
+            soundOn: '🔊 Sound',
+            soundOff: '🔇 Muted',
+            endlessOn: '♾️ Endless: ON',
+            endlessOff: '♾️ Endless: OFF',
+            language: '🌐 Language'
+        },
+        controls: {
+            arrows: '⬅️ ➡️ Arrow keys to move paddle',
+            spaceStart: 'Press <kbd>SPACE</kbd> to start/pause',
+            mute: 'Press <kbd>M</kbd> to mute'
+        },
+        messages: {
+            title: 'Brick Breaker',
+            start: 'Press SPACE to start',
+            paused: 'Paused',
+            pauseMsg: 'Press SPACE to continue',
+            gameOver: 'Game Over',
+            gameOverMsg: 'Better luck next time!',
+            win: 'Level Complete!',
+            winMsg: 'Get ready for next level',
+            loseLife: '💔 Lost a Life',
+            livesLeft: (n) => `${n} ${n === 1 ? 'life' : 'lives'} left  Press SPACE to continue`
+        },
+        powerups: {
+            expand: 'Expand Paddle',
+            multiball: 'Multi Ball',
+            pierce: 'Pierce Ball',
+            slow: 'Slow Ball',
+            shrink: 'Shrink Paddle'
+        },
+        scoreCard: {
+            title: (isWin) => isWin ? '🎉 Level Complete!' : '💀 Game Over',
+            finalScore: 'Final Score',
+            maxCombo: 'Max Combo',
+            playAgain: 'Play Again',
+            share: 'Share Score',
+            enterName: 'Enter Name',
+            saveScore: 'Save Score',
+            viewLeaderboard: 'View Leaderboard'
+        },
+        leaderboard: {
+            title: '🏆 Leaderboard',
+            rank: 'Rank',
+            name: 'Name',
+            score: 'Score',
+            combo: 'Combo',
+            close: 'Close',
+            loading: 'Loading...',
+            empty: 'No scores yet'
+        }
+    }
+};
+
+// 當前語言（從 localStorage 讀取，默認繁體中文）
+let currentLang = localStorage.getItem('brickBreakerLang') || 'zh-TW';
+
+// 獲取翻譯文本的輔助函數
+function t(path) {
+    const keys = path.split('.');
+    let value = LANGUAGES[currentLang];
+    for (const key of keys) {
+        value = value[key];
+        if (value === undefined) return path;
+    }
+    return value;
+}
+
 // Supabase 配置
 const SUPABASE_URL = 'https://ruqsvvefpemqptnsyymj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1cXN2dmVmcGVtcXB0bnN5eW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNDg5ODMsImV4cCI6MjA4MDgyNDk4M30.j9rRy7bgkKh50bhDdkil1UoP1kBAQFDTVgfkHnViH4Q';

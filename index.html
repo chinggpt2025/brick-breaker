@@ -19,15 +19,15 @@
                     <span class="stat-value" id="score">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">生命</span>
+                    <span class="stat-label" data-i18n="ui.lives">生命</span>
                     <span class="stat-value" id="lives">3</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">连击</span>
+                    <span class="stat-label" data-i18n="ui.combo">连击</span>
                     <span class="stat-value" id="combo">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">关卡</span>
+                    <span class="stat-label" data-i18n="ui.level">关卡</span>
                     <span class="stat-value" id="level">1</span>
                 </div>
             </div>
@@ -36,14 +36,18 @@
         <canvas id="gameCanvas"></canvas>
 
         <div class="game-controls">
-            <p>⬅️ ➡️ 方向键控制挡板</p>
-            <p>按 <kbd>空格键</kbd> 开始/暂停游戏 | 按 <kbd>M</kbd> 静音</p>
+            <p data-i18n="controls.arrows">⬅️ ➡️ 方向键控制挡板</p>
+            <p data-i18n-html="controls.spaceStart">按 <kbd>空格键</kbd> 开始/暂停游戏 | <span data-i18n-html="controls.mute">按
+                    <kbd>M</kbd> 静音</span></p>
             <div class="control-buttons">
-                <button class="sound-toggle" id="soundToggle" title="切换音效">
+                <button class="sound-toggle" id="soundToggle" data-i18n="ui.soundOn" title="切换音效">
                     🔊 音效
                 </button>
-                <button class="endless-toggle" id="endlessModeBtn" title="无尽模式">
+                <button class="endless-toggle" id="endlessModeBtn" data-i18n="ui.endlessOff" title="无尽模式">
                     ♾️ 无尽模式: 关
+                </button>
+                <button class="language-toggle" id="languageBtn" title="Switch Language">
+                    🌐 繁中
                 </button>
             </div>
         </div>

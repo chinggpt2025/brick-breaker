@@ -158,6 +158,23 @@ body {
     box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
 }
 
+/* 語言切換按鈕 */
+.language-toggle {
+    padding: 8px 20px;
+    background: linear-gradient(145deg, rgba(99, 179, 237, 0.2), rgba(99, 179, 237, 0.1));
+    border: 1px solid rgba(99, 179, 237, 0.4);
+    border-radius: 20px;
+    color: #63b3ed;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.language-toggle:hover {
+    background: linear-gradient(145deg, rgba(99, 179, 237, 0.3), rgba(99, 179, 237, 0.2));
+    transform: scale(1.05);
+}
+
 kbd {
     display: inline-block;
     padding: 4px 10px;
