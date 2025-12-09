@@ -910,9 +910,11 @@ class BrickBreakerGame {
     }
 
     startGame() {
-        if (this.gameState === 'gameover' || this.gameState === 'win') {
+        // 只有在 gameover 時才重置遊戲，win 時只需繼續
+        if (this.gameState === 'gameover') {
             this.resetGame();
         }
+        // win 狀態時，磚塊已經在 winGame() 中初始化了，只需開始遊戲
         this.gameState = 'playing';
         this.hideOverlay();
 
