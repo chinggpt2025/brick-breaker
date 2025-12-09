@@ -357,7 +357,8 @@ class BrickBreakerGame {
                 const y = r * (CONFIG.brickHeight + CONFIG.brickPadding) + CONFIG.brickOffsetTop;
 
                 // 检查该位置是否有砖块（根据图案）
-                const hasBrick = pattern[r] ? pattern[r][c] : 1;
+                // 如果 pattern 是 null，表示全部填满
+                const hasBrick = pattern ? (pattern[r] ? pattern[r][c] : 0) : 1;
 
                 // 根据行数决定血量：前2行1血，中间2行2血，最后1行3血
                 let maxHits = 1;
