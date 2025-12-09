@@ -843,14 +843,20 @@ class BrickBreakerGame {
             ball.y += ball.dy;
 
             // 左右边界碰撞
-            if (ball.x - ball.radius < 0 || ball.x + ball.radius > CONFIG.canvasWidth) {
-                ball.dx = -ball.dx;
+            if (ball.x - ball.radius < 0) {
+                ball.x = ball.radius; // 修正位置
+                ball.dx = Math.abs(ball.dx); // 確保向右
+                this.sound.playWallHit();
+            } else if (ball.x + ball.radius > CONFIG.canvasWidth) {
+                ball.x = CONFIG.canvasWidth - ball.radius; // 修正位置
+                ball.dx = -Math.abs(ball.dx); // 確保向左
                 this.sound.playWallHit();
             }
 
             // 上边界碰撞
             if (ball.y - ball.radius < 0) {
-                ball.dy = -ball.dy;
+                ball.y = ball.radius; // 修正位置
+                ball.dy = Math.abs(ball.dy); // 確保向下
                 this.sound.playWallHit();
             }
 
@@ -888,6 +894,12 @@ class BrickBreakerGame {
                 const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
                 ball.dx = speed * Math.sin(angle);
                 ball.dy = -Math.abs(speed * Math.cos(angle));
+
+                // 確保有最小水平速度，防止純垂直運動
+                const minDx = speed * 0.3; // 至少 30% 的速度是水平的
+                if (Math.abs(ball.dx) < minDx) {
+                    ball.dx = ball.dx >= 0 ? minDx : -minDx;
+                }
 
                 this.sound.playPaddleHit();
                 this.combo = 0; // 碰到挡板，连击归零
