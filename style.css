@@ -445,6 +445,7 @@ kbd {
 }
 
 /* Leaderboard Modal */
+/* Leaderboard Modal */
 .leaderboard-modal {
     position: absolute;
     top: 0;
@@ -456,11 +457,16 @@ kbd {
     justify-content: center;
     align-items: center;
     border-radius: 24px;
-    z-index: 30;
+    z-index: 200;
+    /* Must be higher than score-card (100) */
     backdrop-filter: blur(10px);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s ease, visibility 0.3s;
 }
 
 .leaderboard-modal.hidden {
+    visibility: hidden;
     opacity: 0;
     pointer-events: none;
 }
