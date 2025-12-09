@@ -742,6 +742,12 @@ class BrickBreakerGame {
             el.innerHTML = t(key);
         });
 
+        // 更新所有帶 data-i18n-prefix 屬性的元素（保留前綴如 emoji）
+        document.querySelectorAll('[data-i18n-prefix]').forEach(el => {
+            const key = el.getAttribute('data-i18n-prefix');
+            el.textContent = '🎮 ' + t(key);
+        });
+
         // 更新語言按鈕顯示
         const langBtn = document.getElementById('languageBtn');
         if (langBtn) {
