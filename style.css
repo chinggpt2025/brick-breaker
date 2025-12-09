@@ -263,14 +263,18 @@ kbd {
     justify-content: center;
     align-items: center;
     border-radius: 24px;
-    z-index: 20;
+    z-index: 100;
+    /* Ensure it is on top */
     backdrop-filter: blur(10px);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s ease, visibility 0.3s;
 }
 
 .score-card.hidden {
+    visibility: hidden;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
 }
 
 .score-card-content {
