@@ -411,6 +411,9 @@ class BrickBreakerGame {
         const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
         this.rng = new SeededRNG(parseInt(seedStr));
 
+        // 球速初始化（必須在 initBall 之前）
+        this.currentBallSpeed = CONFIG.ballSpeed;
+
         // 初始化游戏对象
         this.initPaddle();
         this.initBall();
@@ -436,7 +439,6 @@ class BrickBreakerGame {
         this.activePowerups = {}; // 当前生效的道具 { type: remainingTime }
         this.originalPaddleWidth = CONFIG.paddleWidth; // 用于恢复擋板宽度
         this.lastTime = performance.now(); // 用于计算 deltaTime
-        this.currentBallSpeed = CONFIG.ballSpeed; // 初始球速
 
         // 无尽模式
         this.endlessMode = false;
