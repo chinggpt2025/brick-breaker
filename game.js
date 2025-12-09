@@ -6,7 +6,8 @@ const CONFIG = {
     paddleHeight: 15,
     paddleSpeed: 10,
     ballRadius: 10,
-    ballSpeed: 5,
+    ballSpeed: 4.6, // 初始球速
+    maxBallSpeed: 7, // 最高球速
     brickRowCount: 5,
     brickColumnCount: 10,
     brickWidth: 68,
@@ -435,6 +436,7 @@ class BrickBreakerGame {
         this.activePowerups = {}; // 当前生效的道具 { type: remainingTime }
         this.originalPaddleWidth = CONFIG.paddleWidth; // 用于恢复擋板宽度
         this.lastTime = performance.now(); // 用于计算 deltaTime
+        this.currentBallSpeed = CONFIG.ballSpeed; // 初始球速
 
         // 无尽模式
         this.endlessMode = false;
@@ -473,13 +475,14 @@ class BrickBreakerGame {
     }
 
     createBall(held = false) {
+        // 使用當前球速
         return {
             x: CONFIG.canvasWidth / 2,
             y: CONFIG.canvasHeight - 60,
             radius: CONFIG.ballRadius,
-            dx: CONFIG.ballSpeed * (Math.random() > 0.5 ? 1 : -1),
-            dy: -CONFIG.ballSpeed,
-            speed: CONFIG.ballSpeed,
+            dx: this.currentBallSpeed * (Math.random() > 0.5 ? 1 : -1),
+            dy: -this.currentBallSpeed,
+            speed: this.currentBallSpeed,
             held: held,
             pierce: false // 穿透状态
         };
@@ -820,6 +823,7 @@ class BrickBreakerGame {
         this.lives = 5;
         this.level = 1;
         this.combo = 0;
+        this.currentBallSpeed = CONFIG.ballSpeed; // 重置球速
         this.maxCombo = 0;
         this.initPaddle();
         this.initBall();
@@ -1265,13 +1269,13 @@ class BrickBreakerGame {
         this.level++;
         this.updateHighScore();
 
+        // 增加难度：每过一关速度增加 0.2，上限為 7
+        this.currentBallSpeed = Math.min(this.currentBallSpeed + 0.2, CONFIG.maxBallSpeed);
+
         // 进入下一关
         this.initBricks();
         this.resetBallAndPaddle();
         this.particlePool.reset();
-
-        // 增加难度
-        this.ball.speed = CONFIG.ballSpeed + (this.level - 1) * 0.5;
 
         this.updateUI();
         this.sound.playLevelComplete();
