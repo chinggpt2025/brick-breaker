@@ -102,10 +102,96 @@ class SoundManager {
         setTimeout(() => this.playTone(659, 0.15, 'sine', 0.6), 200);
     }
 
+    // 爆炸音效
+    playExplosion() {
+        this.playTone(100, 0.1, 'sawtooth', 0.8);
+        setTimeout(() => this.playTone(80, 0.15, 'square', 0.6), 50);
+        setTimeout(() => this.playTone(50, 0.2, 'sawtooth', 0.5), 150);
+    }
+
     // 切换音效开关
     toggle() {
         this.enabled = !this.enabled;
         return this.enabled;
+    }
+}
+
+// 粒子对象池优化
+class ParticlePool {
+    constructor(size = 200) {
+        this.pool = [];
+        this.activeParticles = [];
+        this.size = size;
+
+        // 预创建粒子对象
+        for (let i = 0; i < size; i++) {
+            this.pool.push({
+                x: 0, y: 0, dx: 0, dy: 0,
+                radius: 0, color: '', life: 0,
+                active: false
+            });
+        }
+    }
+
+    // 获取一个空闲粒子
+    spawn(x, y, color, isExplosion = false) {
+        let p = null;
+        // 找一个非活跃粒子
+        for (let i = 0; i < this.size; i++) {
+            if (!this.pool[i].active) {
+                p = this.pool[i];
+                break;
+            }
+        }
+
+        // 如果池满了，强制复用最旧的活跃粒子（头部）
+        if (!p && this.activeParticles.length > 0) {
+            p = this.activeParticles.shift();
+        }
+
+        if (p) {
+            p.x = x;
+            p.y = y;
+            const speed = isExplosion ? 6 : 4;
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * speed;
+
+            p.dx = Math.cos(angle) * velocity;
+            p.dy = Math.sin(angle) * velocity;
+            p.radius = Math.random() * (isExplosion ? 6 : 3) + 2;
+            p.color = color;
+            p.life = 1.0;
+            p.active = true;
+            this.activeParticles.push(p);
+        }
+    }
+
+    updateAndDraw(ctx, hexToRgbFn) {
+        for (let i = this.activeParticles.length - 1; i >= 0; i--) {
+            const p = this.activeParticles[i];
+
+            p.x += p.dx;
+            p.y += p.dy;
+            p.life -= 0.02;
+            p.radius *= 0.96;
+
+            // 绘制
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${hexToRgbFn(p.color)}, ${p.life})`;
+            ctx.fill();
+
+            // 回收
+            if (p.life <= 0) {
+                p.active = false;
+                this.activeParticles.splice(i, 1);
+            }
+        }
+    }
+
+    reset() {
+        this.activeParticles.forEach(p => p.active = false);
+        this.activeParticles = [];
     }
 }
 
@@ -147,8 +233,14 @@ class BrickBreakerGame {
         // 粒子效果
         this.particles = [];
 
-        // 音效管理器引用
         this.sound = soundManager;
+
+        // 粒子池
+        this.particlePool = new ParticlePool(300);
+
+        // 屏幕震动参数
+        this.shakeTime = 0;
+        this.shakeMagnitude = 0;
 
         // 初始化事件监听
         this.initEventListeners();
@@ -193,7 +285,8 @@ class BrickBreakerGame {
                     x: x,
                     y: y,
                     status: 1, // 1 = 存在, 0 = 被击碎
-                    color: BRICK_COLORS[r % BRICK_COLORS.length]
+                    color: BRICK_COLORS[r % BRICK_COLORS.length],
+                    isBomb: Math.random() < 0.1 // 10% 几率是炸弹
                 };
             }
         }
@@ -277,7 +370,8 @@ class BrickBreakerGame {
         this.initPaddle();
         this.initBall();
         this.initBricks();
-        this.particles = [];
+        this.particlePool.reset();
+        this.shakeTime = 0;
         this.updateUI();
     }
 
@@ -299,44 +393,18 @@ class BrickBreakerGame {
     }
 
     // 创建粒子效果
-    createParticles(x, y, color) {
-        for (let i = 0; i < 10; i++) {
-            this.particles.push({
-                x: x,
-                y: y,
-                dx: (Math.random() - 0.5) * 8,
-                dy: (Math.random() - 0.5) * 8,
-                radius: Math.random() * 4 + 2,
-                color: color.main,
-                life: 1
-            });
+    createParticles(x, y, color, count = 8, isExplosion = false) {
+        // 使用对象池
+        const mainColor = typeof color === 'string' ? color : color.main;
+        for (let i = 0; i < count; i++) {
+            this.particlePool.spawn(x, y, mainColor, isExplosion);
         }
     }
 
-    // 更新粒子
-    updateParticles() {
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            const p = this.particles[i];
-            p.x += p.dx;
-            p.y += p.dy;
-            p.life -= 0.02;
-            p.radius *= 0.98;
-
-            if (p.life <= 0) {
-                this.particles.splice(i, 1);
-            }
-        }
-    }
-
-    // 绘制粒子
-    drawParticles() {
-        this.particles.forEach(p => {
-            this.ctx.beginPath();
-            this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            this.ctx.fillStyle = `rgba(${this.hexToRgb(p.color)}, ${p.life})`;
-            this.ctx.fill();
-            this.ctx.closePath();
-        });
+    // 触发屏幕震动
+    triggerShake(duration, magnitude) {
+        this.shakeTime = duration;
+        this.shakeMagnitude = magnitude;
     }
 
     hexToRgb(hex) {
@@ -418,23 +486,79 @@ class BrickBreakerGame {
                         this.ball.y < brick.y + CONFIG.brickHeight) {
 
                         this.ball.dy = -this.ball.dy;
-                        brick.status = 0;
-                        this.score += 10;
+
+                        // 处理击中逻辑
+                        if (brick.isBomb) {
+                            this.explodeBrick(c, r);
+                        } else {
+                            brick.status = 0;
+                            this.score += 10;
+                            this.sound.playBrickHit(r);
+                            this.createParticles(
+                                brick.x + CONFIG.brickWidth / 2,
+                                brick.y + CONFIG.brickHeight / 2,
+                                brick.color
+                            );
+                        }
+
                         this.updateUI();
-
-                        // 播放砖块碎裂音效
-                        this.sound.playBrickHit(r);
-
-                        // 创建粒子效果
-                        this.createParticles(
-                            brick.x + CONFIG.brickWidth / 2,
-                            brick.y + CONFIG.brickHeight / 2,
-                            brick.color
-                        );
 
                         // 检查是否赢得游戏
                         if (this.checkWin()) {
                             this.winGame();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // 炸弹爆炸逻辑
+    explodeBrick(c, r) {
+        const brick = this.bricks[c][r];
+        if (brick.status === 0) return; // 防止重复爆炸
+
+        brick.status = 0;
+        this.score += 20; // 炸弹得分更高
+
+        // 视觉效果
+        this.createParticles(
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2,
+            '#ff4757',
+            20,
+            true
+        );
+
+        // 核心音效和震动
+        this.sound.playExplosion();
+        this.triggerShake(15, 10);
+
+        // 检查周围 3x3 区域
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                const nc = c + i;
+                const nr = r + j;
+
+                // 边界检查
+                if (nc >= 0 && nc < CONFIG.brickColumnCount &&
+                    nr >= 0 && nr < CONFIG.brickRowCount) {
+
+                    const neighbor = this.bricks[nc][nr];
+                    if (neighbor.status === 1) {
+                        if (neighbor.isBomb) {
+                            // 延时触发连环爆炸，更有节奏感
+                            setTimeout(() => this.explodeBrick(nc, nr), 100);
+                        } else {
+                            // 摧毁普通砖块
+                            neighbor.status = 0;
+                            this.score += 10;
+                            this.createParticles(
+                                neighbor.x + CONFIG.brickWidth / 2,
+                                neighbor.y + CONFIG.brickHeight / 2,
+                                neighbor.color,
+                                5
+                            );
                         }
                     }
                 }
@@ -472,6 +596,7 @@ class BrickBreakerGame {
         // 进入下一关
         this.initBricks();
         this.resetBallAndPaddle();
+        this.particlePool.reset();
 
         // 增加难度
         this.ball.speed = CONFIG.ballSpeed + (this.level - 1) * 0.5;
@@ -567,6 +692,14 @@ class BrickBreakerGame {
                     this.ctx.roundRect(brick.x + 3, brick.y + 2, CONFIG.brickWidth - 6, 6, 2);
                     this.ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
                     this.ctx.fill();
+
+                    // 绘制炸弹图标
+                    if (brick.isBomb) {
+                        this.ctx.font = '16px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillText('💣', brick.x + CONFIG.brickWidth / 2, brick.y + CONFIG.brickHeight / 2 + 2);
+                    }
                 }
             }
         }
@@ -598,17 +731,27 @@ class BrickBreakerGame {
         // 清除画布
         this.ctx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
 
+        // 应用屏幕震动
+        this.ctx.save();
+        if (this.shakeTime > 0) {
+            const dx = (Math.random() - 0.5) * this.shakeMagnitude;
+            const dy = (Math.random() - 0.5) * this.shakeMagnitude;
+            this.ctx.translate(dx, dy);
+            this.shakeTime--;
+        }
+
         // 绘制背景
         this.drawBackground();
 
-        // 更新和绘制粒子
-        this.updateParticles();
-        this.drawParticles();
+        // 绘制和更新粒子（使用对象池）
+        this.particlePool.updateAndDraw(this.ctx, this.hexToRgb);
 
         // 绘制游戏对象
         this.drawBricks();
         this.drawPaddle();
         this.drawBall();
+
+        this.ctx.restore(); // 恢复坐标系
 
         // 如果游戏正在进行中，更新游戏逻辑
         if (this.gameState === 'playing') {
