@@ -448,6 +448,9 @@ class BrickBreakerGame {
         this.updateUI();
         document.getElementById('highScore').textContent = this.highScore;
 
+        // 初始化語言
+        this.updateAllUI();
+
         // 开始游戏循环
         this.gameLoop();
     }
@@ -593,7 +596,7 @@ class BrickBreakerGame {
     updateEndlessModeUI() {
         const btn = document.getElementById('endlessModeBtn');
         if (btn) {
-            btn.textContent = this.endlessMode ? '♾️ 无尽模式: 开' : '♾️ 无尽模式: 关';
+            btn.textContent = this.endlessMode ? t('ui.endlessOn') : t('ui.endlessOff');
             btn.classList.toggle('active', this.endlessMode);
         }
     }
@@ -696,14 +699,75 @@ class BrickBreakerGame {
         if (endlessBtn) {
             endlessBtn.addEventListener('click', () => this.toggleEndlessMode());
         }
+
+        // 語言切換按鈕點擊事件
+        const langBtn = document.getElementById('languageBtn');
+        if (langBtn) {
+            langBtn.addEventListener('click', () => this.toggleLanguage());
+        }
     }
 
     toggleSound() {
         const enabled = this.sound.toggle();
+        this.updateSoundButtonUI(enabled);
+    }
+
+    updateSoundButtonUI(enabled) {
         const soundBtn = document.getElementById('soundToggle');
         if (soundBtn) {
-            soundBtn.textContent = enabled ? '🔊 音效' : '🔇 静音';
+            soundBtn.textContent = enabled ? t('ui.soundOn') : t('ui.soundOff');
             soundBtn.classList.toggle('muted', !enabled);
+        }
+    }
+
+    toggleLanguage() {
+        // 切換語言
+        currentLang = currentLang === 'zh-TW' ? 'en' : 'zh-TW';
+        localStorage.setItem('brickBreakerLang', currentLang);
+
+        // 更新所有 UI 文本
+        this.updateAllUI();
+    }
+
+    updateAllUI() {
+        // 更新所有帶 data-i18n 屬性的元素
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            el.textContent = t(key);
+        });
+
+        // 更新所有帶 data-i18n-html 屬性的元素（支援 HTML 內容）
+        document.querySelectorAll('[data-i18n-html]').forEach(el => {
+            const key = el.getAttribute('data-i18n-html');
+            el.innerHTML = t(key);
+        });
+
+        // 更新語言按鈕顯示
+        const langBtn = document.getElementById('languageBtn');
+        if (langBtn) {
+            langBtn.textContent = currentLang === 'zh-TW' ? '🌐 繁中' : '🌐 EN';
+        }
+
+        // 更新音效按鈕
+        const soundEnabled = this.sound.enabled;
+        this.updateSoundButtonUI(soundEnabled);
+
+        // 更新無盡模式按鈕
+        this.updateEndlessModeUI();
+
+        // 更新 overlay 訊息（如果正在顯示）
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlayMessage = document.getElementById('overlayMessage');
+        if (overlayTitle && !document.getElementById('overlay').classList.contains('hidden')) {
+            // 根據當前遊戲狀態更新 overlay
+            if (this.gameState === 'idle') {
+                overlayTitle.textContent = t('messages.title');
+                overlayMessage.textContent = t('messages.start');
+            } else if (this.gameState === 'paused') {
+                overlayTitle.textContent = t('messages.paused');
+                overlayMessage.textContent = t('messages.pauseMsg');
+            }
+            // 其他狀態在各自的方法中處理
         }
     }
 
@@ -737,7 +801,7 @@ class BrickBreakerGame {
 
     pauseGame() {
         this.gameState = 'paused';
-        this.showOverlay('暂停', '按空格键继续');
+        this.showOverlay(t('messages.paused'), t('messages.pauseMsg'));
     }
 
     resumeGame() {
