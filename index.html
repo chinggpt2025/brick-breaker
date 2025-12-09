@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>打砖块游戏</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="game-container">
         <div class="game-header">
@@ -25,14 +27,17 @@
                 </div>
             </div>
         </div>
-        
+
         <canvas id="gameCanvas"></canvas>
-        
+
         <div class="game-controls">
             <p>⬅️ ➡️ 方向键控制挡板</p>
-            <p>按 <kbd>空格键</kbd> 开始/暂停游戏</p>
+            <p>按 <kbd>空格键</kbd> 开始/暂停游戏 | 按 <kbd>M</kbd> 静音</p>
+            <button class="sound-toggle" id="soundToggle" title="切换音效">
+                🔊 音效
+            </button>
         </div>
-        
+
         <div class="overlay" id="overlay">
             <div class="overlay-content">
                 <h2 id="overlayTitle">打砖块</h2>
@@ -43,7 +48,8 @@
             </div>
         </div>
     </div>
-    
+
     <script src="game.js"></script>
 </body>
+
 </html>

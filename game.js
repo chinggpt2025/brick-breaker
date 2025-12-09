@@ -16,6 +16,102 @@ const CONFIG = {
     brickOffsetLeft: 35
 };
 
+// 音效系统类
+class SoundManager {
+    constructor() {
+        this.audioContext = null;
+        this.enabled = true;
+        this.volume = 0.3;
+    }
+
+    // 初始化音频上下文（需要用户交互后调用）
+    init() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.audioContext.state === 'suspended') {
+            this.audioContext.resume();
+        }
+    }
+
+    // 播放音调
+    playTone(frequency, duration, type = 'square', volumeMultiplier = 1) {
+        if (!this.enabled || !this.audioContext) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = type;
+
+        const volume = this.volume * volumeMultiplier;
+        gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + duration);
+    }
+
+    // 击中挡板声音
+    playPaddleHit() {
+        this.playTone(220, 0.1, 'sine', 0.8);
+    }
+
+    // 击中砖块声音（根据行数变化音调）
+    playBrickHit(row = 0) {
+        const baseFreq = 400 + row * 50;
+        this.playTone(baseFreq, 0.1, 'square', 0.6);
+        setTimeout(() => this.playTone(baseFreq * 1.5, 0.05, 'sine', 0.3), 50);
+    }
+
+    // 撞墙声音
+    playWallHit() {
+        this.playTone(150, 0.05, 'triangle', 0.4);
+    }
+
+    // 失去生命声音
+    playLoseLife() {
+        this.playTone(200, 0.15, 'sawtooth', 0.5);
+        setTimeout(() => this.playTone(150, 0.15, 'sawtooth', 0.4), 150);
+        setTimeout(() => this.playTone(100, 0.2, 'sawtooth', 0.3), 300);
+    }
+
+    // 游戏结束声音
+    playGameOver() {
+        const notes = [392, 330, 294, 262];
+        notes.forEach((freq, i) => {
+            setTimeout(() => this.playTone(freq, 0.3, 'sine', 0.5), i * 200);
+        });
+    }
+
+    // 过关声音
+    playLevelComplete() {
+        const notes = [523, 659, 784, 1047];
+        notes.forEach((freq, i) => {
+            setTimeout(() => this.playTone(freq, 0.15, 'sine', 0.6), i * 100);
+        });
+    }
+
+    // 开始游戏声音
+    playStart() {
+        this.playTone(440, 0.1, 'sine', 0.5);
+        setTimeout(() => this.playTone(554, 0.1, 'sine', 0.5), 100);
+        setTimeout(() => this.playTone(659, 0.15, 'sine', 0.6), 200);
+    }
+
+    // 切换音效开关
+    toggle() {
+        this.enabled = !this.enabled;
+        return this.enabled;
+    }
+}
+
+// 创建全局音效管理器
+const soundManager = new SoundManager();
+
 // 砖块颜色配置（渐变色）
 const BRICK_COLORS = [
     { main: '#ff6b6b', light: '#ff8787', dark: '#fa5252' },
@@ -50,6 +146,9 @@ class BrickBreakerGame {
 
         // 粒子效果
         this.particles = [];
+
+        // 音效管理器引用
+        this.sound = soundManager;
 
         // 初始化事件监听
         this.initEventListeners();
@@ -110,6 +209,8 @@ class BrickBreakerGame {
             } else if (e.key === ' ' || e.key === 'Spacebar') {
                 e.preventDefault();
                 this.toggleGame();
+            } else if (e.key === 'm' || e.key === 'M') {
+                this.toggleSound();
             }
         });
 
@@ -120,6 +221,21 @@ class BrickBreakerGame {
                 this.keys.right = false;
             }
         });
+
+        // 音效按钮点击事件
+        const soundBtn = document.getElementById('soundToggle');
+        if (soundBtn) {
+            soundBtn.addEventListener('click', () => this.toggleSound());
+        }
+    }
+
+    toggleSound() {
+        const enabled = this.sound.toggle();
+        const soundBtn = document.getElementById('soundToggle');
+        if (soundBtn) {
+            soundBtn.textContent = enabled ? '🔊 音效' : '🔇 静音';
+            soundBtn.classList.toggle('muted', !enabled);
+        }
     }
 
     toggleGame() {
@@ -138,6 +254,10 @@ class BrickBreakerGame {
         }
         this.gameState = 'playing';
         this.hideOverlay();
+
+        // 初始化并播放开始音效
+        this.sound.init();
+        this.sound.playStart();
     }
 
     pauseGame() {
@@ -244,11 +364,13 @@ class BrickBreakerGame {
         // 左右边界碰撞
         if (this.ball.x - this.ball.radius < 0 || this.ball.x + this.ball.radius > CONFIG.canvasWidth) {
             this.ball.dx = -this.ball.dx;
+            this.sound.playWallHit();
         }
 
         // 上边界碰撞
         if (this.ball.y - this.ball.radius < 0) {
             this.ball.dy = -this.ball.dy;
+            this.sound.playWallHit();
         }
 
         // 下边界（失去生命）
@@ -259,6 +381,7 @@ class BrickBreakerGame {
             if (this.lives <= 0) {
                 this.gameOver();
             } else {
+                this.sound.playLoseLife();
                 this.resetBallAndPaddle();
             }
         }
@@ -276,6 +399,8 @@ class BrickBreakerGame {
             const speed = Math.sqrt(this.ball.dx * this.ball.dx + this.ball.dy * this.ball.dy);
             this.ball.dx = speed * Math.sin(angle);
             this.ball.dy = -Math.abs(speed * Math.cos(angle));
+
+            this.sound.playPaddleHit();
         }
     }
 
@@ -294,6 +419,9 @@ class BrickBreakerGame {
                         brick.status = 0;
                         this.score += 10;
                         this.updateUI();
+
+                        // 播放砖块碎裂音效
+                        this.sound.playBrickHit(r);
 
                         // 创建粒子效果
                         this.createParticles(
@@ -331,6 +459,7 @@ class BrickBreakerGame {
     gameOver() {
         this.gameState = 'gameover';
         this.updateHighScore();
+        this.sound.playGameOver();
         this.showOverlay('游戏结束', `最终分数: ${this.score}  按空格键重新开始`);
     }
 
@@ -346,6 +475,7 @@ class BrickBreakerGame {
         this.ball.speed = CONFIG.ballSpeed + (this.level - 1) * 0.5;
 
         this.updateUI();
+        this.sound.playLevelComplete();
         this.showOverlay(`🎉 第 ${this.level - 1} 关完成!`, '按空格键进入下一关');
         this.gameState = 'win';
     }
