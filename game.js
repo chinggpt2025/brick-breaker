@@ -678,7 +678,9 @@ class BrickBreakerGame {
         // 绑定按钮
         document.getElementById('playAgainBtn').onclick = () => {
             this.hideScoreCard();
-            this.startGame();
+            this.resetGame();
+            this.gameState = 'idle';
+            this.showOverlay('打砖块', '按空格键开始游戏');
         };
         document.getElementById('shareBtn').onclick = () => this.shareScore();
 
