@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>打砖块游戏</title>
+    <title>打磚塊遊戲</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -24,11 +24,11 @@
                     <span class="stat-value" id="lives">3</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label" data-i18n="ui.combo">连击</span>
+                    <span class="stat-label" data-i18n="ui.combo">連擊</span>
                     <span class="stat-value" id="combo">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label" data-i18n="ui.level">关卡</span>
+                    <span class="stat-label" data-i18n="ui.level">關卡</span>
                     <span class="stat-value" id="level">1</span>
                 </div>
             </div>
@@ -37,15 +37,15 @@
         <canvas id="gameCanvas"></canvas>
 
         <div class="game-controls">
-            <p data-i18n="controls.arrows">⬅️ ➡️ 方向键控制挡板</p>
-            <p data-i18n-html="controls.spaceStart">按 <kbd>空格键</kbd> 开始/暂停游戏 | <span data-i18n-html="controls.mute">按
-                    <kbd>M</kbd> 静音</span></p>
+            <p data-i18n="controls.arrows">⬅️ ➡️ 方向鍵控制擋板</p>
+            <p data-i18n-html="controls.spaceStart">按 <kbd>空格鍵</kbd> 開始/暫停遊戲 | <span data-i18n-html="controls.mute">按
+                    <kbd>M</kbd> 靜音</span></p>
             <div class="control-buttons">
-                <button class="sound-toggle" id="soundToggle" data-i18n="ui.soundOn" title="切换音效">
+                <button class="sound-toggle" id="soundToggle" data-i18n="ui.soundOn" title="切換音效">
                     🔊 音效
                 </button>
-                <button class="endless-toggle" id="endlessModeBtn" data-i18n="ui.endlessOff" title="无尽模式">
-                    ♾️ 无尽模式: 关
+                <button class="endless-toggle" id="endlessModeBtn" data-i18n="ui.endlessOff" title="無盡模式">
+                    ♾️ 無盡模式: 關
                 </button>
                 <button class="language-toggle" id="languageBtn" title="Switch Language">
                     🌐 繁中
@@ -55,10 +55,10 @@
 
         <div class="overlay" id="overlay">
             <div class="overlay-content">
-                <h2 id="overlayTitle">打砖块</h2>
-                <p id="overlayMessage">按空格键开始游戏</p>
+                <h2 id="overlayTitle" data-i18n="messages.title">打磚塊</h2>
+                <p id="overlayMessage" data-i18n="messages.start">按空格鍵開始遊戲</p>
                 <div class="high-score">
-                    最高分: <span id="highScore">0</span>
+                    <span data-i18n="ui.highScore">最高分</span>: <span id="highScore">0</span>
                 </div>
             </div>
         </div>
@@ -66,36 +66,38 @@
         <!-- Score Card (Game Over / Level Complete) -->
         <div class="score-card hidden" id="scoreCard">
             <div class="score-card-content">
-                <h2 id="cardTitle">🎮 游戏结束</h2>
+                <h2 id="cardTitle">🎮 遊戲結束</h2>
                 <div class="score-card-stats">
                     <div class="card-stat main-score">
-                        <span class="card-label">最终得分</span>
+                        <span class="card-label" data-i18n="scoreCard.finalScore">最終得分</span>
                         <span class="card-value" id="cardScore">0</span>
                     </div>
                     <div class="card-stat">
-                        <span class="card-label">最高连击</span>
+                        <span class="card-label" data-i18n="scoreCard.maxCombo">最高連擊</span>
                         <span class="card-value" id="cardMaxCombo">x0</span>
                     </div>
                     <div class="card-stat">
-                        <span class="card-label">最高分</span>
+                        <span class="card-label" data-i18n="ui.highScore">最高分</span>
                         <span class="card-value" id="cardHighScore">0</span>
                     </div>
                     <div class="card-stat seed-info">
-                        <span class="card-label">每日挑战</span>
+                        <span class="card-label" data-i18n="scoreCard.dailyChallenge">每日挑戰</span>
                         <span class="card-value" id="cardSeed">#20251209</span>
                     </div>
                 </div>
                 <div class="card-actions">
-                    <button class="card-btn primary" id="playAgainBtn">🔄 再玩一次</button>
-                    <button class="card-btn secondary" id="shareBtn">📋 复制成绩</button>
+                    <button class="card-btn primary" id="playAgainBtn" data-i18n="scoreCard.playAgain">🔄 再玩一次</button>
+                    <button class="card-btn secondary" id="shareBtn" data-i18n="scoreCard.share">📋 複製成績</button>
                 </div>
                 <div class="name-input-section" id="nameInputSection">
-                    <input type="text" id="playerName" placeholder="输入昵称保存成绩" maxlength="12">
-                    <button class="card-btn save-btn" id="saveScoreBtn">💾 保存</button>
+                    <input type="text" id="playerName" placeholder="輸入暱稱儲存成績" maxlength="12"
+                        data-i18n-placeholder="scoreCard.enterName">
+                    <button class="card-btn save-btn" id="saveScoreBtn" data-i18n="scoreCard.saveScore">💾 儲存</button>
                 </div>
-                <button class="leaderboard-link" id="viewLeaderboardBtn">🏆 查看排行榜</button>
-                <p class="share-hint hidden" id="shareHint">✅ 已复制到剪贴板！</p>
-                <p class="share-hint hidden" id="saveHint">✅ 成绩已保存！</p>
+                <button class="leaderboard-link" id="viewLeaderboardBtn" data-i18n="scoreCard.viewLeaderboard">🏆
+                    查看排行榜</button>
+                <p class="share-hint hidden" id="shareHint" data-i18n="messages.copied">✅ 已複製到剪貼板！</p>
+                <p class="share-hint hidden" id="saveHint" data-i18n="messages.saved">✅ 成績已儲存！</p>
             </div>
         </div>
 
@@ -103,12 +105,12 @@
         <!-- Leaderboard Modal -->
         <div class="leaderboard-modal hidden" id="leaderboardModal">
             <div class="leaderboard-content">
-                <h2>🏆 今日排行榜</h2>
+                <h2 data-i18n="leaderboard.title">🏆 今日排行榜</h2>
                 <p class="leaderboard-seed" id="leaderboardSeed">#20251209</p>
                 <ol class="leaderboard-list" id="leaderboardList">
                     <!-- Populated by JS -->
                 </ol>
-                <button class="card-btn primary" id="closeLeaderboardBtn">关闭</button>
+                <button class="card-btn primary" id="closeLeaderboardBtn" data-i18n="leaderboard.close">關閉</button>
             </div>
         </div>
     </div>

@@ -48,7 +48,9 @@ const LANGUAGES = {
             win: '恭喜過關！',
             winMsg: '準備挑戰下一關',
             loseLife: '💔 失去一條生命',
-            livesLeft: (n) => `剩餘 ${n} 條生命  按空格鍵繼續`
+            livesLeft: (n) => `剩餘 ${n} 條生命  按空格鍵繼續`,
+            copied: '✅ 已複製到剪貼板！',
+            saved: '✅ 成績已儲存！'
         },
         powerups: {
             expand: '擴大擋板',
@@ -59,13 +61,14 @@ const LANGUAGES = {
         },
         scoreCard: {
             title: (isWin) => isWin ? '🎉 恭喜過關！' : '💀 遊戲結束',
-            finalScore: '最終分數',
+            finalScore: '最終得分',
             maxCombo: '最高連擊',
-            playAgain: '再玩一次',
-            share: '分享成績',
-            enterName: '輸入名稱',
-            saveScore: '儲存成績',
-            viewLeaderboard: '查看排行榜'
+            dailyChallenge: '每日挑戰',
+            playAgain: '🔄 再玩一次',
+            share: '📋 複製成績',
+            enterName: '輸入暱稱儲存成績',
+            saveScore: '💾 儲存',
+            viewLeaderboard: '🏆 查看排行榜'
         },
         leaderboard: {
             title: '🏆 排行榜',
@@ -107,7 +110,9 @@ const LANGUAGES = {
             win: 'Level Complete!',
             winMsg: 'Get ready for next level',
             loseLife: '💔 Lost a Life',
-            livesLeft: (n) => `${n} ${n === 1 ? 'life' : 'lives'} left  Press SPACE to continue`
+            livesLeft: (n) => `${n} ${n === 1 ? 'life' : 'lives'} left  Press SPACE to continue`,
+            copied: '✅ Copied to clipboard!',
+            saved: '✅ Score saved!'
         },
         powerups: {
             expand: 'Expand Paddle',
@@ -120,11 +125,12 @@ const LANGUAGES = {
             title: (isWin) => isWin ? '🎉 Level Complete!' : '💀 Game Over',
             finalScore: 'Final Score',
             maxCombo: 'Max Combo',
-            playAgain: 'Play Again',
-            share: 'Share Score',
-            enterName: 'Enter Name',
-            saveScore: 'Save Score',
-            viewLeaderboard: 'View Leaderboard'
+            dailyChallenge: 'Daily Challenge',
+            playAgain: '🔄 Play Again',
+            share: '📋 Copy Score',
+            enterName: 'Enter nickname to save',
+            saveScore: '💾 Save',
+            viewLeaderboard: '🏆 View Leaderboard'
         },
         leaderboard: {
             title: '🏆 Leaderboard',
@@ -751,6 +757,12 @@ class BrickBreakerGame {
         document.querySelectorAll('[data-i18n-prefix]').forEach(el => {
             const key = el.getAttribute('data-i18n-prefix');
             el.textContent = '🎮 ' + t(key);
+        });
+
+        // 更新所有帶 data-i18n-placeholder 屬性的 input 元素
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            el.placeholder = t(key);
         });
 
         // 更新語言按鈕顯示
