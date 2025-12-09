@@ -16,6 +16,11 @@ const CONFIG = {
     brickOffsetLeft: 24
 };
 
+// Supabase 配置
+const SUPABASE_URL = 'https://ruqsvvefpemqptnsyymj.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1cXN2dmVmcGVtcXB0bnN5eW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNDg5ODMsImV4cCI6MjA4MDgyNDk4M30.j9rRy7bgkKh50bhDdkil1UoP1kBAQFDTVgfkHnViH4Q';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // 种子随机数生成器 (Linear Congruential Generator)
 class SeededRNG {
     constructor(seed) {
@@ -715,59 +720,68 @@ class BrickBreakerGame {
         });
     }
 
-    // 保存成绩到排行榜
-    saveToLeaderboard(name) {
+    // 保存成绩到排行榜 (Supabase)
+    async saveToLeaderboard(name) {
         const today = new Date();
         const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
 
-        // 读取现有数据
-        let data = JSON.parse(localStorage.getItem('brickBreaker_leaderboard') || '{}');
+        try {
+            const { error } = await supabase
+                .from('scores')
+                .insert({
+                    player_name: name.trim() || '匿名玩家',
+                    score: Math.floor(this.score),
+                    max_combo: this.maxCombo,
+                    seed: seedStr
+                });
 
-        // 确保今天的数组存在
-        if (!data[seedStr]) {
-            data[seedStr] = [];
+            if (error) throw error;
+
+            // 显示提示
+            document.getElementById('saveHint').classList.remove('hidden');
+            document.getElementById('nameInputSection').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('saveHint').classList.add('hidden');
+            }, 2000);
+        } catch (err) {
+            console.error('保存失败:', err);
+            alert('保存失败，请检查网络连接');
         }
-
-        // 添加新成绩
-        data[seedStr].push({
-            name: name.trim() || '匿名玩家',
-            score: Math.floor(this.score),
-            maxCombo: this.maxCombo
-        });
-
-        // 排序并保留前 10 名
-        data[seedStr].sort((a, b) => b.score - a.score);
-        data[seedStr] = data[seedStr].slice(0, 10);
-
-        // 保存
-        localStorage.setItem('brickBreaker_leaderboard', JSON.stringify(data));
-
-        // 显示提示
-        document.getElementById('saveHint').classList.remove('hidden');
-        document.getElementById('nameInputSection').style.display = 'none';
-        setTimeout(() => {
-            document.getElementById('saveHint').classList.add('hidden');
-        }, 2000);
     }
 
-    // 获取排行榜
-    getLeaderboard() {
+    // 获取排行榜 (Supabase)
+    async getLeaderboard() {
         const today = new Date();
         const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
 
-        const data = JSON.parse(localStorage.getItem('brickBreaker_leaderboard') || '{}');
-        return data[seedStr] || [];
+        try {
+            const { data, error } = await supabase
+                .from('scores')
+                .select('player_name, score, max_combo')
+                .eq('seed', seedStr)
+                .order('score', { ascending: false })
+                .limit(10);
+
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error('获取排行榜失败:', err);
+            return [];
+        }
     }
 
-    // 显示排行榜
-    showLeaderboard() {
+    // 显示排行榜 (async)
+    async showLeaderboard() {
         const today = new Date();
         const seedStr = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
 
         document.getElementById('leaderboardSeed').textContent = seedStr;
 
         const list = document.getElementById('leaderboardList');
-        const leaderboard = this.getLeaderboard();
+        list.innerHTML = '<li class="leaderboard-empty">加载中...</li>';
+        document.getElementById('leaderboardModal').classList.remove('hidden');
+
+        const leaderboard = await this.getLeaderboard();
 
         if (leaderboard.length === 0) {
             list.innerHTML = '<li class="leaderboard-empty">暂无记录，成为第一名吧！</li>';
@@ -775,13 +789,11 @@ class BrickBreakerGame {
             list.innerHTML = leaderboard.map((entry, index) => `
                 <li>
                     <span class="rank">${index + 1}.</span>
-                    <span class="name">${entry.name}</span>
+                    <span class="name">${entry.player_name}</span>
                     <span class="lb-score">${entry.score.toLocaleString()}</span>
                 </li>
             `).join('');
         }
-
-        document.getElementById('leaderboardModal').classList.remove('hidden');
     }
 
     // 隐藏排行榜
