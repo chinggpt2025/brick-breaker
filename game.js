@@ -238,7 +238,9 @@ class BrickBreakerGame {
         // 游戏状态
         this.gameState = 'idle'; // idle, playing, paused, gameover, win
         this.level = 1;
+        this.level = 1;
         this.combo = 0; // 连击数
+        this.maxCombo = 0; // 最大连击数
         this.score = 0;
         this.highScore = parseInt(localStorage.getItem('brickBreakerHighScore')) || 0;
 
@@ -269,6 +271,10 @@ class BrickBreakerGame {
 
         // 初始化事件监听
         this.initEventListeners();
+
+        // 绑定按钮事件
+        document.getElementById('btnRestart').addEventListener('click', () => this.restartGame());
+        document.getElementById('btnShare').addEventListener('click', () => this.shareScore());
 
         // 更新显示
         this.updateUI();
@@ -393,6 +399,7 @@ class BrickBreakerGame {
         this.lives = 3;
         this.level = 1;
         this.combo = 0;
+        this.maxCombo = 0;
         this.initPaddle();
         this.initBall();
         // 重置种子，确保每局开始炸弹位置一致（可选，或者每关不同）
@@ -524,6 +531,7 @@ class BrickBreakerGame {
                         } else {
                             brick.status = 0;
                             this.combo++; // 增加连击
+                            if (this.combo > this.maxCombo) this.maxCombo = this.combo; // 更新最大连击
                             const points = 10 * (1 + (this.combo - 1) * 0.5); // 连击加分
                             this.score += points;
 
@@ -554,6 +562,7 @@ class BrickBreakerGame {
 
         brick.status = 0;
         this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
         this.score += 20 * (1 + (this.combo - 1) * 0.5); // 炸弹得分更高 + 连击
 
         // 视觉效果
@@ -621,7 +630,7 @@ class BrickBreakerGame {
         this.gameState = 'gameover';
         this.updateHighScore();
         this.sound.playGameOver();
-        this.showOverlay('游戏结束', `最终分数: ${this.score}  按空格键重新开始`);
+        this.showScoreCard('GAME OVER');
     }
 
     winGame() {
@@ -640,6 +649,47 @@ class BrickBreakerGame {
         this.sound.playLevelComplete();
         this.showOverlay(`🎉 第 ${this.level - 1} 关完成!`, '按空格键进入下一关');
         this.gameState = 'win';
+    }
+
+    // 显示结算卡片
+    showScoreCard(title) {
+        document.getElementById('overlay').classList.add('hidden'); // 隐藏旧遮罩
+        const card = document.getElementById('scoreCard');
+
+        document.getElementById('cardTitle').textContent = title;
+        document.getElementById('cardScore').textContent = Math.floor(this.score);
+        document.getElementById('cardCombo').textContent = `x${this.maxCombo}`;
+
+        // 显示日期种子作为 ID
+        const today = new Date();
+        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        document.getElementById('cardSeed').textContent = `#${seedStr}`;
+
+        card.classList.remove('hidden');
+    }
+
+    // 重新一局（从卡片按钮触发）
+    restartGame() {
+        document.getElementById('scoreCard').classList.add('hidden');
+        this.resetGame();
+        this.startGame();
+    }
+
+    // 分享战绩
+    shareScore() {
+        const today = new Date();
+        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        const text = `💣 Brick Breaker Daily #${seedStr}\n🏆 Score: ${Math.floor(this.score)}\n🔥 Max Combo: x${this.maxCombo}\nPlay now: https://chinggpt2025.github.io/brick-breaker/`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById('btnShare');
+            const originalText = btn.textContent;
+            btn.textContent = '✅ 已复制!';
+            setTimeout(() => btn.textContent = originalText, 2000);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            alert('复制失败，请截图分享！');
+        });
     }
 
     updateHighScore() {
@@ -802,5 +852,5 @@ class BrickBreakerGame {
 
 // 启动游戏
 window.addEventListener('load', () => {
-    new BrickBreakerGame();
+    window.game = new BrickBreakerGame();
 });
