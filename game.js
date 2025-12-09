@@ -521,7 +521,7 @@ class BrickBreakerGame {
 
     initEventListeners() {
         // 键盘事件
-        document.addEventListener('keydown', (e) => {
+        window.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'Left') {
                 this.keys.left = true;
             } else if (e.key === 'ArrowRight' || e.key === 'Right') {
@@ -534,7 +534,7 @@ class BrickBreakerGame {
             }
         });
 
-        document.addEventListener('keyup', (e) => {
+        window.addEventListener('keyup', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'Left') {
                 this.keys.left = false;
             } else if (e.key === 'ArrowRight' || e.key === 'Right') {
