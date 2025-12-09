@@ -343,11 +343,16 @@ class BrickBreakerGame {
 
     initBricks() {
         this.bricks = [];
+        const pattern = this.getLevelPattern(this.level);
+
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
             this.bricks[c] = [];
             for (let r = 0; r < CONFIG.brickRowCount; r++) {
                 const x = c * (CONFIG.brickWidth + CONFIG.brickPadding) + CONFIG.brickOffsetLeft;
                 const y = r * (CONFIG.brickHeight + CONFIG.brickPadding) + CONFIG.brickOffsetTop;
+
+                // 检查该位置是否有砖块（根据图案）
+                const hasBrick = pattern[r] ? pattern[r][c] : 1;
 
                 // 根据行数决定血量：前2行1血，中间2行2血，最后1行3血
                 let maxHits = 1;
@@ -355,19 +360,76 @@ class BrickBreakerGame {
                 if (r >= 4) maxHits = 3;
 
                 // 炸弹砖只有1血
-                const isBomb = this.rng.nextFloat() < 0.1;
+                const isBomb = hasBrick && this.rng.nextFloat() < 0.1;
 
                 this.bricks[c][r] = {
                     x: x,
                     y: y,
-                    status: 1, // 1 = 存在, 0 = 被击碎
+                    status: hasBrick ? 1 : 0, // 根据图案决定是否存在
                     color: BRICK_COLORS[r % BRICK_COLORS.length],
                     isBomb: isBomb,
-                    hits: isBomb ? 1 : maxHits, // 当前血量
-                    maxHits: isBomb ? 1 : maxHits // 最大血量（用于显示）
+                    hits: isBomb ? 1 : maxHits,
+                    maxHits: isBomb ? 1 : maxHits
                 };
             }
         }
+    }
+
+    // 获取关卡图案
+    getLevelPattern(level) {
+        const patterns = [
+            // 关卡 1: 完整矩形
+            null, // null 表示全部填满
+
+            // 关卡 2: 金字塔
+            [
+                [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+            ],
+
+            // 关卡 3: 钻石
+            [
+                [0, 0, 0, 0, 1, 1, 0, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 0, 0, 0],
+                [0, 0, 0, 0, 1, 1, 0, 0, 0, 0]
+            ],
+
+            // 关卡 4: 棋盘格
+            [
+                [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+                [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+                [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+                [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+                [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
+            ],
+
+            // 关卡 5: 爱心 ❤️
+            [
+                [0, 1, 1, 0, 0, 0, 0, 1, 1, 0],
+                [1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+                [0, 0, 0, 1, 1, 1, 1, 0, 0, 0]
+            ],
+
+            // 关卡 6: 波浪
+            [
+                [1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+                [1, 1, 1, 0, 0, 1, 1, 0, 0, 1],
+                [0, 1, 1, 1, 0, 0, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 0, 0, 1, 1, 0],
+                [0, 0, 0, 1, 1, 1, 0, 0, 1, 1]
+            ]
+        ];
+
+        // 循环使用图案（关卡超过图案数量时）
+        const patternIndex = (level - 1) % patterns.length;
+        return patterns[patternIndex];
     }
 
     initEventListeners() {
