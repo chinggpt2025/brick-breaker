@@ -348,12 +348,23 @@ class BrickBreakerGame {
             for (let r = 0; r < CONFIG.brickRowCount; r++) {
                 const x = c * (CONFIG.brickWidth + CONFIG.brickPadding) + CONFIG.brickOffsetLeft;
                 const y = r * (CONFIG.brickHeight + CONFIG.brickPadding) + CONFIG.brickOffsetTop;
+
+                // 根据行数决定血量：前2行1血，中间2行2血，最后1行3血
+                let maxHits = 1;
+                if (r >= 2 && r < 4) maxHits = 2;
+                if (r >= 4) maxHits = 3;
+
+                // 炸弹砖只有1血
+                const isBomb = this.rng.nextFloat() < 0.1;
+
                 this.bricks[c][r] = {
                     x: x,
                     y: y,
                     status: 1, // 1 = 存在, 0 = 被击碎
                     color: BRICK_COLORS[r % BRICK_COLORS.length],
-                    isBomb: this.rng.nextFloat() < 0.1 // 使用种子随机数
+                    isBomb: isBomb,
+                    hits: isBomb ? 1 : maxHits, // 当前血量
+                    maxHits: isBomb ? 1 : maxHits // 最大血量（用于显示）
                 };
             }
         }
@@ -746,24 +757,33 @@ class BrickBreakerGame {
                             if (brick.isBomb) {
                                 this.explodeBrick(c, r);
                             } else {
-                                brick.status = 0;
+                                brick.hits--; // 减少血量
+
                                 this.combo++; // 增加连击
                                 if (this.combo > this.maxCombo) this.maxCombo = this.combo;
                                 const points = 10 * (1 + (this.combo - 1) * 0.5); // 连击加分
                                 this.score += points;
 
                                 this.sound.playBrickHit(r);
+
+                                // 创建小粒子效果（表示受击）
                                 this.createParticles(
                                     brick.x + CONFIG.brickWidth / 2,
                                     brick.y + CONFIG.brickHeight / 2,
-                                    brick.color
+                                    brick.color,
+                                    brick.hits > 0 ? 3 : 8 // 未破碎时粒子少
                                 );
 
-                                // 生成道具
-                                this.spawnPowerup(
-                                    brick.x + CONFIG.brickWidth / 2,
-                                    brick.y + CONFIG.brickHeight / 2
-                                );
+                                // 如果血量归零，销毁砖块
+                                if (brick.hits <= 0) {
+                                    brick.status = 0;
+
+                                    // 生成道具（只在完全破坏时）
+                                    this.spawnPowerup(
+                                        brick.x + CONFIG.brickWidth / 2,
+                                        brick.y + CONFIG.brickHeight / 2
+                                    );
+                                }
                             }
 
                             this.updateUI();
@@ -1126,6 +1146,44 @@ class BrickBreakerGame {
                     this.ctx.roundRect(brick.x + 3, brick.y + 2, CONFIG.brickWidth - 6, 6, 2);
                     this.ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
                     this.ctx.fill();
+
+                    // 显示血量指示器（如果是多血砖块）
+                    if (brick.maxHits > 1 && !brick.isBomb) {
+                        // 根据剩余血量显示裂痕
+                        const damageRatio = 1 - (brick.hits / brick.maxHits);
+
+                        if (damageRatio > 0) {
+                            this.ctx.save();
+                            this.ctx.globalAlpha = damageRatio * 0.6;
+                            this.ctx.strokeStyle = '#000';
+                            this.ctx.lineWidth = 2;
+
+                            // 绘制裂痕
+                            const cx = brick.x + CONFIG.brickWidth / 2;
+                            const cy = brick.y + CONFIG.brickHeight / 2;
+
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(cx - 10, cy - 5);
+                            this.ctx.lineTo(cx, cy);
+                            this.ctx.lineTo(cx + 8, cy - 8);
+                            this.ctx.moveTo(cx, cy);
+                            this.ctx.lineTo(cx + 5, cy + 6);
+                            this.ctx.stroke();
+
+                            this.ctx.restore();
+                        }
+
+                        // 显示血量数字
+                        this.ctx.font = 'bold 12px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'middle';
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                        this.ctx.fillText(
+                            brick.hits.toString(),
+                            brick.x + CONFIG.brickWidth / 2,
+                            brick.y + CONFIG.brickHeight / 2
+                        );
+                    }
 
                     // 绘制炸弹图标
                     if (brick.isBomb) {
