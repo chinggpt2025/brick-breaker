@@ -266,7 +266,7 @@ class BrickBreakerGame {
         this.combo = 0; // 当前连击数
         this.maxCombo = 0; // 本局最高连击
         this.score = 0;
-        this.lives = 3;
+        this.lives = 5;
         this.highScore = parseInt(localStorage.getItem('brickBreakerHighScore')) || 0;
 
         // 使用当天日期作为种子 (YYYYMMDD)
@@ -449,7 +449,7 @@ class BrickBreakerGame {
 
     resetGame() {
         this.score = 0;
-        this.lives = 3;
+        this.lives = 5;
         this.level = 1;
         this.combo = 0;
         this.maxCombo = 0;
