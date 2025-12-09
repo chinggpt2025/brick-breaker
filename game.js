@@ -31,7 +31,8 @@ const LANGUAGES = {
             soundOff: '🔇 靜音',
             endlessOn: '♾️ 無盡模式: 開',
             endlessOff: '♾️ 無盡模式: 關',
-            language: '🌐 語言'
+            language: '🌐 語言',
+            help: '❓ 說明'
         },
         controls: {
             arrows: '⬅️ ➡️ 方向鍵控制擋板',
@@ -80,6 +81,30 @@ const LANGUAGES = {
             close: '關閉',
             loading: '載入中...',
             empty: '目前還沒有成績記錄'
+        },
+        help: {
+            title: '❓ 遊戲說明',
+            controls: '🎮 操作方式',
+            controlArrows: '⬅️➡️ 方向鍵移動擋板',
+            controlSpace: '空格鍵 開始/暫停/發射球',
+            controlTouch: '👆 觸控滑動移動擋板',
+            controlM: 'M 鍵靜音',
+            powerups: '🎁 道具效果',
+            powerupExpand: '擴大擋板',
+            powerupMultiball: '多球模式',
+            powerupPierce: '穿透球（不反彈）',
+            powerupSlow: '減速球',
+            powerupShrink: '縮小擋板（危險！）',
+            bricks: '🧱 磚塊類型',
+            brick1: '1 血磚塊：紅色/黃色',
+            brick2: '2 血磚塊：顯示數字 2',
+            brick3: '3 血磚塊：顯示數字 3',
+            brickBomb: '💣 炸彈磚塊：爆炸波及周圍',
+            tips: '💡 小技巧',
+            tip1: '連擊可獲得額外分數！',
+            tip2: '每日關卡固定，挑戰排行榜！',
+            tip3: '球速每過一關會增加',
+            close: '知道了！'
         }
     },
     'en': {
@@ -94,7 +119,8 @@ const LANGUAGES = {
             soundOff: '🔇 Muted',
             endlessOn: '♾️ Endless: ON',
             endlessOff: '♾️ Endless: OFF',
-            language: '🌐 Language'
+            language: '🌐 Language',
+            help: '❓ Help'
         },
         controls: {
             arrows: '⬅️ ➡️ Arrow keys to move paddle',
@@ -143,6 +169,30 @@ const LANGUAGES = {
             close: 'Close',
             loading: 'Loading...',
             empty: 'No scores yet'
+        },
+        help: {
+            title: '❓ Game Help',
+            controls: '🎮 Controls',
+            controlArrows: '⬅️➡️ Arrow keys to move paddle',
+            controlSpace: 'SPACE to start/pause/launch',
+            controlTouch: '👆 Swipe to move paddle',
+            controlM: 'M key to mute',
+            powerups: '🎁 Power-ups',
+            powerupExpand: 'Expand Paddle',
+            powerupMultiball: 'Multi-ball Mode',
+            powerupPierce: 'Pierce Ball (no bounce)',
+            powerupSlow: 'Slow Ball',
+            powerupShrink: 'Shrink Paddle (danger!)',
+            bricks: '🧱 Brick Types',
+            brick1: '1 HP: Red/Yellow',
+            brick2: '2 HP: Shows number 2',
+            brick3: '3 HP: Shows number 3',
+            brickBomb: '💣 Bomb: Explodes nearby',
+            tips: '💡 Tips',
+            tip1: 'Combos give bonus points!',
+            tip2: 'Daily levels are fixed, compete!',
+            tip3: 'Ball speed increases each level',
+            close: 'Got it!'
         }
     }
 };
@@ -815,6 +865,18 @@ class BrickBreakerGame {
         if (langBtn) {
             langBtn.addEventListener('click', () => this.toggleLanguage());
         }
+
+        // 幫助按鈕點擊事件
+        const helpBtn = document.getElementById('helpBtn');
+        if (helpBtn) {
+            helpBtn.addEventListener('click', () => this.showHelp());
+        }
+
+        // 關閉幫助按鈕點擊事件
+        const closeHelpBtn = document.getElementById('closeHelpBtn');
+        if (closeHelpBtn) {
+            closeHelpBtn.addEventListener('click', () => this.hideHelp());
+        }
     }
 
     toggleSound() {
@@ -837,6 +899,24 @@ class BrickBreakerGame {
 
         // 更新所有 UI 文本
         this.updateAllUI();
+    }
+
+    showHelp() {
+        const helpModal = document.getElementById('helpModal');
+        if (helpModal) {
+            helpModal.classList.remove('hidden');
+            // 暫停遊戲（如果正在進行）
+            if (this.gameState === 'playing') {
+                this.pauseGame();
+            }
+        }
+    }
+
+    hideHelp() {
+        const helpModal = document.getElementById('helpModal');
+        if (helpModal) {
+            helpModal.classList.add('hidden');
+        }
     }
 
     updateAllUI() {

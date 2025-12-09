@@ -51,6 +51,9 @@
                 <button class="language-toggle" id="languageBtn" title="Switch Language">
                     🌐 繁中
                 </button>
+                <button class="help-toggle" id="helpBtn" data-i18n="ui.help" title="遊戲說明">
+                    ❓ 說明
+                </button>
             </div>
         </div>
 
@@ -112,6 +115,59 @@
                     <!-- Populated by JS -->
                 </ol>
                 <button class="card-btn primary" id="closeLeaderboardBtn" data-i18n="leaderboard.close">關閉</button>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div class="help-modal hidden" id="helpModal">
+            <div class="help-content">
+                <h2 data-i18n="help.title">❓ 遊戲說明</h2>
+
+                <div class="help-section">
+                    <h3 data-i18n="help.controls">🎮 操作方式</h3>
+                    <ul>
+                        <li data-i18n="help.controlArrows">⬅️➡️ 方向鍵移動擋板</li>
+                        <li data-i18n="help.controlSpace">空格鍵 開始/暫停/發射球</li>
+                        <li data-i18n="help.controlTouch">👆 觸控滑動移動擋板</li>
+                        <li data-i18n="help.controlM">M 鍵静音</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3 data-i18n="help.powerups">🎁 道具效果</h3>
+                    <ul class="powerup-list">
+                        <li><span class="powerup-icon expand">↔️</span> <span data-i18n="help.powerupExpand">擴大擋板</span>
+                        </li>
+                        <li><span class="powerup-icon multiball">⚪</span> <span
+                                data-i18n="help.powerupMultiball">多球模式</span></li>
+                        <li><span class="powerup-icon pierce">💠</span> <span
+                                data-i18n="help.powerupPierce">穿透球（不反彈）</span></li>
+                        <li><span class="powerup-icon slow">🐢</span> <span data-i18n="help.powerupSlow">減速球</span></li>
+                        <li><span class="powerup-icon shrink">↕️</span> <span
+                                data-i18n="help.powerupShrink">縮小擋板（危險！）</span></li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3 data-i18n="help.bricks">🧱 磚塊類型</h3>
+                    <ul>
+                        <li data-i18n="help.brick1">1 血磚塊：紅色/黃色</li>
+                        <li data-i18n="help.brick2">2 血磚塊：顯示數字 2</li>
+                        <li data-i18n="help.brick3">3 血磚塊：顯示數字 3</li>
+                        <li data-i18n="help.brickBomb">💣 炸彈磚塊：爆炸波及周圍</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3 data-i18n="help.tips">💡 小技巧</h3>
+                    <ul>
+                        <li data-i18n="help.tip1">連擊可獲得額外分數！</li>
+                        <li data-i18n="help.tip2">每日關卡固定，挑戰排行榜！</li>
+                        <li data-i18n="help.tip3">球速每過一關會增加</li>
+                    </ul>
+                </div>
+
+                <button class="card-btn primary" id="closeHelpBtn" data-i18n="help.close">知道了！</button>
             </div>
         </div>
     </div>
