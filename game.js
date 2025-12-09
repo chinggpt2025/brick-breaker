@@ -302,7 +302,8 @@ class BrickBreakerGame {
             radius: CONFIG.ballRadius,
             dx: CONFIG.ballSpeed * (Math.random() > 0.5 ? 1 : -1),
             dy: -CONFIG.ballSpeed,
-            speed: CONFIG.ballSpeed
+            speed: CONFIG.ballSpeed,
+            held: true // 球吸附在挡板上
         };
     }
 
@@ -367,7 +368,11 @@ class BrickBreakerGame {
         if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
             this.startGame();
         } else if (this.gameState === 'playing') {
-            this.pauseGame();
+            if (this.ball.held) {
+                this.ball.held = false; // 发射球
+            } else {
+                this.pauseGame();
+            }
         } else if (this.gameState === 'paused') {
             this.resumeGame();
         }
@@ -462,6 +467,13 @@ class BrickBreakerGame {
 
     // 更新球位置
     updateBall() {
+        // 如果球被抓住，跟隨擋板移動
+        if (this.ball.held) {
+            this.ball.x = this.paddle.x + this.paddle.width / 2;
+            this.ball.y = this.paddle.y - this.ball.radius;
+            return;
+        }
+
         this.ball.x += this.ball.dx;
         this.ball.y += this.ball.dy;
 
