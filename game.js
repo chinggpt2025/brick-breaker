@@ -134,6 +134,13 @@ class SoundManager {
         setTimeout(() => this.playTone(50, 0.2, 'sawtooth', 0.5), 150);
     }
 
+    // 道具音效
+    playPowerup() {
+        this.playTone(880, 0.08, 'sine', 0.5);
+        setTimeout(() => this.playTone(1100, 0.08, 'sine', 0.5), 80);
+        setTimeout(() => this.playTone(1320, 0.12, 'sine', 0.6), 160);
+    }
+
     // 切换音效开关
     toggle() {
         this.enabled = !this.enabled;
@@ -232,6 +239,19 @@ const BRICK_COLORS = [
     { main: '#54a0ff', light: '#74b3ff', dark: '#2e86de' }
 ];
 
+// 道具类型配置
+const POWERUP_TYPES = {
+    expand: { color: '#ff6b6b', emoji: '🔴', duration: 10000, name: '扩大挡板' },
+    multiball: { color: '#48dbfb', emoji: '🔵', duration: 0, name: '多球' },
+    pierce: { color: '#feca57', emoji: '⚡', duration: 8000, name: '穿透球' },
+    slow: { color: '#1dd1a1', emoji: '🐢', duration: 8000, name: '减速' },
+    shrink: { color: '#9b59b6', emoji: '💀', duration: 5000, name: '缩小挡板' }
+};
+const POWERUP_KEYS = Object.keys(POWERUP_TYPES);
+const POWERUP_DROP_CHANCE = 0.15; // 15% 掉落机率
+const POWERUP_SPEED = 3; // 道具下落速度
+const POWERUP_SIZE = 25; // 道具大小
+
 // 游戏类
 class BrickBreakerGame {
     constructor() {
@@ -274,6 +294,12 @@ class BrickBreakerGame {
         this.shakeTime = 0;
         this.shakeMagnitude = 0;
 
+        // 道具系统
+        this.powerups = []; // 当前掉落中的道具
+        this.activePowerups = {}; // 当前生效的道具 { type: remainingTime }
+        this.originalPaddleWidth = CONFIG.paddleWidth; // 用于恢复擋板宽度
+        this.lastTime = performance.now(); // 用于计算 deltaTime
+
         // 初始化事件监听
         this.initEventListeners();
 
@@ -296,14 +322,22 @@ class BrickBreakerGame {
     }
 
     initBall() {
-        this.ball = {
+        // 初始化球阵列（支持多球）
+        this.balls = [this.createBall(true)];
+        // 保持向后兼容的 this.ball 引用
+        this.ball = this.balls[0];
+    }
+
+    createBall(held = false) {
+        return {
             x: CONFIG.canvasWidth / 2,
             y: CONFIG.canvasHeight - 60,
             radius: CONFIG.ballRadius,
             dx: CONFIG.ballSpeed * (Math.random() > 0.5 ? 1 : -1),
             dy: -CONFIG.ballSpeed,
             speed: CONFIG.ballSpeed,
-            held: true // 球吸附在挡板上
+            held: held,
+            pierce: false // 穿透状态
         };
     }
 
@@ -368,8 +402,10 @@ class BrickBreakerGame {
         if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
             this.startGame();
         } else if (this.gameState === 'playing') {
-            if (this.ball.held) {
-                this.ball.held = false; // 发射球
+            // 检查是否有球被吸附
+            const heldBall = this.balls.find(b => b.held);
+            if (heldBall) {
+                heldBall.held = false; // 发射球
             } else {
                 this.pauseGame();
             }
@@ -411,6 +447,12 @@ class BrickBreakerGame {
         this.initBricks();
         this.particlePool.reset();
         this.shakeTime = 0;
+
+        // 重置道具系统
+        this.powerups = [];
+        this.activePowerups = {};
+        this.paddle.width = this.originalPaddleWidth;
+
         this.hideScoreCard();
         this.updateUI();
     }
@@ -455,6 +497,150 @@ class BrickBreakerGame {
             '255, 255, 255';
     }
 
+    // ===== 道具系统方法 =====
+
+    // 生成道具
+    spawnPowerup(x, y) {
+        if (Math.random() > POWERUP_DROP_CHANCE) return;
+
+        const type = POWERUP_KEYS[Math.floor(Math.random() * POWERUP_KEYS.length)];
+        this.powerups.push({
+            x: x,
+            y: y,
+            type: type,
+            ...POWERUP_TYPES[type]
+        });
+    }
+
+    // 更新道具位置与碰撞
+    updatePowerups() {
+        for (let i = this.powerups.length - 1; i >= 0; i--) {
+            const p = this.powerups[i];
+            p.y += POWERUP_SPEED;
+
+            // 碰撞检测：道具碰到挡板
+            if (p.y + POWERUP_SIZE / 2 > this.paddle.y &&
+                p.y - POWERUP_SIZE / 2 < this.paddle.y + this.paddle.height &&
+                p.x > this.paddle.x &&
+                p.x < this.paddle.x + this.paddle.width) {
+                this.applyPowerup(p.type);
+                this.powerups.splice(i, 1);
+                this.sound.playPowerup();
+                continue;
+            }
+
+            // 道具掉出画面
+            if (p.y > CONFIG.canvasHeight + POWERUP_SIZE) {
+                this.powerups.splice(i, 1);
+            }
+        }
+    }
+
+    // 套用道具效果
+    applyPowerup(type) {
+        const config = POWERUP_TYPES[type];
+
+        switch (type) {
+            case 'expand':
+                this.paddle.width = this.originalPaddleWidth * 1.5;
+                this.activePowerups.expand = config.duration;
+                break;
+
+            case 'shrink':
+                this.paddle.width = this.originalPaddleWidth * 0.6;
+                this.activePowerups.shrink = config.duration;
+                break;
+
+            case 'multiball':
+                // 分裂成 3 球
+                const currentBalls = [...this.balls];
+                for (const ball of currentBalls) {
+                    if (!ball.held) {
+                        // 创建两个额外的球，往不同方向
+                        const ball2 = { ...ball, dx: ball.speed * 0.7, dy: -ball.speed * 0.7 };
+                        const ball3 = { ...ball, dx: -ball.speed * 0.7, dy: -ball.speed * 0.7 };
+                        this.balls.push(ball2, ball3);
+                    }
+                }
+                break;
+
+            case 'pierce':
+                this.balls.forEach(b => b.pierce = true);
+                this.activePowerups.pierce = config.duration;
+                break;
+
+            case 'slow':
+                this.balls.forEach(b => {
+                    b.dx *= 0.5;
+                    b.dy *= 0.5;
+                    b.speed *= 0.5;
+                });
+                this.activePowerups.slow = config.duration;
+                break;
+        }
+    }
+
+    // 更新道具持续时间
+    updateActivePowerups(deltaTime) {
+        for (const type in this.activePowerups) {
+            this.activePowerups[type] -= deltaTime;
+
+            if (this.activePowerups[type] <= 0) {
+                // 道具过期
+                this.removePowerupEffect(type);
+                delete this.activePowerups[type];
+            }
+        }
+    }
+
+    // 移除道具效果
+    removePowerupEffect(type) {
+        switch (type) {
+            case 'expand':
+            case 'shrink':
+                this.paddle.width = this.originalPaddleWidth;
+                break;
+
+            case 'pierce':
+                this.balls.forEach(b => b.pierce = false);
+                break;
+
+            case 'slow':
+                this.balls.forEach(b => {
+                    b.dx *= 2;
+                    b.dy *= 2;
+                    b.speed *= 2;
+                });
+                break;
+        }
+    }
+
+    // 绘制道具
+    drawPowerups() {
+        for (const p of this.powerups) {
+            // 绘制发光圆形背景
+            this.ctx.save();
+            this.ctx.shadowColor = p.color;
+            this.ctx.shadowBlur = 15;
+
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, POWERUP_SIZE / 2, 0, Math.PI * 2);
+            this.ctx.fillStyle = p.color;
+            this.ctx.fill();
+
+            // 绘制 emoji
+            this.ctx.shadowBlur = 0;
+            this.ctx.font = '16px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(p.emoji, p.x, p.y);
+
+            this.ctx.restore();
+        }
+    }
+
+    // ===== 结束道具系统方法 =====
+
     // 更新挡板位置
     updatePaddle() {
         if (this.keys.left && this.paddle.x > 0) {
@@ -465,101 +651,127 @@ class BrickBreakerGame {
         }
     }
 
-    // 更新球位置
+    // 更新球位置（支持多球）
     updateBall() {
-        // 如果球被抓住，跟隨擋板移動
-        if (this.ball.held) {
-            this.ball.x = this.paddle.x + this.paddle.width / 2;
-            this.ball.y = this.paddle.y - this.ball.radius;
-            return;
-        }
+        for (let i = this.balls.length - 1; i >= 0; i--) {
+            const ball = this.balls[i];
 
-        this.ball.x += this.ball.dx;
-        this.ball.y += this.ball.dy;
+            // 如果球被抓住，跟隨擋板移動
+            if (ball.held) {
+                ball.x = this.paddle.x + this.paddle.width / 2;
+                ball.y = this.paddle.y - ball.radius;
+                continue;
+            }
 
-        // 左右边界碰撞
-        if (this.ball.x - this.ball.radius < 0 || this.ball.x + this.ball.radius > CONFIG.canvasWidth) {
-            this.ball.dx = -this.ball.dx;
-            this.sound.playWallHit();
-        }
+            ball.x += ball.dx;
+            ball.y += ball.dy;
 
-        // 上边界碰撞
-        if (this.ball.y - this.ball.radius < 0) {
-            this.ball.dy = -this.ball.dy;
-            this.sound.playWallHit();
-        }
+            // 左右边界碰撞
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > CONFIG.canvasWidth) {
+                ball.dx = -ball.dx;
+                this.sound.playWallHit();
+            }
 
-        // 下边界（失去生命）
-        if (this.ball.y + this.ball.radius > CONFIG.canvasHeight) {
-            this.lives--;
-            this.updateUI();
+            // 上边界碰撞
+            if (ball.y - ball.radius < 0) {
+                ball.dy = -ball.dy;
+                this.sound.playWallHit();
+            }
 
-            if (this.lives <= 0) {
-                this.gameOver();
-            } else {
-                this.sound.playLoseLife();
-                this.resetBallAndPaddle();
-                this.gameState = 'paused';
-                this.showOverlay(`💔 失去一条生命`, `剩余 ${this.lives} 条生命  按空格键继续`);
+            // 下边界（球落出画面）
+            if (ball.y + ball.radius > CONFIG.canvasHeight) {
+                this.balls.splice(i, 1);
+
+                // 如果没有球了，失去生命
+                if (this.balls.length === 0) {
+                    this.lives--;
+                    this.updateUI();
+
+                    if (this.lives <= 0) {
+                        this.gameOver();
+                    } else {
+                        this.sound.playLoseLife();
+                        this.resetBallAndPaddle();
+                        this.gameState = 'paused';
+                        this.showOverlay(`💔 失去一条生命`, `剩余 ${this.lives} 条生命  按空格键继续`);
+                    }
+                }
+                continue;
+            }
+
+            // 挡板碰撞
+            if (ball.y + ball.radius > this.paddle.y &&
+                ball.y - ball.radius < this.paddle.y + this.paddle.height &&
+                ball.x > this.paddle.x &&
+                ball.x < this.paddle.x + this.paddle.width) {
+
+                // 根据击中位置改变反弹角度
+                const hitPos = (ball.x - this.paddle.x) / this.paddle.width;
+                const angle = (hitPos - 0.5) * Math.PI * 0.6; // -54° 到 54°
+
+                const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+                ball.dx = speed * Math.sin(angle);
+                ball.dy = -Math.abs(speed * Math.cos(angle));
+
+                this.sound.playPaddleHit();
+                this.combo = 0; // 碰到挡板，连击归零
+                this.updateUI();
             }
         }
 
-        // 挡板碰撞
-        if (this.ball.y + this.ball.radius > this.paddle.y &&
-            this.ball.y - this.ball.radius < this.paddle.y + this.paddle.height &&
-            this.ball.x > this.paddle.x &&
-            this.ball.x < this.paddle.x + this.paddle.width) {
-
-            // 根据击中位置改变反弹角度
-            const hitPos = (this.ball.x - this.paddle.x) / this.paddle.width;
-            const angle = (hitPos - 0.5) * Math.PI * 0.6; // -54° 到 54°
-
-            const speed = Math.sqrt(this.ball.dx * this.ball.dx + this.ball.dy * this.ball.dy);
-            this.ball.dx = speed * Math.sin(angle);
-            this.ball.dy = -Math.abs(speed * Math.cos(angle));
-
-            this.sound.playPaddleHit();
-            this.combo = 0; // 碰到挡板，连击归零
-            this.updateUI();
-        }
+        // 更新 this.ball 引用（指向第一个球）
+        this.ball = this.balls[0] || null;
     }
 
-    // 砖块碰撞检测
+    // 砖块碰撞检测（支持多球）
     checkBrickCollision() {
-        for (let c = 0; c < CONFIG.brickColumnCount; c++) {
-            for (let r = 0; r < CONFIG.brickRowCount; r++) {
-                const brick = this.bricks[c][r];
-                if (brick.status === 1) {
-                    if (this.ball.x > brick.x &&
-                        this.ball.x < brick.x + CONFIG.brickWidth &&
-                        this.ball.y > brick.y &&
-                        this.ball.y < brick.y + CONFIG.brickHeight) {
+        for (const ball of this.balls) {
+            if (ball.held) continue;
 
-                        this.ball.dy = -this.ball.dy;
+            for (let c = 0; c < CONFIG.brickColumnCount; c++) {
+                for (let r = 0; r < CONFIG.brickRowCount; r++) {
+                    const brick = this.bricks[c][r];
+                    if (brick.status === 1) {
+                        if (ball.x > brick.x &&
+                            ball.x < brick.x + CONFIG.brickWidth &&
+                            ball.y > brick.y &&
+                            ball.y < brick.y + CONFIG.brickHeight) {
 
-                        // 处理击中逻辑
-                        if (brick.isBomb) {
-                            this.explodeBrick(c, r);
-                        } else {
-                            brick.status = 0;
-                            this.combo++; // 增加连击
-                            if (this.combo > this.maxCombo) this.maxCombo = this.combo;
-                            const points = 10 * (1 + (this.combo - 1) * 0.5); // 连击加分
-                            this.score += points;
+                            // 如果不是穿透模式，反弹
+                            if (!ball.pierce) {
+                                ball.dy = -ball.dy;
+                            }
 
-                            this.sound.playBrickHit(r);
-                            this.createParticles(
-                                brick.x + CONFIG.brickWidth / 2,
-                                brick.y + CONFIG.brickHeight / 2,
-                                brick.color
-                            );
-                        }
+                            // 处理击中逻辑
+                            if (brick.isBomb) {
+                                this.explodeBrick(c, r);
+                            } else {
+                                brick.status = 0;
+                                this.combo++; // 增加连击
+                                if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+                                const points = 10 * (1 + (this.combo - 1) * 0.5); // 连击加分
+                                this.score += points;
 
-                        this.updateUI();
+                                this.sound.playBrickHit(r);
+                                this.createParticles(
+                                    brick.x + CONFIG.brickWidth / 2,
+                                    brick.y + CONFIG.brickHeight / 2,
+                                    brick.color
+                                );
 
-                        // 检查是否赢得游戏
-                        if (this.checkWin()) {
-                            this.winGame();
+                                // 生成道具
+                                this.spawnPowerup(
+                                    brick.x + CONFIG.brickWidth / 2,
+                                    brick.y + CONFIG.brickHeight / 2
+                                );
+                            }
+
+                            this.updateUI();
+
+                            // 检查是否赢得游戏
+                            if (this.checkWin()) {
+                                this.winGame();
+                            }
                         }
                     }
                 }
@@ -838,27 +1050,49 @@ class BrickBreakerGame {
         this.ctx.fill();
     }
 
-    // 绘制球
+    // 绘制球（支持多球）
     drawBall() {
-        // 球的阴影
-        this.ctx.beginPath();
-        this.ctx.arc(this.ball.x + 3, this.ball.y + 3, this.ball.radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        this.ctx.fill();
+        for (const ball of this.balls) {
+            // 球的阴影
+            this.ctx.beginPath();
+            this.ctx.arc(ball.x + 3, ball.y + 3, ball.radius, 0, Math.PI * 2);
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            this.ctx.fill();
 
-        // 球的渐变
-        const gradient = this.ctx.createRadialGradient(
-            this.ball.x - 3, this.ball.y - 3, 0,
-            this.ball.x, this.ball.y, this.ball.radius
-        );
-        gradient.addColorStop(0, '#fff');
-        gradient.addColorStop(0.3, '#ffeaa7');
-        gradient.addColorStop(1, '#fdcb6e');
+            // 球的渐变（穿透模式时显示黄色发光）
+            let gradient;
+            if (ball.pierce) {
+                gradient = this.ctx.createRadialGradient(
+                    ball.x - 3, ball.y - 3, 0,
+                    ball.x, ball.y, ball.radius
+                );
+                gradient.addColorStop(0, '#fff');
+                gradient.addColorStop(0.3, '#feca57');
+                gradient.addColorStop(1, '#ff9f43');
 
-        this.ctx.beginPath();
-        this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = gradient;
-        this.ctx.fill();
+                // 穿透发光效果
+                this.ctx.save();
+                this.ctx.shadowColor = '#feca57';
+                this.ctx.shadowBlur = 15;
+            } else {
+                gradient = this.ctx.createRadialGradient(
+                    ball.x - 3, ball.y - 3, 0,
+                    ball.x, ball.y, ball.radius
+                );
+                gradient.addColorStop(0, '#fff');
+                gradient.addColorStop(0.3, '#ffeaa7');
+                gradient.addColorStop(1, '#fdcb6e');
+            }
+
+            this.ctx.beginPath();
+            this.ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            this.ctx.fillStyle = gradient;
+            this.ctx.fill();
+
+            if (ball.pierce) {
+                this.ctx.restore();
+            }
+        }
     }
 
     // 绘制砖块
@@ -928,6 +1162,11 @@ class BrickBreakerGame {
 
     // 游戏主循环
     gameLoop() {
+        // 计算 deltaTime
+        const now = performance.now();
+        const deltaTime = now - this.lastTime;
+        this.lastTime = now;
+
         // 清除画布
         this.ctx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
 
@@ -950,6 +1189,7 @@ class BrickBreakerGame {
         this.drawBricks();
         this.drawPaddle();
         this.drawBall();
+        this.drawPowerups(); // 绘制道具
 
         this.ctx.restore(); // 恢复坐标系
 
@@ -958,6 +1198,8 @@ class BrickBreakerGame {
             this.updatePaddle();
             this.updateBall();
             this.checkBrickCollision();
+            this.updatePowerups(); // 更新道具位置
+            this.updateActivePowerups(deltaTime); // 更新道具计时器
         }
 
         // 继续游戏循环
