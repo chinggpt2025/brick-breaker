@@ -526,7 +526,7 @@ class BrickBreakerGame {
                 this.keys.left = true;
             } else if (e.key === 'ArrowRight' || e.key === 'Right') {
                 this.keys.right = true;
-            } else if (e.key === ' ' || e.key === 'Spacebar') {
+            } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault();
                 this.toggleGame();
             } else if (e.key === 'm' || e.key === 'M') {
