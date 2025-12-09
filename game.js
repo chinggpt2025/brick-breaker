@@ -300,6 +300,11 @@ class BrickBreakerGame {
         this.originalPaddleWidth = CONFIG.paddleWidth; // 用于恢复擋板宽度
         this.lastTime = performance.now(); // 用于计算 deltaTime
 
+        // 无尽模式
+        this.endlessMode = false;
+        this.endlessTimer = 0; // 新行生成计时器
+        this.endlessInterval = 15000; // 每 15 秒生成新行
+
         // 初始化事件监听
         this.initEventListeners();
 
@@ -432,6 +437,88 @@ class BrickBreakerGame {
         return patterns[patternIndex];
     }
 
+    // ===== 无尽模式方法 =====
+
+    // 切换无尽模式
+    toggleEndlessMode() {
+        this.endlessMode = !this.endlessMode;
+        this.updateEndlessModeUI();
+        return this.endlessMode;
+    }
+
+    // 更新无尽模式 UI
+    updateEndlessModeUI() {
+        const btn = document.getElementById('endlessModeBtn');
+        if (btn) {
+            btn.textContent = this.endlessMode ? '♾️ 无尽模式: 开' : '♾️ 无尽模式: 关';
+            btn.classList.toggle('active', this.endlessMode);
+        }
+    }
+
+    // 更新无尽模式逻辑
+    updateEndlessMode(deltaTime) {
+        if (!this.endlessMode || this.gameState !== 'playing') return;
+
+        this.endlessTimer += deltaTime;
+
+        // 每隔一段时间生成新行
+        if (this.endlessTimer >= this.endlessInterval) {
+            this.endlessTimer = 0;
+            this.spawnNewBrickRow();
+        }
+    }
+
+    // 生成新的砖块行
+    spawnNewBrickRow() {
+        // 先将所有砖块下移一行
+        this.pushBricksDown();
+
+        // 在顶部生成新行
+        for (let c = 0; c < CONFIG.brickColumnCount; c++) {
+            const x = c * (CONFIG.brickWidth + CONFIG.brickPadding) + CONFIG.brickOffsetLeft;
+            const y = CONFIG.brickOffsetTop;
+
+            const isBomb = Math.random() < 0.1;
+            const maxHits = Math.random() < 0.3 ? 2 : 1; // 30% 机率 2 血
+
+            this.bricks[c][0] = {
+                x: x,
+                y: y,
+                status: 1,
+                color: BRICK_COLORS[Math.floor(Math.random() * BRICK_COLORS.length)],
+                isBomb: isBomb,
+                hits: isBomb ? 1 : maxHits,
+                maxHits: isBomb ? 1 : maxHits
+            };
+        }
+
+        // 播放音效
+        this.sound.playBrickHit(0);
+    }
+
+    // 将所有砖块下移
+    pushBricksDown() {
+        const rowHeight = CONFIG.brickHeight + CONFIG.brickPadding;
+
+        for (let c = 0; c < CONFIG.brickColumnCount; c++) {
+            // 从下往上移动，避免覆盖
+            for (let r = CONFIG.brickRowCount - 1; r > 0; r--) {
+                this.bricks[c][r] = { ...this.bricks[c][r - 1] };
+                this.bricks[c][r].y += rowHeight;
+
+                // 检查是否超出安全区域（接近挡板）
+                if (this.bricks[c][r].status === 1 &&
+                    this.bricks[c][r].y + CONFIG.brickHeight > this.paddle.y - 50) {
+                    // 砖块太低了，游戏结束
+                    this.gameOver();
+                    return;
+                }
+            }
+        }
+    }
+
+    // ===== 结束无尽模式方法 =====
+
     initEventListeners() {
         // 键盘事件
         document.addEventListener('keydown', (e) => {
@@ -459,6 +546,12 @@ class BrickBreakerGame {
         const soundBtn = document.getElementById('soundToggle');
         if (soundBtn) {
             soundBtn.addEventListener('click', () => this.toggleSound());
+        }
+
+        // 无尽模式按钮点击事件
+        const endlessBtn = document.getElementById('endlessModeBtn');
+        if (endlessBtn) {
+            endlessBtn.addEventListener('click', () => this.toggleEndlessMode());
         }
     }
 
@@ -525,6 +618,9 @@ class BrickBreakerGame {
         this.powerups = [];
         this.activePowerups = {};
         this.paddle.width = this.originalPaddleWidth;
+
+        // 重置无尽模式计时器
+        this.endlessTimer = 0;
 
         this.hideScoreCard();
         this.updateUI();
@@ -1320,6 +1416,7 @@ class BrickBreakerGame {
             this.checkBrickCollision();
             this.updatePowerups(); // 更新道具位置
             this.updateActivePowerups(deltaTime); // 更新道具计时器
+            this.updateEndlessMode(deltaTime); // 更新无尽模式
         }
 
         // 继续游戏循环
