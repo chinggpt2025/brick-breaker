@@ -37,7 +37,52 @@
         <div class="game-controls">
             <p>⬅️ ➡️ 方向键控制挡板</p>
             <p>按 <kbd>空格键</kbd> 开始/暂停游戏 | 按 <kbd>M</kbd> 静音</p>
-            <script src="game.js"></script>
+            <button class="sound-toggle" id="soundToggle" title="切换音效">
+                🔊 音效
+            </button>
+        </div>
+
+        <div class="overlay" id="overlay">
+            <div class="overlay-content">
+                <h2 id="overlayTitle">打砖块</h2>
+                <p id="overlayMessage">按空格键开始游戏</p>
+                <div class="high-score">
+                    最高分: <span id="highScore">0</span>
+                </div>
+            </div>
+
+            <!-- Score Card (Game Over / Level Complete) -->
+            <div class="score-card hidden" id="scoreCard">
+                <div class="score-card-content">
+                    <h2 id="cardTitle">🎮 游戏结束</h2>
+                    <div class="score-card-stats">
+                        <div class="card-stat main-score">
+                            <span class="card-label">最终得分</span>
+                            <span class="card-value" id="cardScore">0</span>
+                        </div>
+                        <div class="card-stat">
+                            <span class="card-label">最高连击</span>
+                            <span class="card-value" id="cardMaxCombo">x0</span>
+                        </div>
+                        <div class="card-stat">
+                            <span class="card-label">最高分</span>
+                            <span class="card-value" id="cardHighScore">0</span>
+                        </div>
+                        <div class="card-stat seed-info">
+                            <span class="card-label">每日挑战</span>
+                            <span class="card-value" id="cardSeed">#20251209</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="card-btn primary" id="playAgainBtn">🔄 再玩一次</button>
+                        <button class="card-btn secondary" id="shareBtn">📋 复制成绩</button>
+                    </div>
+                    <p class="share-hint hidden" id="shareHint">✅ 已复制到剪贴板！</p>
+                </div>
+            </div>
+        </div>
+
+        <script src="game.js"></script>
 </body>
 
 </html>

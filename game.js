@@ -238,10 +238,10 @@ class BrickBreakerGame {
         // 游戏状态
         this.gameState = 'idle'; // idle, playing, paused, gameover, win
         this.level = 1;
-        this.level = 1;
-        this.combo = 0; // 连击数
-        this.maxCombo = 0; // 最大连击数
+        this.combo = 0; // 当前连击数
+        this.maxCombo = 0; // 本局最高连击
         this.score = 0;
+        this.lives = 3;
         this.highScore = parseInt(localStorage.getItem('brickBreakerHighScore')) || 0;
 
         // 使用当天日期作为种子 (YYYYMMDD)
@@ -271,10 +271,6 @@ class BrickBreakerGame {
 
         // 初始化事件监听
         this.initEventListeners();
-
-        // 绑定按钮事件
-        document.getElementById('btnRestart').addEventListener('click', () => this.restartGame());
-        document.getElementById('btnShare').addEventListener('click', () => this.shareScore());
 
         // 更新显示
         this.updateUI();
@@ -402,11 +398,10 @@ class BrickBreakerGame {
         this.maxCombo = 0;
         this.initPaddle();
         this.initBall();
-        // 重置种子，确保每局开始炸弹位置一致（可选，或者每关不同）
-        // 这里不重置种子，让后续关卡保持随机性但在一局内固定
         this.initBricks();
         this.particlePool.reset();
         this.shakeTime = 0;
+        this.hideScoreCard();
         this.updateUI();
     }
 
@@ -531,7 +526,7 @@ class BrickBreakerGame {
                         } else {
                             brick.status = 0;
                             this.combo++; // 增加连击
-                            if (this.combo > this.maxCombo) this.maxCombo = this.combo; // 更新最大连击
+                            if (this.combo > this.maxCombo) this.maxCombo = this.combo;
                             const points = 10 * (1 + (this.combo - 1) * 0.5); // 连击加分
                             this.score += points;
 
@@ -630,7 +625,8 @@ class BrickBreakerGame {
         this.gameState = 'gameover';
         this.updateHighScore();
         this.sound.playGameOver();
-        this.showScoreCard('GAME OVER');
+        this.hideOverlay();
+        this.showScoreCard('💀 游戏结束');
     }
 
     winGame() {
@@ -651,53 +647,59 @@ class BrickBreakerGame {
         this.gameState = 'win';
     }
 
-    // 显示结算卡片
-    showScoreCard(title) {
-        document.getElementById('overlay').classList.add('hidden'); // 隐藏旧遮罩
-        const card = document.getElementById('scoreCard');
-
-        document.getElementById('cardTitle').textContent = title;
-        document.getElementById('cardScore').textContent = Math.floor(this.score);
-        document.getElementById('cardCombo').textContent = `x${this.maxCombo}`;
-
-        // 显示日期种子作为 ID
-        const today = new Date();
-        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-        document.getElementById('cardSeed').textContent = `#${seedStr}`;
-
-        card.classList.remove('hidden');
-    }
-
-    // 重新一局（从卡片按钮触发）
-    restartGame() {
-        document.getElementById('scoreCard').classList.add('hidden');
-        this.resetGame();
-        this.startGame();
-    }
-
-    // 分享战绩
-    shareScore() {
-        const today = new Date();
-        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-        const text = `💣 Brick Breaker Daily #${seedStr}\n🏆 Score: ${Math.floor(this.score)}\n🔥 Max Combo: x${this.maxCombo}\nPlay now: https://chinggpt2025.github.io/brick-breaker/`;
-
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.getElementById('btnShare');
-            const originalText = btn.textContent;
-            btn.textContent = '✅ 已复制!';
-            setTimeout(() => btn.textContent = originalText, 2000);
-        }).catch(err => {
-            console.error('Failed to copy text: ', err);
-            alert('复制失败，请截图分享！');
-        });
-    }
-
     updateHighScore() {
         if (this.score > this.highScore) {
             this.highScore = this.score;
             localStorage.setItem('brickBreakerHighScore', this.highScore);
             document.getElementById('highScore').textContent = this.highScore;
         }
+    }
+
+    // 显示成绩卡片
+    showScoreCard(title) {
+        const card = document.getElementById('scoreCard');
+        document.getElementById('cardTitle').textContent = title;
+        document.getElementById('cardScore').textContent = Math.floor(this.score).toLocaleString();
+        document.getElementById('cardMaxCombo').textContent = this.maxCombo > 0 ? `x${this.maxCombo}` : '-';
+        document.getElementById('cardHighScore').textContent = Math.floor(this.highScore).toLocaleString();
+
+        // 获取种子日期
+        const today = new Date();
+        const seedStr = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        document.getElementById('cardSeed').textContent = seedStr;
+
+        card.classList.remove('hidden');
+
+        // 绑定按钮
+        document.getElementById('playAgainBtn').onclick = () => {
+            this.hideScoreCard();
+            this.startGame();
+        };
+        document.getElementById('shareBtn').onclick = () => this.shareScore();
+    }
+
+    // 隐藏成绩卡片
+    hideScoreCard() {
+        document.getElementById('scoreCard').classList.add('hidden');
+        document.getElementById('shareHint').classList.add('hidden');
+    }
+
+    // 复制成绩
+    shareScore() {
+        const today = new Date();
+        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
+        const text = `💣 Brick Breaker Daily #${seedStr}
+🏆 Score: ${Math.floor(this.score).toLocaleString()}
+🔥 Max Combo: x${this.maxCombo}
+🎮 Play now: https://chinggpt2025.github.io/brick-breaker/`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            document.getElementById('shareHint').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('shareHint').classList.add('hidden');
+            }, 2000);
+        });
     }
 
     // 绘制挡板
@@ -852,5 +854,5 @@ class BrickBreakerGame {
 
 // 启动游戏
 window.addEventListener('load', () => {
-    window.game = new BrickBreakerGame();
+    new BrickBreakerGame();
 });
