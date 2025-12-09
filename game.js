@@ -9,11 +9,11 @@ const CONFIG = {
     ballSpeed: 5,
     brickRowCount: 5,
     brickColumnCount: 10,
-    brickWidth: 70,
+    brickWidth: 68,
     brickHeight: 25,
     brickPadding: 8,
     brickOffsetTop: 50,
-    brickOffsetLeft: 35
+    brickOffsetLeft: 24
 };
 
 // 音效系统类
