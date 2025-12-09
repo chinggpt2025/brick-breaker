@@ -248,7 +248,7 @@ const POWERUP_TYPES = {
     shrink: { color: '#9b59b6', emoji: '💀', duration: 5000, name: '缩小挡板' }
 };
 const POWERUP_KEYS = Object.keys(POWERUP_TYPES);
-const POWERUP_DROP_CHANCE = 0.15; // 15% 掉落机率
+const POWERUP_DROP_CHANCE = 0.20; // 20% 掉落机率
 const POWERUP_SPEED = 3; // 道具下落速度
 const POWERUP_SIZE = 25; // 道具大小
 
