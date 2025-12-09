@@ -383,6 +383,8 @@ class BrickBreakerGame {
             } else {
                 this.sound.playLoseLife();
                 this.resetBallAndPaddle();
+                this.gameState = 'paused';
+                this.showOverlay(`💔 失去一条生命`, `剩余 ${this.lives} 条生命  按空格键继续`);
             }
         }
 
