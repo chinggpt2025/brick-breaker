@@ -103,6 +103,20 @@ body {
     gap: 8px;
 }
 
+/* 觸控提示 - 預設隱藏，觸控設備顯示 */
+.touch-hint {
+    display: none;
+    color: #48dbfb;
+}
+
+@media (hover: none) and (pointer: coarse) {
+
+    /* 觸控設備 */
+    .touch-hint {
+        display: flex;
+    }
+}
+
 /* 音效开关按钮 */
 .sound-toggle {
     padding: 8px 20px;

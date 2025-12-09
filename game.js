@@ -35,6 +35,7 @@ const LANGUAGES = {
         },
         controls: {
             arrows: '⬅️ ➡️ 方向鍵控制擋板',
+            touch: '👆 觸控：點擊開始，滑動移動擋板',
             spaceStart: '按 <kbd>空格鍵</kbd> 開始/暫停遊戲',
             mute: '按 <kbd>M</kbd> 靜音'
         },
@@ -97,6 +98,7 @@ const LANGUAGES = {
         },
         controls: {
             arrows: '⬅️ ➡️ Arrow keys to move paddle',
+            touch: '👆 Touch: Tap to start, swipe to move',
             spaceStart: 'Press <kbd>SPACE</kbd> to start/pause',
             mute: 'Press <kbd>M</kbd> to mute'
         },
@@ -697,6 +699,103 @@ class BrickBreakerGame {
             } else if (e.key === 'ArrowRight' || e.key === 'Right') {
                 this.keys.right = false;
             }
+        });
+
+        // ========== 觸控支援 ==========
+        let touchStartX = 0;
+        let isTouching = false;
+
+        // 觸控開始
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            isTouching = true;
+
+            // 點擊 canvas 觸發遊戲開始/發射球
+            if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
+                this.toggleGame();
+            } else if (this.gameState === 'playing') {
+                const heldBall = this.balls.find(b => b.held);
+                if (heldBall) {
+                    heldBall.held = false; // 發射球
+                }
+            } else if (this.gameState === 'paused') {
+                this.resumeGame();
+            }
+        }, { passive: false });
+
+        // 觸控移動 - 直接跟隨手指位置
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!isTouching) return;
+
+            const touch = e.touches[0];
+            const rect = this.canvas.getBoundingClientRect();
+            const scaleX = this.canvas.width / rect.width;
+
+            // 計算手指在 canvas 中的 X 位置
+            const touchX = (touch.clientX - rect.left) * scaleX;
+
+            // 將擋板中心移動到手指位置
+            this.paddle.x = touchX - this.paddle.width / 2;
+
+            // 邊界檢查
+            if (this.paddle.x < 0) {
+                this.paddle.x = 0;
+            }
+            if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
+                this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
+            }
+        }, { passive: false });
+
+        // 觸控結束
+        this.canvas.addEventListener('touchend', () => {
+            isTouching = false;
+        });
+
+        // 防止頁面滾動干擾遊戲
+        this.canvas.addEventListener('touchcancel', () => {
+            isTouching = false;
+        });
+
+        // ========== 滑鼠支援（桌面觸控板）==========
+        let isMouseDown = false;
+
+        this.canvas.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            // 點擊也可以開始遊戲
+            if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
+                this.toggleGame();
+            } else if (this.gameState === 'playing') {
+                const heldBall = this.balls.find(b => b.held);
+                if (heldBall) {
+                    heldBall.held = false;
+                }
+            }
+        });
+
+        this.canvas.addEventListener('mousemove', (e) => {
+            if (!isMouseDown) return;
+
+            const rect = this.canvas.getBoundingClientRect();
+            const scaleX = this.canvas.width / rect.width;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+
+            this.paddle.x = mouseX - this.paddle.width / 2;
+
+            if (this.paddle.x < 0) this.paddle.x = 0;
+            if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
+                this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
+            }
+        });
+
+        this.canvas.addEventListener('mouseup', () => {
+            isMouseDown = false;
+        });
+
+        this.canvas.addEventListener('mouseleave', () => {
+            isMouseDown = false;
         });
 
         // 音效按钮点击事件
