@@ -402,6 +402,71 @@ kbd {
     color: #48dbfb;
 }
 
+/* 情緒反饋樣式 */
+.card-feedback {
+    text-align: center;
+    font-size: 1.1rem;
+    padding: 10px 15px;
+    margin: 5px 0;
+    border-radius: 10px;
+    background: linear-gradient(145deg, rgba(74, 222, 128, 0.15), rgba(74, 222, 128, 0.05));
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    color: #4ade80;
+    animation: feedbackPulse 2s ease-in-out infinite;
+}
+
+.card-feedback.new-record {
+    background: linear-gradient(145deg, rgba(255, 200, 55, 0.2), rgba(255, 200, 55, 0.1));
+    border: 1px solid rgba(255, 200, 55, 0.4);
+    color: #ffc837;
+}
+
+.card-feedback.try-again {
+    background: linear-gradient(145deg, rgba(255, 107, 107, 0.15), rgba(255, 107, 107, 0.05));
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: #ff6b6b;
+}
+
+@keyframes feedbackPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* 連擊高亮樣式 */
+.card-stat.combo-highlight {
+    transition: all 0.3s ease;
+}
+
+.card-stat.combo-highlight.awesome {
+    background: linear-gradient(145deg, rgba(255, 159, 67, 0.2), rgba(255, 159, 67, 0.1));
+    border: 1px solid rgba(255, 159, 67, 0.4);
+    animation: comboGlow 1.5s ease-in-out infinite;
+}
+
+.card-stat.combo-highlight.awesome .card-value {
+    color: #ff9f43;
+    font-size: 1.5rem;
+}
+
+@keyframes comboGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(255, 159, 67, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(255, 159, 67, 0.6);
+    }
+}
+
 .card-actions {
     display: flex;
     gap: 15px;

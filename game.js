@@ -1795,7 +1795,7 @@ class BrickBreakerGame {
     winGame() {
         const completedLevel = this.level;
         const wasBossLevel = this.isBossLevel(completedLevel);
-        
+
         this.level++;
         this.updateHighScore();
 
@@ -1840,7 +1840,7 @@ class BrickBreakerGame {
         } else {
             this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${lifeMessage}按空格键进入下一关`);
         }
-        
+
         this.gameState = 'win';
     }
 
@@ -1864,6 +1864,35 @@ class BrickBreakerGame {
         const today = new Date();
         const seedStr = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
         document.getElementById('cardSeed').textContent = seedStr;
+
+        // ===== 情緒反饋系統 =====
+        const feedbackEl = document.getElementById('cardFeedback');
+        feedbackEl.className = 'card-feedback'; // 重置 class
+
+        let feedbackText = '';
+        if (this.score >= this.highScore && this.score > 0) {
+            feedbackText = '🎉 新紀錄！太厲害了！';
+            feedbackEl.classList.add('new-record');
+        } else if (this.score >= this.highScore * 0.8) {
+            feedbackText = '💪 差一點破紀錄，再接再厲！';
+        } else if (this.maxCombo >= 10) {
+            feedbackText = '🔥 超強連擊！技術一流！';
+        } else if (this.maxCombo >= 5) {
+            feedbackText = '👍 不錯的表現！繼續加油！';
+        } else if (this.score >= 500) {
+            feedbackText = '👌 表現穩定，繼續保持！';
+        } else {
+            feedbackText = '💡 多練習，你可以的！';
+            feedbackEl.classList.add('try-again');
+        }
+        feedbackEl.textContent = feedbackText;
+
+        // ===== 連擊高亮 =====
+        const comboStat = document.getElementById('comboStat');
+        comboStat.className = 'card-stat combo-highlight'; // 重置 class
+        if (this.maxCombo >= 8) {
+            comboStat.classList.add('awesome');
+        }
 
         card.classList.remove('hidden');
 
