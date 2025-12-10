@@ -248,6 +248,31 @@ kbd {
     margin-bottom: 20px;
 }
 
+/* 開始按鈕 */
+.start-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 15px 40px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(145deg, #4ade80, #22c55e);
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(74, 222, 128, 0.4);
+    transition: all 0.3s ease;
+}
+
+.start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(74, 222, 128, 0.6);
+}
+
+.start-btn:active {
+    transform: scale(0.98);
+}
+
 .high-score {
     display: inline-block;
     padding: 10px 25px;

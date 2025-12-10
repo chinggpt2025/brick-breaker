@@ -895,6 +895,19 @@ class BrickBreakerGame {
             });
         }
 
+        // 開始按鈕點擊事件
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn) {
+            startBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // 防止觸發 overlay 的點擊事件
+                if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
+                    this.toggleGame();
+                } else if (this.gameState === 'paused') {
+                    this.resumeGame();
+                }
+            });
+        }
+
         // 设置按钮点击事件
         const settingsBtn = document.getElementById('settingsBtn');
         if (settingsBtn) {
