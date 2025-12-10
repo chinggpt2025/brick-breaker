@@ -1550,6 +1550,14 @@ class BrickBreakerGame {
                 }
             }
         }
+
+        // 爆炸後延遲檢查是否過關（等連鎖爆炸結束）
+        setTimeout(() => {
+            this.updateUI();
+            if (this.checkWin()) {
+                this.winGame();
+            }
+        }, 200);
     }
 
     checkWin() {
