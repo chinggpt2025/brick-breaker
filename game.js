@@ -380,6 +380,21 @@ class SoundManager {
         setTimeout(() => this.playTone(600, 0.2, 'sine', 0.4), 200);
     }
 
+    // ❄️ 冰凍音效（清脆冰晶聲）
+    playFreeze() {
+        this.playTone(1500, 0.1, 'sine', 0.5);
+        setTimeout(() => this.playTone(1800, 0.08, 'triangle', 0.4), 50);
+        setTimeout(() => this.playTone(2000, 0.12, 'sine', 0.3), 100);
+    }
+
+    // 🌀 傳送音效（神秘嗡鳴）
+    playTeleport() {
+        this.playTone(300, 0.1, 'sine', 0.5);
+        setTimeout(() => this.playTone(600, 0.15, 'sine', 0.6), 100);
+        setTimeout(() => this.playTone(1200, 0.1, 'sine', 0.4), 200);
+        setTimeout(() => this.playTone(400, 0.1, 'triangle', 0.3), 300);
+    }
+
     // 切换音效开关
     toggle() {
         this.enabled = !this.enabled;
@@ -619,12 +634,23 @@ class BrickBreakerGame {
             if (rand < 0.26) return 'lightning';
             return null;
         }
-        // 關卡 4+：混合派對 - 全部
-        else {
+        // 關卡 4：防護階段 - 加入護盾
+        else if (level === 4) {
             if (rand < 0.05) return 'bomb';
             if (rand < 0.13) return 'gold';
             if (rand < 0.18) return 'lightning';
             if (rand < 0.23) return 'shield';
+            return null;
+        }
+        // 關卡 5+：全部磚塊 - 加入冰凍、傳送、隨機道具
+        else {
+            if (rand < 0.04) return 'bomb';
+            if (rand < 0.10) return 'gold';
+            if (rand < 0.14) return 'lightning';
+            if (rand < 0.18) return 'shield';
+            if (rand < 0.22) return 'freeze';    // ❄️ 冰凍
+            if (rand < 0.26) return 'teleport';  // 🌀 傳送
+            if (rand < 0.30) return 'random';    // 🎲 隨機道具
             return null;
         }
     }
@@ -1618,6 +1644,18 @@ class BrickBreakerGame {
                                     this.spawnShield(brick);
                                     break;
 
+                                case 'freeze':
+                                    this.triggerFreeze(brick, ball);
+                                    break;
+
+                                case 'teleport':
+                                    this.triggerTeleport(brick, ball);
+                                    break;
+
+                                case 'random':
+                                    this.triggerRandomPowerup(brick);
+                                    break;
+
                                 default:
                                     // 普通磚塊
                                     this.hitNormalBrick(brick);
@@ -1737,6 +1775,98 @@ class BrickBreakerGame {
         );
 
         this.sound.playShield();
+    }
+
+    // ❄️ 冰凍磚：球速減半 5 秒
+    triggerFreeze(brick, ball) {
+        brick.status = 0;
+
+        this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        this.score += 15;
+
+        // 減速所有球
+        for (const b of this.balls) {
+            if (!b.isSlowed) {
+                b.dx *= 0.5;
+                b.dy *= 0.5;
+                b.isSlowed = true;
+            }
+        }
+
+        // 5 秒後恢復
+        setTimeout(() => {
+            for (const b of this.balls) {
+                if (b.isSlowed) {
+                    b.dx *= 2;
+                    b.dy *= 2;
+                    b.isSlowed = false;
+                }
+            }
+        }, 5000);
+
+        this.createParticles(
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2,
+            '#00bfff', // 冰藍色
+            15
+        );
+
+        this.sound.playFreeze();
+    }
+
+    // 🌀 傳送磚：球傳送到隨機位置
+    triggerTeleport(brick, ball) {
+        brick.status = 0;
+
+        this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        this.score += 15;
+
+        // 傳送球到隨機安全位置
+        ball.x = 100 + Math.random() * (CONFIG.canvasWidth - 200);
+        ball.y = 100 + Math.random() * (CONFIG.canvasHeight / 2 - 100);
+
+        this.createParticles(
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2,
+            '#9b59b6', // 紫色
+            20
+        );
+
+        // 在新位置也產生粒子
+        this.createParticles(ball.x, ball.y, '#9b59b6', 15);
+
+        this.sound.playTeleport();
+    }
+
+    // 🎲 隨機道具磚：掉落隨機道具
+    triggerRandomPowerup(brick) {
+        brick.status = 0;
+
+        this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        this.score += 15;
+
+        // 隨機選擇一個道具類型
+        const randomType = POWERUP_KEYS[Math.floor(Math.random() * POWERUP_KEYS.length)];
+
+        // 生成道具
+        this.powerups.push({
+            x: brick.x + CONFIG.brickWidth / 2,
+            y: brick.y + CONFIG.brickHeight / 2,
+            type: randomType,
+            ...POWERUP_TYPES[randomType]
+        });
+
+        this.createParticles(
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2,
+            '#f1c40f', // 金色
+            15
+        );
+
+        this.sound.playPowerup();
     }
 
     // 炸弹爆炸逻辑（使用計數器追蹤連鎖）
@@ -2369,6 +2499,15 @@ class BrickBreakerGame {
                                 break;
                             case 'shield':
                                 this.ctx.fillText('🛡️', cx, cy);
+                                break;
+                            case 'freeze':
+                                this.ctx.fillText('❄️', cx, cy);
+                                break;
+                            case 'teleport':
+                                this.ctx.fillText('🌀', cx, cy);
+                                break;
+                            case 'random':
+                                this.ctx.fillText('🎲', cx, cy);
                                 break;
                         }
                     }
