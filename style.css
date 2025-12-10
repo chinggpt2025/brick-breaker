@@ -21,8 +21,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
-    padding: 30px;
+    gap: 10px;
+    padding: 15px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 24px;
     backdrop-filter: blur(10px);
@@ -36,13 +36,13 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 5px;
     width: 100%;
 }
 
 .game-header h1 {
     color: #fff;
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
     text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
     letter-spacing: 2px;
@@ -50,14 +50,14 @@ body {
 
 .stats {
     display: flex;
-    gap: 30px;
+    gap: 10px;
 }
 
 .stat-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 12px 25px;
+    padding: 8px 15px;
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -72,7 +72,7 @@ body {
 
 .stat-value {
     color: #fff;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
     font-weight: 700;
     text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }

@@ -759,7 +759,20 @@ class BrickBreakerGame {
                 this.keys.right = true;
             } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault();
-                this.toggleGame();
+                // 檢查是否有任何彈窗正在顯示中
+                const scoreCard = document.getElementById('scoreCard');
+                const settingsModal = document.getElementById('settingsModal');
+                const helpModal = document.getElementById('helpModal');
+
+                const isAnyModalVisible =
+                    (scoreCard && !scoreCard.classList.contains('hidden')) ||
+                    (settingsModal && !settingsModal.classList.contains('hidden')) ||
+                    (helpModal && !helpModal.classList.contains('hidden'));
+
+                // 如果有彈窗正在顯示，不觸發遊戲開始
+                if (!isAnyModalVisible) {
+                    this.toggleGame();
+                }
             } else if (e.key === 'm' || e.key === 'M') {
                 this.toggleSound();
             }
@@ -869,6 +882,18 @@ class BrickBreakerGame {
         this.canvas.addEventListener('mouseleave', () => {
             isMouseDown = false;
         });
+
+        // Overlay 點擊/觸控事件（讓手機用戶可以開始遊戲）
+        const overlay = document.getElementById('overlay');
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
+                    this.toggleGame();
+                } else if (this.gameState === 'paused') {
+                    this.resumeGame();
+                }
+            });
+        }
 
         // 设置按钮点击事件
         const settingsBtn = document.getElementById('settingsBtn');
