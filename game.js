@@ -1243,11 +1243,19 @@ class BrickBreakerGame {
 
         switch (type) {
             case 'expand':
+                // 取消縮小效果（互斥）
+                if (this.activePowerups.shrink) {
+                    delete this.activePowerups.shrink;
+                }
                 this.paddle.width = this.originalPaddleWidth * 1.5;
                 this.activePowerups.expand = config.duration;
                 break;
 
             case 'shrink':
+                // 取消擴大效果（互斥）
+                if (this.activePowerups.expand) {
+                    delete this.activePowerups.expand;
+                }
                 this.paddle.width = this.originalPaddleWidth * 0.6;
                 this.activePowerups.shrink = config.duration;
                 break;
@@ -1272,9 +1280,12 @@ class BrickBreakerGame {
 
             case 'slow':
                 this.balls.forEach(b => {
-                    b.dx *= 0.5;
-                    b.dy *= 0.5;
-                    b.speed *= 0.5;
+                    if (!b.isSlowed) { // 只對未減速的球生效
+                        b.dx *= 0.5;
+                        b.dy *= 0.5;
+                        b.speed *= 0.5;
+                        b.isSlowed = true;
+                    }
                 });
                 this.activePowerups.slow = config.duration;
                 break;
@@ -1308,9 +1319,12 @@ class BrickBreakerGame {
 
             case 'slow':
                 this.balls.forEach(b => {
-                    b.dx *= 2;
-                    b.dy *= 2;
-                    b.speed *= 2;
+                    if (b.isSlowed) { // 只恢復被減速過的球
+                        b.dx *= 2;
+                        b.dy *= 2;
+                        b.speed *= 2;
+                        b.isSlowed = false;
+                    }
                 });
                 break;
         }
@@ -1592,8 +1606,15 @@ class BrickBreakerGame {
         this.level++;
         this.updateHighScore();
 
-        // 過關獎勵：增加一條生命
-        this.lives++;
+        // 過關獎勵：增加一條生命（上限 10 條）
+        const maxLives = 10;
+        let lifeMessage = '';
+        if (this.lives < maxLives) {
+            this.lives++;
+            lifeMessage = '❤️ +1 生命！';
+        } else {
+            lifeMessage = '❤️ 生命已滿！';
+        }
 
         // 增加难度：每过一关速度增加 0.2，上限為 7
         this.currentBallSpeed = Math.min(this.currentBallSpeed + 0.2, CONFIG.maxBallSpeed);
@@ -1605,7 +1626,7 @@ class BrickBreakerGame {
 
         this.updateUI();
         this.sound.playLevelComplete();
-        this.showOverlay(`🎉 第 ${this.level - 1} 关完成!`, `❤️ +1 生命！按空格键进入下一关`);
+        this.showOverlay(`🎉 第 ${this.level - 1} 关完成!`, `${lifeMessage}按空格键进入下一关`);
         this.gameState = 'win';
     }
 
