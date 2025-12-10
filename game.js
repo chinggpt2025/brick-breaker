@@ -571,6 +571,12 @@ class BrickBreakerGame {
         // 冰凍效果狀態
         this.freezeActive = false;
 
+        // 評級系統變數
+        this.currentRank = null;      // 當前評級
+        this.bestRanks = {};           // 每關最佳評級 {level: rank}
+        this.missCount = 0;            // 失誤次數（失去生命）
+        this.loadBestRanks();          // 從 localStorage 載入
+
         // 初始化事件监听
         this.initEventListeners();
 
@@ -1978,6 +1984,10 @@ class BrickBreakerGame {
         const completedLevel = this.level;
         const wasBossLevel = this.isBossLevel(completedLevel);
 
+        // 計算評級
+        this.currentRank = this.calculateRank(completedLevel, this.score, this.maxCombo, this.missCount);
+        const isNewBest = this.saveBestRank(completedLevel, this.currentRank);
+
         this.level++;
         this.updateHighScore();
 
@@ -2017,17 +2027,22 @@ class BrickBreakerGame {
         this.resetBallAndPaddle();
         this.particlePool.reset();
 
+        // 重置失誤計數（新關卡）
+        this.missCount = 0;
+
         this.updateUI();
         this.sound.playLevelComplete();
 
-        // 顯示過關訊息
+        // 顯示過關訊息（含評級）
+        const rankText = `RANK: ${this.currentRank}${isNewBest ? ' 🎉NEW!' : ''}`;
+
         if (wasBossLevel) {
-            this.showOverlay(`👑 第 ${completedLevel} 关 BOSS 擊敗!`, `${bonusMessage}`);
+            this.showOverlay(`👑 第 ${completedLevel} 关 BOSS 擊敗! ${rankText}`, `${bonusMessage}`);
         } else if (this.isBossLevel(this.level)) {
             // 下一關是 Boss 關
-            this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${lifeMessage}⚠️ 下一關是 BOSS 關！`);
+            this.showOverlay(`🎉 第 ${completedLevel} 关完成! ${rankText}`, `${lifeMessage}⚠️ 下一關是 BOSS 關！`);
         } else {
-            this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${lifeMessage}按空格键进入下一关`);
+            this.showOverlay(`🎉 第 ${completedLevel} 关完成! ${rankText}`, `${lifeMessage}按空格键进入下一关`);
         }
 
         this.gameState = 'win';
@@ -2039,6 +2054,74 @@ class BrickBreakerGame {
             localStorage.setItem('brickBreakerHighScore', this.highScore);
             document.getElementById('highScore').textContent = this.highScore;
         }
+    }
+
+    // ===== 評級系統 =====
+
+    // 計算當前評級（S/A/B/C/D）
+    calculateRank(level, score, maxCombo, missCount) {
+        // 目標分數（隨關卡增加）
+        const targetScore = 1000 + (level - 1) * 500;
+
+        // S 級：完美表現
+        if (missCount === 0 && maxCombo >= 20 && score >= targetScore * 1.5) {
+            return 'S';
+        }
+
+        // A 級：優秀表現
+        if (missCount <= 1 && maxCombo >= 15 && score >= targetScore * 1.2) {
+            return 'A';
+        }
+
+        // B 級：良好表現
+        if (missCount <= 2 && maxCombo >= 10 && score >= targetScore) {
+            return 'B';
+        }
+
+        // C 級：基本過關
+        if (missCount <= 3) {
+            return 'C';
+        }
+
+        // D 級：未達標
+        return 'D';
+    }
+
+    // 載入最佳評級
+    loadBestRanks() {
+        const saved = localStorage.getItem('brickBreakerBestRanks');
+        if (saved) {
+            try {
+                this.bestRanks = JSON.parse(saved);
+            } catch (e) {
+                this.bestRanks = {};
+            }
+        }
+    }
+
+    // 儲存最佳評級
+    saveBestRank(level, rank) {
+        const rankValue = { 'S': 5, 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
+        const currentBest = this.bestRanks[level];
+
+        if (!currentBest || rankValue[rank] > rankValue[currentBest]) {
+            this.bestRanks[level] = rank;
+            localStorage.setItem('brickBreakerBestRanks', JSON.stringify(this.bestRanks));
+            return true; // 新紀錄
+        }
+        return false;
+    }
+
+    // 取得評級顏色（霓虹色）
+    getRankColor(rank) {
+        const colors = {
+            'S': '#FFD700',  // 金色
+            'A': '#9B59B6',  // 紫色
+            'B': '#3498DB',  // 藍色
+            'C': '#2ECC71',  // 綠色
+            'D': '#95A5A6'   // 灰色
+        };
+        return colors[rank] || '#95A5A6';
     }
 
     // 显示成绩卡片
