@@ -528,6 +528,9 @@ class BrickBreakerGame {
         // 護盾系統
         this.shield = { active: false, y: 0, height: 0, timeLeft: 0 };
 
+        // 炸彈連鎖計數器
+        this.pendingExplosions = 0;
+
         // 初始化事件监听
         this.initEventListeners();
 
@@ -1537,6 +1540,15 @@ class BrickBreakerGame {
                     ball.dx = ball.dx >= 0 ? minDx : -minDx;
                 }
 
+                // 球速正規化：確保球速不會因累積誤差而異常
+                const expectedSpeed = ball.isSlowed ? this.currentBallSpeed * 0.5 : this.currentBallSpeed;
+                const currentSpeed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+                if (Math.abs(currentSpeed - expectedSpeed) > 0.5) {
+                    const ratio = expectedSpeed / currentSpeed;
+                    ball.dx *= ratio;
+                    ball.dy *= ratio;
+                }
+
                 this.sound.playPaddleHit();
                 this.combo = 0; // 碰到挡板，连击归零
                 this.updateUI();
@@ -1705,10 +1717,12 @@ class BrickBreakerGame {
         this.sound.playBrickHit(0);
     }
 
-    // 炸弹爆炸逻辑
+    // 炸弹爆炸逻辑（使用計數器追蹤連鎖）
     explodeBrick(c, r) {
         const brick = this.bricks[c][r];
         if (brick.status === 0) return; // 防止重复爆炸
+
+        this.pendingExplosions++; // 增加計數器
 
         brick.status = 0;
         this.combo++;
@@ -1759,13 +1773,16 @@ class BrickBreakerGame {
             }
         }
 
-        // 爆炸後延遲檢查是否過關（等連鎖爆炸結束）
+        // 減少計數器，當所有爆炸完成後檢查過關
         setTimeout(() => {
+            this.pendingExplosions--;
             this.updateUI();
-            if (this.checkWin()) {
+
+            // 只有當所有爆炸都完成時才檢查過關
+            if (this.pendingExplosions === 0 && this.checkWin()) {
                 this.winGame();
             }
-        }, 200);
+        }, 150);
     }
 
     checkWin() {
@@ -1805,18 +1822,25 @@ class BrickBreakerGame {
         let bonusMessage = '';
 
         if (wasBossLevel) {
-            // 🏆 Boss 過關特殊獎勵：+3 生命、+500 分
-            const bonusLives = Math.min(3, maxLives - this.lives);
-            this.lives = Math.min(this.lives + 3, maxLives);
+            // 🏆 Boss 過關特殊獎勵：+3 生命、+500 分（無盡模式只加分）
+            if (!this.endlessMode) {
+                const bonusLives = Math.min(3, maxLives - this.lives);
+                this.lives = Math.min(this.lives + 3, maxLives);
+                bonusMessage = `🏆 BOSS 擊敗！+${bonusLives} 生命 +500 分！`;
+            } else {
+                bonusMessage = `🏆 BOSS 擊敗！+500 分！`;
+            }
             this.score += 500;
-            bonusMessage = `🏆 BOSS 擊敗！+${bonusLives} 生命 +500 分！`;
         } else {
-            // 普通關卡：+1 生命
-            if (this.lives < maxLives) {
+            // 普通關卡：+1 生命（無盡模式不加命）
+            if (!this.endlessMode && this.lives < maxLives) {
                 this.lives++;
                 lifeMessage = '❤️ +1 生命！';
-            } else {
+            } else if (!this.endlessMode) {
                 lifeMessage = '❤️ 生命已滿！';
+            } else {
+                lifeMessage = '🎯 +100 分！';
+                this.score += 100;
             }
         }
 
@@ -2494,6 +2518,11 @@ async function initVisitorStats() {
 
         } catch (e) {
             console.warn('統計查詢失敗:', e);
+            // 離線狀態提示
+            document.getElementById('statTotalVisitors').textContent = '離線';
+            document.getElementById('statTodayVisitors').textContent = '-';
+            document.getElementById('statOnlinePlayers').textContent = '-';
+            document.getElementById('statTodayChallengers').textContent = '-';
         }
     }
 
