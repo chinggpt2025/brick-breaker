@@ -525,6 +525,9 @@ class BrickBreakerGame {
         this.endlessTimer = 0; // 新行生成计时器
         this.endlessInterval = 15000; // 每 15 秒生成新行
 
+        // 護盾系統
+        this.shield = { active: false, y: 0, height: 0, timeLeft: 0 };
+
         // 初始化事件监听
         this.initEventListeners();
 
@@ -570,6 +573,37 @@ class BrickBreakerGame {
         };
     }
 
+    // 取得特殊磚塊類型（根據關卡主題）
+    getSpecialBrickType(level) {
+        const rand = this.rng.nextFloat();
+
+        // 關卡 1：爆破快感 - 只有炸彈
+        if (level === 1) {
+            return rand < 0.20 ? 'bomb' : null;
+        }
+        // 關卡 2：金幣雨 - 炸彈 + 金磚
+        else if (level === 2) {
+            if (rand < 0.10) return 'bomb';
+            if (rand < 0.25) return 'gold';
+            return null;
+        }
+        // 關卡 3：閃電風暴 - 炸彈 + 金磚 + 閃電
+        else if (level === 3) {
+            if (rand < 0.08) return 'bomb';
+            if (rand < 0.16) return 'gold';
+            if (rand < 0.26) return 'lightning';
+            return null;
+        }
+        // 關卡 4+：混合派對 - 全部
+        else {
+            if (rand < 0.05) return 'bomb';
+            if (rand < 0.13) return 'gold';
+            if (rand < 0.18) return 'lightning';
+            if (rand < 0.23) return 'shield';
+            return null;
+        }
+    }
+
     initBricks() {
         this.bricks = [];
         const pattern = this.getLevelPattern(this.level);
@@ -581,7 +615,6 @@ class BrickBreakerGame {
                 const y = r * (CONFIG.brickHeight + CONFIG.brickPadding) + CONFIG.brickOffsetTop;
 
                 // 检查该位置是否有砖块（根据图案）
-                // 如果 pattern 是 null，表示全部填满
                 let hasBrick = pattern ? (pattern[r] ? pattern[r][c] : 0) : 1;
 
                 // 第一關：跳過最上面那排，降低難度
@@ -589,27 +622,26 @@ class BrickBreakerGame {
                     hasBrick = 0;
                 }
 
-                // 根据行数决定血量：前2行1血，中间2行2血，最后1行混合1血和3血
+                // 根据行数决定血量
                 let maxHits = 1;
                 if (r >= 2 && r < 4) {
                     maxHits = 2;
                 } else if (r >= 4) {
-                    // 最底部一行：50% 機率 3 血，50% 機率 1 血
                     maxHits = this.rng.nextFloat() < 0.5 ? 3 : 1;
                 }
 
-                // 炸弹砖只有1血，第一關炸彈機率增加到 20%
-                const bombChance = this.level === 1 ? 0.2 : 0.1;
-                const isBomb = hasBrick && this.rng.nextFloat() < bombChance;
+                // 決定特殊磚塊類型
+                const specialType = hasBrick ? this.getSpecialBrickType(this.level) : null;
 
                 this.bricks[c][r] = {
                     x: x,
                     y: y,
-                    status: hasBrick ? 1 : 0, // 根据图案决定是否存在
+                    status: hasBrick ? 1 : 0,
                     color: BRICK_COLORS[r % BRICK_COLORS.length],
-                    isBomb: isBomb,
-                    hits: isBomb ? 1 : maxHits,
-                    maxHits: isBomb ? 1 : maxHits
+                    specialType: specialType, // 'bomb', 'gold', 'lightning', 'shield', or null
+                    isBomb: specialType === 'bomb', // 保持向後相容
+                    hits: specialType ? 1 : maxHits, // 特殊磚塊都是 1 血
+                    maxHits: specialType ? 1 : maxHits
                 };
             }
         }
@@ -1354,6 +1386,37 @@ class BrickBreakerGame {
         }
     }
 
+    // 繪製護盾
+    drawShield() {
+        if (!this.shield.active) return;
+
+        const opacity = Math.min(1, this.shield.timeLeft / 1000); // 最後一秒漸隱
+        this.ctx.save();
+        this.ctx.globalAlpha = opacity;
+
+        // 護盾發光效果
+        const gradient = this.ctx.createLinearGradient(0, this.shield.y, 0, this.shield.y + this.shield.height);
+        gradient.addColorStop(0, '#00ffcc');
+        gradient.addColorStop(1, '#00aa88');
+
+        this.ctx.fillStyle = gradient;
+        this.ctx.shadowColor = '#00ffcc';
+        this.ctx.shadowBlur = 20;
+        this.ctx.fillRect(0, this.shield.y, CONFIG.canvasWidth, this.shield.height);
+
+        this.ctx.restore();
+    }
+
+    // 更新護盾計時器
+    updateShield(deltaTime) {
+        if (!this.shield.active) return;
+
+        this.shield.timeLeft -= deltaTime;
+        if (this.shield.timeLeft <= 0) {
+            this.shield.active = false;
+        }
+    }
+
     // ===== 结束道具系统方法 =====
 
     // 更新挡板位置
@@ -1399,8 +1462,17 @@ class BrickBreakerGame {
                 this.sound.playWallHit();
             }
 
-            // 下边界（球落出画面）
+            // 下边界（球落出画面）或護盾碰撞
             if (ball.y + ball.radius > CONFIG.canvasHeight) {
+                // 檢查是否有護盾
+                if (this.shield.active && ball.y + ball.radius > this.shield.y) {
+                    // 護盾反彈
+                    ball.y = this.shield.y - ball.radius;
+                    ball.dy = -Math.abs(ball.dy);
+                    this.sound.playWallHit();
+                    continue;
+                }
+
                 this.balls.splice(i, 1);
 
                 // 如果没有球了，失去生命
@@ -1450,7 +1522,7 @@ class BrickBreakerGame {
         this.ball = this.balls[0] || null;
     }
 
-    // 砖块碰撞检测（支持多球）
+    // 砖块碰撞检测（支持多球和特殊磚塊）
     checkBrickCollision() {
         for (const ball of this.balls) {
             if (ball.held) continue;
@@ -1469,37 +1541,27 @@ class BrickBreakerGame {
                                 ball.dy = -ball.dy;
                             }
 
-                            // 处理击中逻辑
-                            if (brick.isBomb) {
-                                this.explodeBrick(c, r);
-                            } else {
-                                brick.hits--; // 减少血量
+                            // 根據特殊磚塊類型處理
+                            switch (brick.specialType) {
+                                case 'bomb':
+                                    this.explodeBrick(c, r);
+                                    break;
 
-                                this.combo++; // 增加连击
-                                if (this.combo > this.maxCombo) this.maxCombo = this.combo;
-                                const points = 10 * (1 + (this.combo - 1) * 0.5); // 连击加分
-                                this.score += points;
+                                case 'gold':
+                                    this.hitGoldBrick(brick);
+                                    break;
 
-                                this.sound.playBrickHit(r);
+                                case 'lightning':
+                                    this.triggerLightning(r);
+                                    break;
 
-                                // 创建小粒子效果（表示受击）
-                                this.createParticles(
-                                    brick.x + CONFIG.brickWidth / 2,
-                                    brick.y + CONFIG.brickHeight / 2,
-                                    brick.color,
-                                    brick.hits > 0 ? 3 : 8 // 未破碎时粒子少
-                                );
+                                case 'shield':
+                                    this.spawnShield(brick);
+                                    break;
 
-                                // 如果血量归零，销毁砖块
-                                if (brick.hits <= 0) {
-                                    brick.status = 0;
-
-                                    // 生成道具（只在完全破坏时）
-                                    this.spawnPowerup(
-                                        brick.x + CONFIG.brickWidth / 2,
-                                        brick.y + CONFIG.brickHeight / 2
-                                    );
-                                }
+                                default:
+                                    // 普通磚塊
+                                    this.hitNormalBrick(brick);
                             }
 
                             this.updateUI();
@@ -1513,6 +1575,109 @@ class BrickBreakerGame {
                 }
             }
         }
+    }
+
+    // 擊中普通磚塊
+    hitNormalBrick(brick) {
+        brick.hits--;
+
+        this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        const points = 10 * (1 + (this.combo - 1) * 0.5);
+        this.score += points;
+
+        this.sound.playBrickHit(0);
+
+        this.createParticles(
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2,
+            brick.color,
+            brick.hits > 0 ? 3 : 8
+        );
+
+        if (brick.hits <= 0) {
+            brick.status = 0;
+            this.spawnPowerup(
+                brick.x + CONFIG.brickWidth / 2,
+                brick.y + CONFIG.brickHeight / 2
+            );
+        }
+    }
+
+    // 💰 金磚：雙倍分數
+    hitGoldBrick(brick) {
+        brick.status = 0;
+
+        this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        const points = 20 * (1 + (this.combo - 1) * 0.5); // 雙倍分數
+        this.score += points;
+
+        // 金幣音效和粒子
+        this.sound.playBrickHit(0);
+        this.createParticles(
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2,
+            '#ffd700', // 金色
+            15
+        );
+
+        this.triggerShake(5, 5);
+    }
+
+    // ⚡ 閃電磚：清除整排
+    triggerLightning(row) {
+        let clearedCount = 0;
+
+        for (let c = 0; c < CONFIG.brickColumnCount; c++) {
+            const brick = this.bricks[c][row];
+            if (brick.status === 1) {
+                brick.status = 0;
+                clearedCount++;
+
+                this.createParticles(
+                    brick.x + CONFIG.brickWidth / 2,
+                    brick.y + CONFIG.brickHeight / 2,
+                    '#ffff00', // 黃色閃電
+                    10
+                );
+            }
+        }
+
+        // 分數和連擊
+        this.combo += clearedCount;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        this.score += clearedCount * 15;
+
+        // 震動效果
+        this.triggerShake(10, 8);
+        this.sound.playExplosion();
+    }
+
+    // 🛡️ 護盾磚：生成底部護盾
+    spawnShield(brick) {
+        brick.status = 0;
+
+        this.combo++;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        this.score += 15;
+
+        // 設定護盾（5 秒）
+        this.shield = {
+            active: true,
+            y: CONFIG.canvasHeight - 10,
+            height: 8,
+            timeLeft: 5000 // 5 秒
+        };
+
+        this.createParticles(
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2,
+            '#00ffcc', // 青色
+            12
+        );
+
+        this.sound.playBrickHit(0);
     }
 
     // 炸弹爆炸逻辑
@@ -1919,12 +2084,28 @@ class BrickBreakerGame {
                         );
                     }
 
-                    // 绘制炸弹图标
-                    if (brick.isBomb) {
+                    // 繪製特殊磚塊圖標
+                    if (brick.specialType) {
                         this.ctx.font = '16px Arial';
                         this.ctx.textAlign = 'center';
                         this.ctx.textBaseline = 'middle';
-                        this.ctx.fillText('💣', brick.x + CONFIG.brickWidth / 2, brick.y + CONFIG.brickHeight / 2 + 2);
+                        const cx = brick.x + CONFIG.brickWidth / 2;
+                        const cy = brick.y + CONFIG.brickHeight / 2 + 2;
+
+                        switch (brick.specialType) {
+                            case 'bomb':
+                                this.ctx.fillText('💣', cx, cy);
+                                break;
+                            case 'gold':
+                                this.ctx.fillText('⭐', cx, cy);
+                                break;
+                            case 'lightning':
+                                this.ctx.fillText('⚡', cx, cy);
+                                break;
+                            case 'shield':
+                                this.ctx.fillText('🛡️', cx, cy);
+                                break;
+                        }
                     }
                 }
             }
@@ -1982,6 +2163,7 @@ class BrickBreakerGame {
         this.drawPaddle();
         this.drawBall();
         this.drawPowerups(); // 绘制道具
+        this.drawShield(); // 繪製護盾
 
         this.ctx.restore(); // 恢复坐标系
 
@@ -1992,6 +2174,7 @@ class BrickBreakerGame {
             this.checkBrickCollision();
             this.updatePowerups(); // 更新道具位置
             this.updateActivePowerups(deltaTime); // 更新道具计时器
+            this.updateShield(deltaTime); // 更新護盾計時器
             this.updateEndlessMode(deltaTime); // 更新无尽模式
         }
 
