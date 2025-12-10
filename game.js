@@ -568,6 +568,9 @@ class BrickBreakerGame {
         // 炸彈連鎖計數器
         this.pendingExplosions = 0;
 
+        // 冰凍效果狀態
+        this.freezeActive = false;
+
         // 初始化事件监听
         this.initEventListeners();
 
@@ -1777,7 +1780,7 @@ class BrickBreakerGame {
         this.sound.playShield();
     }
 
-    // ❄️ 冰凍磚：球速減半 5 秒
+    // ❄️ 冰凍磚：球速減慢 70%、只影響擊中的球、擋板變大
     triggerFreeze(brick, ball) {
         brick.status = 0;
 
@@ -1785,31 +1788,41 @@ class BrickBreakerGame {
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
         this.score += 15;
 
-        // 減速所有球
-        for (const b of this.balls) {
-            if (!b.isSlowed) {
-                b.dx *= 0.5;
-                b.dy *= 0.5;
-                b.isSlowed = true;
-            }
+        // 只減速擊中的這顆球（70% 減速）
+        if (!ball.isFrozen) {
+            ball.dx *= 0.3;  // 減速到 30%（= 70% 減速）
+            ball.dy *= 0.3;
+            ball.isFrozen = true;
+            ball.freezeColor = '#00bfff'; // 冰藍色標記
         }
 
-        // 5 秒後恢復
-        setTimeout(() => {
-            for (const b of this.balls) {
-                if (b.isSlowed) {
-                    b.dx *= 2;
-                    b.dy *= 2;
-                    b.isSlowed = false;
+        // 擋板變大 1.2 倍
+        if (!this.freezeActive) {
+            const originalWidth = this.paddle.width;
+            this.paddle.width *= 1.2;
+            this.freezeActive = true;
+
+            // 5 秒後恢復
+            setTimeout(() => {
+                // 恢復球速
+                if (ball.isFrozen) {
+                    ball.dx /= 0.3;  // 恢復原速
+                    ball.dy /= 0.3;
+                    ball.isFrozen = false;
+                    delete ball.freezeColor;
                 }
-            }
-        }, 5000);
+
+                // 恢復擋板大小
+                this.paddle.width = originalWidth;
+                this.freezeActive = false;
+            }, 5000);
+        }
 
         this.createParticles(
             brick.x + CONFIG.brickWidth / 2,
             brick.y + CONFIG.brickHeight / 2,
             '#00bfff', // 冰藍色
-            15
+            20
         );
 
         this.sound.playFreeze();
@@ -2373,7 +2386,7 @@ class BrickBreakerGame {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             this.ctx.fill();
 
-            // 球的渐变（穿透模式时显示黄色发光）
+            // 球的渐变（穿透模式或冰凍模式時顯示特殊顏色）
             let gradient;
             if (ball.pierce) {
                 gradient = this.ctx.createRadialGradient(
@@ -2388,6 +2401,20 @@ class BrickBreakerGame {
                 this.ctx.save();
                 this.ctx.shadowColor = '#feca57';
                 this.ctx.shadowBlur = 15;
+            } else if (ball.isFrozen) {
+                // 冰凍狀態：冰藍色
+                gradient = this.ctx.createRadialGradient(
+                    ball.x - 3, ball.y - 3, 0,
+                    ball.x, ball.y, ball.radius
+                );
+                gradient.addColorStop(0, '#fff');
+                gradient.addColorStop(0.3, '#87ceeb');
+                gradient.addColorStop(1, '#00bfff');
+
+                // 冰凍發光效果
+                this.ctx.save();
+                this.ctx.shadowColor = '#00bfff';
+                this.ctx.shadowBlur = 10;
             } else {
                 gradient = this.ctx.createRadialGradient(
                     ball.x - 3, ball.y - 3, 0,
@@ -2403,7 +2430,7 @@ class BrickBreakerGame {
             this.ctx.fillStyle = gradient;
             this.ctx.fill();
 
-            if (ball.pierce) {
+            if (ball.pierce || ball.isFrozen) {
                 this.ctx.restore();
             }
         }
