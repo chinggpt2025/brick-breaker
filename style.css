@@ -130,7 +130,7 @@ body {
     backdrop-filter: blur(10px);
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 50;
+    z-index: 200;
     font-size: 0.85rem;
     min-width: 140px;
 }
