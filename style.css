@@ -288,31 +288,145 @@ kbd {
     font-size: 1.3rem;
 }
 
-/* 响应式设计 */
-@media (max-width: 600px) {
+/* 响应式设计 - 手機優化 */
+@media (max-width: 850px) {
+    body {
+        padding: 10px;
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+
     .game-container {
-        padding: 15px;
-        margin: 10px;
+        padding: 10px;
+        margin: 5px;
+        width: 100%;
+        max-width: 100vw;
+        border-radius: 16px;
     }
 
     .game-header h1 {
-        font-size: 1.8rem;
-    }
-
-    .stats {
-        gap: 15px;
-    }
-
-    .stat-item {
-        padding: 8px 15px;
-    }
-
-    .stat-value {
         font-size: 1.4rem;
     }
 
+    .stats {
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .stat-item {
+        padding: 5px 10px;
+        min-width: 70px;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+    }
+
+    .stat-value {
+        font-size: 1.1rem;
+    }
+
+    /* Canvas 縮放 */
+    #gameCanvas {
+        width: 100% !important;
+        height: auto !important;
+        max-width: calc(100vw - 40px);
+        aspect-ratio: 800 / 600;
+    }
+
+    .game-controls {
+        font-size: 0.85rem;
+    }
+
+    .game-controls p {
+        margin: 3px 0;
+    }
+
+    .control-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .control-buttons button {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
     .overlay-content h2 {
-        font-size: 2rem;
+        font-size: 1.8rem;
+    }
+
+    .overlay-content p {
+        font-size: 1rem;
+    }
+
+    .start-btn {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+    }
+
+    /* Score Card 手機優化 */
+    .score-card-content {
+        padding: 20px;
+        min-width: auto;
+        width: 90%;
+        max-width: 350px;
+    }
+
+    .score-card-content h2 {
+        font-size: 1.6rem;
+    }
+
+    .card-stat {
+        padding: 8px 12px;
+    }
+
+    .card-stat.main-score .card-value {
+        font-size: 1.6rem;
+    }
+
+    .card-feedback {
+        font-size: 0.95rem;
+        padding: 8px 10px;
+    }
+
+    .card-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .card-btn {
+        width: 100%;
+    }
+
+    .name-input-section {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .name-input-section input {
+        width: 100%;
+    }
+
+    /* Help Modal 手機優化 */
+    .help-content {
+        padding: 20px;
+        max-width: 95vw;
+        max-height: 85vh;
+    }
+
+    .powerup-list {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    /* Settings Modal 手機優化 */
+    .settings-content {
+        min-width: auto;
+        width: 90%;
+        max-width: 350px;
+        padding: 20px;
     }
 }
 
