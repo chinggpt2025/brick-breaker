@@ -32,7 +32,8 @@ const LANGUAGES = {
             endlessOn: '♾️ 無盡模式: 開',
             endlessOff: '♾️ 無盡模式: 關',
             language: '🌐 語言',
-            help: '❓ 說明'
+            help: '❓ 說明',
+            settings: '⚙️ 設定'
         },
         controls: {
             arrows: '⬅️ ➡️ 方向鍵控制擋板',
@@ -105,6 +106,16 @@ const LANGUAGES = {
             tip2: '每日關卡固定，挑戰排行榜！',
             tip3: '球速每過一關會增加',
             close: '知道了！'
+        },
+        settings: {
+            title: '⚙️ 遊戲設定',
+            language: '語言 / Language',
+            sound: '音效',
+            endless: '無盡模式',
+            clearData: '清除數據',
+            clear: '🗑️ 清除',
+            close: '完成',
+            cleared: '數據已清除！'
         }
     },
     'en': {
@@ -120,7 +131,8 @@ const LANGUAGES = {
             endlessOn: '♾️ Endless: ON',
             endlessOff: '♾️ Endless: OFF',
             language: '🌐 Language',
-            help: '❓ Help'
+            help: '❓ Help',
+            settings: '⚙️ Settings'
         },
         controls: {
             arrows: '⬅️ ➡️ Arrow keys to move paddle',
@@ -193,6 +205,16 @@ const LANGUAGES = {
             tip2: 'Daily levels are fixed, compete!',
             tip3: 'Ball speed increases each level',
             close: 'Got it!'
+        },
+        settings: {
+            title: '⚙️ Game Settings',
+            language: 'Language',
+            sound: 'Sound',
+            endless: 'Endless Mode',
+            clearData: 'Clear Data',
+            clear: '🗑️ Clear',
+            close: 'Done',
+            cleared: 'Data cleared!'
         }
     }
 };
@@ -848,22 +870,40 @@ class BrickBreakerGame {
             isMouseDown = false;
         });
 
-        // 音效按钮点击事件
-        const soundBtn = document.getElementById('soundToggle');
-        if (soundBtn) {
-            soundBtn.addEventListener('click', () => this.toggleSound());
+        // 设置按钮点击事件
+        const settingsBtn = document.getElementById('settingsBtn');
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => this.showSettings());
         }
 
-        // 无尽模式按钮点击事件
-        const endlessBtn = document.getElementById('endlessModeBtn');
-        if (endlessBtn) {
-            endlessBtn.addEventListener('click', () => this.toggleEndlessMode());
+        // 关闭设置按钮点击事件
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        if (closeSettingsBtn) {
+            closeSettingsBtn.addEventListener('click', () => this.hideSettings());
         }
 
-        // 語言切換按鈕點擊事件
-        const langBtn = document.getElementById('languageBtn');
-        if (langBtn) {
-            langBtn.addEventListener('click', () => this.toggleLanguage());
+        // 语言设置按钮监听
+        const settingLangBtn = document.getElementById('settingLangBtn');
+        if (settingLangBtn) {
+            settingLangBtn.addEventListener('click', () => this.toggleLanguage());
+        }
+
+        // 音效开关监听
+        const soundCheck = document.getElementById('settingSoundCheck');
+        if (soundCheck) {
+            soundCheck.addEventListener('change', (e) => this.toggleSound(e.target.checked));
+        }
+
+        // 无尽模式开关监听
+        const endlessCheck = document.getElementById('settingEndlessCheck');
+        if (endlessCheck) {
+            endlessCheck.addEventListener('change', (e) => this.toggleEndlessMode(e.target.checked));
+        }
+
+        // 清除数据按钮监听
+        const clearDataBtn = document.getElementById('clearDataBtn');
+        if (clearDataBtn) {
+            clearDataBtn.addEventListener('click', () => this.clearData());
         }
 
         // 幫助按鈕點擊事件
@@ -879,16 +919,50 @@ class BrickBreakerGame {
         }
     }
 
-    toggleSound() {
-        const enabled = this.sound.toggle();
-        this.updateSoundButtonUI(enabled);
+    showSettings() {
+        const settingsModal = document.getElementById('settingsModal');
+        if (settingsModal) {
+            // 同步当前状态到 UI
+            const soundCheck = document.getElementById('settingSoundCheck');
+            if (soundCheck) soundCheck.checked = this.sound.enabled;
+
+            const endlessCheck = document.getElementById('settingEndlessCheck');
+            if (endlessCheck) endlessCheck.checked = this.endlessMode;
+
+            // 更新语言按钮文本
+            this.updateLanguageButton();
+
+            settingsModal.classList.remove('hidden');
+
+            // 暂停游戏
+            if (this.gameState === 'playing') {
+                this.pauseGame();
+            }
+        }
     }
 
-    updateSoundButtonUI(enabled) {
-        const soundBtn = document.getElementById('soundToggle');
-        if (soundBtn) {
-            soundBtn.textContent = enabled ? t('ui.soundOn') : t('ui.soundOff');
-            soundBtn.classList.toggle('muted', !enabled);
+    hideSettings() {
+        const settingsModal = document.getElementById('settingsModal');
+        if (settingsModal) {
+            settingsModal.classList.add('hidden');
+        }
+    }
+
+    toggleSound(enabled) {
+        if (enabled !== undefined) {
+            this.sound.enabled = enabled;
+        } else {
+            this.sound.toggle();
+        }
+        // Save preference could be added here
+        localStorage.setItem('brickBreakerSound', this.sound.enabled);
+    }
+
+    toggleEndlessMode(enabled) {
+        if (enabled !== undefined) {
+            this.endlessMode = enabled;
+        } else {
+            this.endlessMode = !this.endlessMode;
         }
     }
 
@@ -899,6 +973,22 @@ class BrickBreakerGame {
 
         // 更新所有 UI 文本
         this.updateAllUI();
+        this.updateLanguageButton();
+    }
+
+    updateLanguageButton() {
+        const btn = document.getElementById('settingLangBtn');
+        if (btn) {
+            // 显示当前语言名称
+            btn.textContent = currentLang === 'zh-TW' ? '🌐 繁體中文' : '🌐 English';
+        }
+    }
+
+    clearData() {
+        if (confirm('確定要清除所有數據嗎？\nAre you sure you want to clear all data?')) {
+            localStorage.clear();
+            location.reload();
+        }
     }
 
     showHelp() {
@@ -944,18 +1034,6 @@ class BrickBreakerGame {
             el.placeholder = t(key);
         });
 
-        // 更新語言按鈕顯示
-        const langBtn = document.getElementById('languageBtn');
-        if (langBtn) {
-            langBtn.textContent = currentLang === 'zh-TW' ? '🌐 繁中' : '🌐 EN';
-        }
-
-        // 更新音效按鈕
-        const soundEnabled = this.sound.enabled;
-        this.updateSoundButtonUI(soundEnabled);
-
-        // 更新無盡模式按鈕
-        this.updateEndlessModeUI();
 
         // 更新 overlay 訊息（如果正在顯示）
         const overlayTitle = document.getElementById('overlayTitle');

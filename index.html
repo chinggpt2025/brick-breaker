@@ -45,11 +45,8 @@
                 <button class="sound-toggle" id="soundToggle" data-i18n="ui.soundOn" title="切換音效">
                     🔊 音效
                 </button>
-                <button class="endless-toggle" id="endlessModeBtn" data-i18n="ui.endlessOff" title="無盡模式">
-                    ♾️ 無盡模式: 關
-                </button>
-                <button class="language-toggle" id="languageBtn" title="Switch Language">
-                    🌐 繁中
+                <button class="settings-toggle" id="settingsBtn" data-i18n="ui.settings" title="遊戲設定">
+                    ⚙️ 設定
                 </button>
                 <button class="help-toggle" id="helpBtn" data-i18n="ui.help" title="遊戲說明">
                     ❓ 說明
@@ -168,6 +165,43 @@
                 </div>
 
                 <button class="card-btn primary" id="closeHelpBtn" data-i18n="help.close">知道了！</button>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="settings-modal hidden" id="settingsModal">
+            <div class="settings-content">
+                <h2 data-i18n="settings.title">⚙️ 遊戲設定</h2>
+
+                <div class="setting-item">
+                    <span class="setting-label" data-i18n="settings.language">語言 / Language</span>
+                    <button class="setting-toggle" id="settingLangBtn">🌐 繁體中文</button>
+                </div>
+
+                <div class="setting-item">
+                    <span class="setting-label" data-i18n="settings.sound">音效</span>
+                    <label class="switch">
+                        <input type="checkbox" id="settingSoundCheck" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <span class="setting-label" data-i18n="settings.endless">無盡模式</span>
+                    <label class="switch">
+                        <input type="checkbox" id="settingEndlessCheck">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="setting-divider"></div>
+
+                <div class="setting-item">
+                    <span class="setting-label" data-i18n="settings.clearData">清除數據</span>
+                    <button class="setting-btn danger" id="clearDataBtn" data-i18n="settings.clear">🗑️ 清除</button>
+                </div>
+
+                <button class="card-btn primary" id="closeSettingsBtn" data-i18n="settings.close">完成</button>
             </div>
         </div>
     </div>
