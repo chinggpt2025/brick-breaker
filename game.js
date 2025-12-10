@@ -624,10 +624,16 @@ class BrickBreakerGame {
 
                 // 根据行数决定血量
                 let maxHits = 1;
-                if (r >= 2 && r < 4) {
-                    maxHits = 2;
-                } else if (r >= 4) {
-                    maxHits = this.rng.nextFloat() < 0.5 ? 3 : 1;
+
+                // Boss 關卡：所有磚塊都更強
+                if (this.isBossLevel(this.level)) {
+                    maxHits = this.rng.nextFloat() < 0.5 ? 3 : 2;
+                } else {
+                    if (r >= 2 && r < 4) {
+                        maxHits = 2;
+                    } else if (r >= 4) {
+                        maxHits = this.rng.nextFloat() < 0.5 ? 3 : 1;
+                    }
                 }
 
                 // 決定特殊磚塊類型
@@ -647,8 +653,27 @@ class BrickBreakerGame {
         }
     }
 
+    // 检查是否为 Boss 关卡（每 7 关：第 7、14、21...）
+    isBossLevel(level) {
+        return level >= 7 && level % 7 === 0;
+    }
+
     // 获取关卡图案
     getLevelPattern(level) {
+        // Boss 關卡特殊圖案（皇冠形狀）
+        const bossPattern = [
+            [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 1, 1, 1, 0, 0]
+        ];
+
+        // 如果是 Boss 關卡，返回 Boss 圖案
+        if (this.isBossLevel(level)) {
+            return bossPattern;
+        }
+
         const patterns = [
             // 关卡 1: 完整矩形
             null, // null 表示全部填满
@@ -1768,17 +1793,31 @@ class BrickBreakerGame {
     }
 
     winGame() {
+        const completedLevel = this.level;
+        const wasBossLevel = this.isBossLevel(completedLevel);
+        
         this.level++;
         this.updateHighScore();
 
-        // 過關獎勵：增加一條生命（上限 10 條）
+        // 過關獎勵
         const maxLives = 10;
         let lifeMessage = '';
-        if (this.lives < maxLives) {
-            this.lives++;
-            lifeMessage = '❤️ +1 生命！';
+        let bonusMessage = '';
+
+        if (wasBossLevel) {
+            // 🏆 Boss 過關特殊獎勵：+3 生命、+500 分
+            const bonusLives = Math.min(3, maxLives - this.lives);
+            this.lives = Math.min(this.lives + 3, maxLives);
+            this.score += 500;
+            bonusMessage = `🏆 BOSS 擊敗！+${bonusLives} 生命 +500 分！`;
         } else {
-            lifeMessage = '❤️ 生命已滿！';
+            // 普通關卡：+1 生命
+            if (this.lives < maxLives) {
+                this.lives++;
+                lifeMessage = '❤️ +1 生命！';
+            } else {
+                lifeMessage = '❤️ 生命已滿！';
+            }
         }
 
         // 增加难度：每过一关速度增加 0.2，上限為 7
@@ -1791,7 +1830,17 @@ class BrickBreakerGame {
 
         this.updateUI();
         this.sound.playLevelComplete();
-        this.showOverlay(`🎉 第 ${this.level - 1} 关完成!`, `${lifeMessage}按空格键进入下一关`);
+
+        // 顯示過關訊息
+        if (wasBossLevel) {
+            this.showOverlay(`👑 第 ${completedLevel} 关 BOSS 擊敗!`, `${bonusMessage}`);
+        } else if (this.isBossLevel(this.level)) {
+            // 下一關是 Boss 關
+            this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${lifeMessage}⚠️ 下一關是 BOSS 關！`);
+        } else {
+            this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${lifeMessage}按空格键进入下一关`);
+        }
+        
         this.gameState = 'win';
     }
 
