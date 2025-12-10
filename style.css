@@ -689,16 +689,32 @@ kbd {
     font-size: 0.95rem;
 }
 
+.powerup-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
 .powerup-list li {
     display: flex;
     align-items: center;
     gap: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .powerup-icon {
     font-size: 1.2rem;
-    width: 28px;
-    text-align: center;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .help-content .card-btn {
