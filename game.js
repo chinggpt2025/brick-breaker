@@ -582,8 +582,12 @@ class BrickBreakerGame {
 
                 // 检查该位置是否有砖块（根据图案）
                 // 如果 pattern 是 null，表示全部填满
-                const hasBrick = pattern ? (pattern[r] ? pattern[r][c] : 0) : 1;
+                let hasBrick = pattern ? (pattern[r] ? pattern[r][c] : 0) : 1;
 
+                // 第一關：跳過最上面那排，降低難度
+                if (this.level === 1 && r === 0) {
+                    hasBrick = 0;
+                }
 
                 // 根据行数决定血量：前2行1血，中间2行2血，最后1行混合1血和3血
                 let maxHits = 1;
@@ -594,9 +598,9 @@ class BrickBreakerGame {
                     maxHits = this.rng.nextFloat() < 0.5 ? 3 : 1;
                 }
 
-
-                // 炸弹砖只有1血
-                const isBomb = hasBrick && this.rng.nextFloat() < 0.1;
+                // 炸弹砖只有1血，第一關炸彈機率增加到 20%
+                const bombChance = this.level === 1 ? 0.2 : 0.1;
+                const isBomb = hasBrick && this.rng.nextFloat() < bombChance;
 
                 this.bricks[c][r] = {
                     x: x,
@@ -1588,6 +1592,9 @@ class BrickBreakerGame {
         this.level++;
         this.updateHighScore();
 
+        // 過關獎勵：增加一條生命
+        this.lives++;
+
         // 增加难度：每过一关速度增加 0.2，上限為 7
         this.currentBallSpeed = Math.min(this.currentBallSpeed + 0.2, CONFIG.maxBallSpeed);
 
@@ -1598,7 +1605,7 @@ class BrickBreakerGame {
 
         this.updateUI();
         this.sound.playLevelComplete();
-        this.showOverlay(`🎉 第 ${this.level - 1} 关完成!`, '按空格键进入下一关');
+        this.showOverlay(`🎉 第 ${this.level - 1} 关完成!`, `❤️ +1 生命！按空格键进入下一关`);
         this.gameState = 'win';
     }
 
