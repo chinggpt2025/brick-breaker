@@ -54,6 +54,30 @@
             </div>
         </div>
 
+        <!-- 訪客統計區塊 -->
+        <div class="visitor-stats" id="visitorStats">
+            <div class="visitor-stat">
+                <span class="visitor-icon">📊</span>
+                <span class="visitor-label">總訪客</span>
+                <span class="visitor-value" id="statTotalVisitors">-</span>
+            </div>
+            <div class="visitor-stat">
+                <span class="visitor-icon">👥</span>
+                <span class="visitor-label">今日訪客</span>
+                <span class="visitor-value" id="statTodayVisitors">-</span>
+            </div>
+            <div class="visitor-stat">
+                <span class="visitor-icon">🎮</span>
+                <span class="visitor-label">正在遊玩</span>
+                <span class="visitor-value" id="statOnlinePlayers">-</span>
+            </div>
+            <div class="visitor-stat">
+                <span class="visitor-icon">🏆</span>
+                <span class="visitor-label">今日挑戰者</span>
+                <span class="visitor-value" id="statTodayChallengers">-</span>
+            </div>
+        </div>
+
         <div class="overlay" id="overlay">
             <div class="overlay-content">
                 <h2 id="overlayTitle" data-i18n="messages.title">打磚塊</h2>
@@ -115,6 +139,23 @@
                     <!-- Populated by JS -->
                 </ol>
                 <button class="card-btn primary" id="closeLeaderboardBtn" data-i18n="leaderboard.close">關閉</button>
+            </div>
+        </div>
+
+        <!-- Share Modal -->
+        <div class="share-modal hidden" id="shareModal">
+            <div class="share-content">
+                <h2>📸 分享成績</h2>
+                <div class="share-image-container">
+                    <img id="shareImage" alt="Game Score" />
+                </div>
+                <div class="share-actions">
+                    <button class="card-btn primary" id="downloadShareBtn">⬇️ 下載圖片</button>
+                    <button class="card-btn secondary" id="copyShareBtn">📋 複製圖片</button>
+                </div>
+                <p class="share-hint" style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-top: 10px;">
+                    長按圖片也可儲存或分享</p>
+                <button class="close-btn" id="closeShareBtn">×</button>
             </div>
         </div>
 

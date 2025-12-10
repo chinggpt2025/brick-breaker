@@ -1925,22 +1925,163 @@ class BrickBreakerGame {
         document.getElementById('saveHint').classList.add('hidden');
     }
 
-    // 复制成绩
-    shareScore() {
+    // 显示分享模态框
+    showShareModal() {
+        const dataUrl = this.generateShareImage();
+        const img = document.getElementById('shareImage');
+        img.src = dataUrl;
+
+        const modal = document.getElementById('shareModal');
+        modal.classList.remove('hidden');
+
+        // 下载按钮
+        document.getElementById('downloadShareBtn').onclick = () => {
+            const link = document.createElement('a');
+            link.download = `brick-breaker-score-${Date.now()}.png`;
+            link.href = dataUrl;
+            link.click();
+        };
+
+        // 复制按钮
+        document.getElementById('copyShareBtn').onclick = async () => {
+            try {
+                const blob = await (await fetch(dataUrl)).blob();
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        'image/png': blob
+                    })
+                ]);
+                const btn = document.getElementById('copyShareBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ 已複製！';
+                setTimeout(() => btn.innerHTML = originalText, 2000);
+            } catch (err) {
+                console.error('Failed to copy image: ', err);
+                alert('複製失敗，請長按圖片保存');
+            }
+        };
+
+        // 关闭按钮
+        document.getElementById('closeShareBtn').onclick = () => {
+            modal.classList.add('hidden');
+        };
+
+        // 点击背景关闭
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        };
+    }
+
+    // 生成分享图片
+    generateShareImage() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 800;
+
+        // 1. 背景
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#1e293b');
+        gradient.addColorStop(1, '#0f172a');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. 装饰
+        ctx.save();
+        ctx.globalAlpha = 0.1;
+        ctx.fillStyle = '#4ade80';
+        ctx.beginPath();
+        ctx.arc(100, 100, 150, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#3b82f6';
+        ctx.beginPath();
+        ctx.arc(500, 700, 200, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // 3. 标题
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 48px "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Brick Breaker', canvas.width / 2, 80);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '24px "Segoe UI", Roboto, sans-serif';
         const today = new Date();
-        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        const dateStr = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+        ctx.fillText(dateStr, canvas.width / 2, 130);
 
-        const text = `💣 Brick Breaker Daily #${seedStr}
-🏆 Score: ${Math.floor(this.score).toLocaleString()}
-🔥 Max Combo: x${this.maxCombo}
-🎮 Play now: https://chinggpt2025.github.io/brick-breaker/`;
+        // 4. 卡片
+        const cardY = 180;
+        const cardHeight = 450;
+        const cardWidth = 500;
+        const cardX = (canvas.width - cardWidth) / 2;
 
-        navigator.clipboard.writeText(text).then(() => {
-            document.getElementById('shareHint').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('shareHint').classList.add('hidden');
-            }, 2000);
-        });
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 20);
+            ctx.fill();
+        } else {
+            ctx.fillRect(cardX, cardY, cardWidth, cardHeight);
+        }
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 分数
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '32px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(t('scoreCard.finalScore'), canvas.width / 2, cardY + 70);
+
+        ctx.fillStyle = '#4ade80';
+        ctx.font = 'bold 80px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(Math.floor(this.score).toLocaleString(), canvas.width / 2, cardY + 150);
+
+        // 连击
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '28px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(t('scoreCard.maxCombo'), canvas.width / 2, cardY + 240);
+
+        ctx.fillStyle = '#facc15';
+        ctx.font = 'bold 60px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(`x${this.maxCombo}`, canvas.width / 2, cardY + 310);
+
+        // 评语
+        let feedback = '';
+        if (this.score >= this.highScore && this.score > 0) feedback = '🎉 Innovative Record!';
+        else if (this.score >= this.highScore * 0.8) feedback = '💪 So Close!';
+        else if (this.maxCombo >= 10) feedback = '🔥 Combo Master!';
+        else if (this.score >= 500) feedback = '👌 Great Run!';
+        else feedback = '💡 Play Again!';
+
+        // 简单映射回中文如果需要，或者直接用英文/简单符号
+        if (currentLang === 'zh-TW') {
+            if (feedback.includes('Record')) feedback = '🎉 新紀錄！';
+            else if (feedback.includes('Close')) feedback = '💪 差一點破紀錄！';
+            else if (feedback.includes('Master')) feedback = '🔥 連擊大師！';
+            else if (feedback.includes('Run')) feedback = '👌 表現不錯！';
+            else feedback = '💡 再接再厲！';
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'italic 30px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText(feedback, canvas.width / 2, cardY + 390);
+
+        // 5. Footer
+        ctx.fillStyle = '#64748b';
+        ctx.font = '18px "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('Play at: chinggpt2025.github.io/brick-breaker', canvas.width / 2, canvas.height - 40);
+
+        return canvas.toDataURL('image/png');
+    }
+
+    // 触发分享
+    shareScore() {
+        this.showShareModal();
     }
 
     // 保存成绩到排行榜 (Supabase)
@@ -2264,4 +2405,109 @@ class BrickBreakerGame {
 // 启动游戏
 window.addEventListener('load', () => {
     new BrickBreakerGame();
+
+    // ===== 訪客統計系統 =====
+    initVisitorStats();
 });
+
+// ===== 訪客統計系統 =====
+async function initVisitorStats() {
+    // 1. 生成或讀取訪客 ID
+    let visitorId = localStorage.getItem('brick_visitor_id');
+    if (!visitorId) {
+        visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('brick_visitor_id', visitorId);
+    }
+
+    // 2. 記錄訪問
+    try {
+        await supabase.from('visits').insert({ visitor_id: visitorId });
+    } catch (e) {
+        console.warn('記錄訪問失敗:', e);
+    }
+
+    // 3. 更新在線狀態（心跳）
+    async function updateHeartbeat() {
+        try {
+            await supabase.from('active_users').upsert(
+                { visitor_id: visitorId, last_seen: new Date().toISOString() },
+                { onConflict: 'visitor_id' }
+            );
+        } catch (e) {
+            console.warn('心跳更新失敗:', e);
+        }
+    }
+
+    // 首次心跳
+    updateHeartbeat();
+
+    // 每 30 秒心跳一次
+    const heartbeatInterval = setInterval(updateHeartbeat, 30000);
+
+    // 4. 離開頁面時清理
+    window.addEventListener('beforeunload', async () => {
+        clearInterval(heartbeatInterval);
+        try {
+            await supabase.from('active_users').delete().eq('visitor_id', visitorId);
+        } catch (e) {
+            // 忽略錯誤
+        }
+    });
+
+    // 5. 查詢並顯示統計數據
+    async function updateStats() {
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
+        try {
+            // 總訪客數（不重複）
+            const { count: totalVisitors } = await supabase
+                .from('visits')
+                .select('visitor_id', { count: 'exact', head: true });
+
+            // 今日訪客數（不重複）
+            const { data: todayData } = await supabase
+                .from('visits')
+                .select('visitor_id')
+                .gte('visited_at', todayStart);
+            const todayVisitors = todayData ? new Set(todayData.map(v => v.visitor_id)).size : 0;
+
+            // 正在遊玩人數
+            const { count: onlinePlayers } = await supabase
+                .from('active_users')
+                .select('visitor_id', { count: 'exact', head: true })
+                .gte('last_seen', fiveMinutesAgo);
+
+            // 今日挑戰者（提交過成績的）
+            const { count: todayChallengers } = await supabase
+                .from('scores')
+                .select('id', { count: 'exact', head: true })
+                .eq('seed', seedStr);
+
+            // 更新 UI
+            document.getElementById('statTotalVisitors').textContent = formatNumber(totalVisitors || 0);
+            document.getElementById('statTodayVisitors').textContent = formatNumber(todayVisitors);
+            document.getElementById('statOnlinePlayers').textContent = formatNumber(onlinePlayers || 0);
+            document.getElementById('statTodayChallengers').textContent = formatNumber(todayChallengers || 0);
+
+        } catch (e) {
+            console.warn('統計查詢失敗:', e);
+        }
+    }
+
+    // 格式化數字
+    function formatNumber(num) {
+        if (num >= 10000) {
+            return (num / 1000).toFixed(1) + 'k';
+        }
+        return num.toLocaleString();
+    }
+
+    // 首次載入統計
+    updateStats();
+
+    // 每 60 秒更新一次統計
+    setInterval(updateStats, 60000);
+}
