@@ -1759,12 +1759,12 @@ class BrickBreakerGame {
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
         this.score += 15;
 
-        // 設定護盾（5 秒）
+        // 設定護盾（8 秒）
         this.shield = {
             active: true,
             y: CONFIG.canvasHeight - 10,
             height: 8,
-            timeLeft: 5000 // 5 秒
+            timeLeft: 8000 // 8 秒
         };
 
         this.createParticles(
