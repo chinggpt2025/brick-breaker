@@ -358,6 +358,28 @@ class SoundManager {
         setTimeout(() => this.playTone(1320, 0.12, 'sine', 0.6), 160);
     }
 
+    // 🪙 金幣音效（高音叮噹聲）
+    playCoin() {
+        this.playTone(1200, 0.08, 'sine', 0.6);
+        setTimeout(() => this.playTone(1500, 0.1, 'sine', 0.5), 60);
+        setTimeout(() => this.playTone(1800, 0.12, 'sine', 0.4), 120);
+    }
+
+    // ⚡ 閃電音效（電擊嗡嗡聲）
+    playLightning() {
+        this.playTone(800, 0.05, 'sawtooth', 0.7);
+        setTimeout(() => this.playTone(1200, 0.08, 'square', 0.5), 40);
+        setTimeout(() => this.playTone(600, 0.1, 'sawtooth', 0.6), 80);
+        setTimeout(() => this.playTone(1000, 0.06, 'square', 0.4), 140);
+    }
+
+    // 🛡️ 護盾音效（柔和嗡鳴聲）
+    playShield() {
+        this.playTone(400, 0.15, 'sine', 0.4);
+        setTimeout(() => this.playTone(500, 0.15, 'sine', 0.5), 100);
+        setTimeout(() => this.playTone(600, 0.2, 'sine', 0.4), 200);
+    }
+
     // 切换音效开关
     toggle() {
         this.enabled = !this.enabled;
@@ -1651,7 +1673,7 @@ class BrickBreakerGame {
         this.score += points;
 
         // 金幣音效和粒子
-        this.sound.playBrickHit(0);
+        this.sound.playCoin();
         this.createParticles(
             brick.x + CONFIG.brickWidth / 2,
             brick.y + CONFIG.brickHeight / 2,
@@ -1688,7 +1710,7 @@ class BrickBreakerGame {
 
         // 震動效果
         this.triggerShake(10, 8);
-        this.sound.playExplosion();
+        this.sound.playLightning();
     }
 
     // 🛡️ 護盾磚：生成底部護盾
@@ -1714,7 +1736,7 @@ class BrickBreakerGame {
             12
         );
 
-        this.sound.playBrickHit(0);
+        this.sound.playShield();
     }
 
     // 炸弹爆炸逻辑（使用計數器追蹤連鎖）
