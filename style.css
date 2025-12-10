@@ -647,7 +647,7 @@ kbd {
 }
 
 .help-content {
-    text-align: left;
+    text-align: center;
     padding: 30px 40px;
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     border-radius: 20px;
@@ -675,6 +675,7 @@ kbd {
     margin-bottom: 10px;
     border-bottom: 1px solid rgba(72, 219, 251, 0.3);
     padding-bottom: 5px;
+    text-align: center;
 }
 
 .help-section ul {
@@ -687,6 +688,7 @@ kbd {
     color: rgba(255, 255, 255, 0.85);
     padding: 6px 0;
     font-size: 0.95rem;
+    text-align: center;
 }
 
 .powerup-list {
@@ -698,6 +700,7 @@ kbd {
 .powerup-list li {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     background: rgba(255, 255, 255, 0.05);
     padding: 8px 12px;
