@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打磚塊遊戲</title>
+    <link rel="icon" type="image/png" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 data-i18n-prefix="messages.title">🎮 打磚塊</h1>
+            <div id="version" style="font-size: 10px; opacity: 0.5;">v1.2</div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="ui.score">分數</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="ui.lives">生命</span>
+                    <span class="stat-value" id="lives">3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="ui.combo">連擊</span>
+                    <span class="stat-value" id="combo">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label" data-i18n="ui.level">關卡</span>
+                    <span class="stat-value" id="level">1</span>
+                </div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="game-controls">
+            <p data-i18n="controls.arrows">⬅️ ➡️ 方向鍵控制擋板</p>
+            <p class="touch-hint" data-i18n="controls.touch">👆 觸控：點擊開始，滑動移動擋板</p>
+            <p data-i18n-html="controls.spaceStart">按 <kbd>空格鍵</kbd> 開始/暫停遊戲 | <span data-i18n-html="controls.mute">按
+                    <kbd>M</kbd> 靜音</span></p>
+            <div class="control-buttons">
+                <button class="sound-toggle" id="soundToggle" data-i18n="ui.soundOn" title="切換音效">
+                    🔊 音效
+                </button>
+                <button class="settings-toggle" id="settingsBtn" data-i18n="ui.settings" title="遊戲設定">
+                    ⚙️ 設定
+                </button>
+                <button class="help-toggle" id="helpBtn" data-i18n="ui.help" title="遊戲說明">
+                    ❓ 說明
+                </button>
+            </div>
+        </div>
+
+        <!-- 訪客統計區塊 -->
+        <div class="visitor-stats" id="visitorStats">
+            <div class="visitor-stat">
+                <span class="visitor-icon">📊</span>
+                <span class="visitor-label">總訪客</span>
+                <span class="visitor-value" id="statTotalVisitors">-</span>
+            </div>
+            <div class="visitor-stat">
+                <span class="visitor-icon">👥</span>
+                <span class="visitor-label">今日訪客</span>
+                <span class="visitor-value" id="statTodayVisitors">-</span>
+            </div>
+            <div class="visitor-stat">
+                <span class="visitor-icon">🎮</span>
+                <span class="visitor-label">正在遊玩</span>
+                <span class="visitor-value" id="statOnlinePlayers">-</span>
+            </div>
+            <div class="visitor-stat">
+                <span class="visitor-icon">🏆</span>
+                <span class="visitor-label">今日挑戰者</span>
+                <span class="visitor-value" id="statTodayChallengers">-</span>
+            </div>
+        </div>
+
+        <div class="overlay" id="overlay">
+            <div class="overlay-content">
+                <h2 id="overlayTitle" data-i18n="messages.title">打磚塊</h2>
+                <p id="overlayMessage" data-i18n="messages.start">按空格鍵開始遊戲</p>
+                <button class="start-btn" id="startBtn">👆 點擊開始</button>
+                <div class="high-score">
+                    <span data-i18n="ui.highScore">最高分</span>: <span id="highScore">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Card (Game Over / Level Complete) -->
+        <div class="score-card hidden" id="scoreCard">
+            <div class="score-card-content">
+                <h2 id="cardTitle">🎮 遊戲結束</h2>
+                <div class="score-card-stats">
+                    <div class="card-stat main-score">
+                        <span class="card-label" data-i18n="scoreCard.finalScore">最終得分</span>
+                        <span class="card-value" id="cardScore">0</span>
+                    </div>
+                    <!-- 情緒反饋 -->
+                    <div class="card-feedback" id="cardFeedback">👍 不錯的表現！</div>
+                    <div class="card-stat combo-highlight" id="comboStat">
+                        <span class="card-label" data-i18n="scoreCard.maxCombo">最高連擊</span>
+                        <span class="card-value" id="cardMaxCombo">x0</span>
+                    </div>
+                    <div class="card-stat">
+                        <span class="card-label" data-i18n="ui.highScore">最高分</span>
+                        <span class="card-value" id="cardHighScore">0</span>
+                    </div>
+                    <div class="card-stat seed-info">
+                        <span class="card-label" data-i18n="scoreCard.dailyChallenge">每日挑戰</span>
+                        <span class="card-value" id="cardSeed">#20251209</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="card-btn primary" id="playAgainBtn" data-i18n="scoreCard.playAgain">🔄 再玩一次</button>
+                    <button class="card-btn secondary" id="shareBtn" data-i18n="scoreCard.share">📋 複製成績</button>
+                </div>
+                <div class="name-input-section" id="nameInputSection">
+                    <input type="text" id="playerName" placeholder="輸入暱稱儲存成績" maxlength="12"
+                        data-i18n-placeholder="scoreCard.enterName">
+                    <button class="card-btn save-btn" id="saveScoreBtn" data-i18n="scoreCard.saveScore">💾 儲存</button>
+                </div>
+                <button class="leaderboard-link" id="viewLeaderboardBtn" data-i18n="scoreCard.viewLeaderboard">🏆
+                    查看排行榜</button>
+                <p class="share-hint hidden" id="shareHint" data-i18n="messages.copied">✅ 已複製到剪貼板！</p>
+                <p class="share-hint hidden" id="saveHint" data-i18n="messages.saved">✅ 成績已儲存！</p>
+            </div>
+        </div>
+
+
+        <!-- Leaderboard Modal -->
+        <div class="leaderboard-modal hidden" id="leaderboardModal">
+            <div class="leaderboard-content">
+                <h2 data-i18n="leaderboard.title">🏆 今日排行榜</h2>
+                <p class="leaderboard-seed" id="leaderboardSeed">#20251209</p>
+                <ol class="leaderboard-list" id="leaderboardList">
+                    <!-- Populated by JS -->
+                </ol>
+                <button class="card-btn primary" id="closeLeaderboardBtn" data-i18n="leaderboard.close">關閉</button>
+            </div>
+        </div>
+
+        <!-- Share Modal -->
+        <div class="share-modal hidden" id="shareModal">
+            <div class="share-content">
+                <h2>📸 分享成績</h2>
+                <div class="share-image-container">
+                    <img id="shareImage" alt="Game Score" />
+                </div>
+                <div class="share-actions">
+                    <button class="card-btn primary" id="downloadShareBtn">⬇️ 下載圖片</button>
+                    <button class="card-btn secondary" id="copyShareBtn">📋 複製圖片</button>
+                </div>
+                <p class="share-hint" style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-top: 10px;">
+                    長按圖片也可儲存或分享</p>
+                <button class="close-btn" id="closeShareBtn">×</button>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div class="help-modal hidden" id="helpModal">
+            <div class="help-content">
+                <h2 data-i18n="help.title">❓ 遊戲說明</h2>
+
+                <div class="help-section">
+                    <h3 data-i18n="help.controls">🎮 操作方式</h3>
+                    <ul>
+                        <li data-i18n="help.controlArrows">⬅️➡️ 方向鍵移動擋板</li>
+                        <li data-i18n="help.controlSpace">空格鍵 開始/暫停/發射球</li>
+                        <li data-i18n="help.controlTouch">👆 觸控滑動移動擋板</li>
+                        <li data-i18n="help.controlM">M 鍵静音</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3 data-i18n="help.powerups">🎁 道具效果</h3>
+                    <ul class="powerup-list">
+                        <li><span class="powerup-icon expand">↔️</span> <span data-i18n="help.powerupExpand">擴大擋板</span>
+                        </li>
+                        <li><span class="powerup-icon multiball">⚪</span> <span
+                                data-i18n="help.powerupMultiball">多球模式</span></li>
+                        <li><span class="powerup-icon pierce">💠</span> <span
+                                data-i18n="help.powerupPierce">穿透球（不反彈）</span></li>
+                        <li><span class="powerup-icon slow">🐢</span> <span data-i18n="help.powerupSlow">減速球</span></li>
+                        <li><span class="powerup-icon shrink">↕️</span> <span
+                                data-i18n="help.powerupShrink">縮小擋板（危險！）</span></li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3 data-i18n="help.bricks">🧱 磚塊類型</h3>
+                    <ul>
+                        <li data-i18n="help.brick1">1 血磚塊：紅色/黃色</li>
+                        <li data-i18n="help.brick2">2 血磚塊：顯示數字 2</li>
+                        <li data-i18n="help.brick3">3 血磚塊：顯示數字 3</li>
+                        <li>💣 炸彈磚塊：爆炸波及周圍 3×3</li>
+                        <li>⭐ 金磚：雙倍分數</li>
+                        <li>⚡ 閃電磚塊：清除整排</li>
+                        <li>🛡️ 護盾磚塊：提供 8 秒底部保護</li>
+                        <li>❄️ 冰凍磚塊：<strong>球速減慢 70%、擋板變大、球變冰藍色</strong>（5秒，關卡 5+）</li>
+                        <li>🌀 傳送磚塊：球傳送到隨機位置（關卡 5+）</li>
+                        <li>🎲 隨機道具磚：擊破掉落隨機道具（關卡 5+）</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>💡 小技巧</h3>
+                    <ul>
+                        <li>🔥 連擊加分公式：基礎分 × (1 + 連擊數 × 0.5)</li>
+                        <li>🚀 球速每過一關 +0.2，最高 7</li>
+                        <li>👑 每 7 關有 Boss 關卡，獎勵豐厚！</li>
+                        <li>❄️ <strong>冰凍 vs 烏龜：</strong>冰凍減速 70%（只影響單球、擋板變大），烏龜減速 50%（影響所有球）</li>
+                        <li data-i18n="help.tip2">每日關卡固定，挑戰排行榜！</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>♾️ 無盡模式</h3>
+                    <ul>
+                        <li>在設定中開啟「無盡模式」</li>
+                        <li>每 15 秒會新增一排磚塊</li>
+                        <li>過關不加生命，改為加分</li>
+                        <li>挑戰你能堅持多久！</li>
+                    </ul>
+                </div>
+
+                <button class="card-btn primary" id="closeHelpBtn" data-i18n="help.close">知道了！</button>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="settings-modal hidden" id="settingsModal">
+            <div class="settings-content">
+                <h2 data-i18n="settings.title">⚙️ 遊戲設定</h2>
+
+                <div class="setting-item">
+                    <span class="setting-label" data-i18n="settings.language">語言 / Language</span>
+                    <button class="setting-toggle" id="settingLangBtn">🌐 繁體中文</button>
+                </div>
+
+                <div class="setting-item">
+                    <span class="setting-label" data-i18n="settings.sound">音效</span>
+                    <label class="switch">
+                        <input type="checkbox" id="settingSoundCheck" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <span class="setting-label" data-i18n="settings.endless">無盡模式</span>
+                    <label class="switch">
+                        <input type="checkbox" id="settingEndlessCheck">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="setting-divider"></div>
+
+                <div class="setting-item">
+                    <span class="setting-label" data-i18n="settings.clearData">清除數據</span>
+                    <button class="setting-btn danger" id="clearDataBtn" data-i18n="settings.clear">🗑️ 清除</button>
+                </div>
+
+                <button class="card-btn primary" id="closeSettingsBtn" data-i18n="settings.close">完成</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+
+</html>
