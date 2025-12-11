@@ -873,8 +873,17 @@ class BrickBreakerGame {
 
         // 播放 BGM
         let theme = 'normal';
-        if (this.isBossLevel(this.level)) theme = 'boss';
-        else if (this.level >= 4) theme = 'fast';
+
+        if (this.isBossLevel(this.level)) {
+            theme = 'boss';
+        } else if (this.level >= 10) {
+            theme = 'fast'; // 10關以後這麽快
+        } else {
+            // 1-9 關循環：Normal -> Journey -> Adventure
+            const cycle = ['normal', 'journey', 'adventure'];
+            theme = cycle[(this.level - 1) % 3];
+        }
+
         this.sound.startBgm(theme);
     }
 

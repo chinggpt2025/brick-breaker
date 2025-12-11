@@ -100,8 +100,26 @@ const BGM_THEMES = {
             { freq: 440, dur: 4 }, { freq: 349, dur: 4 }, { freq: 294, dur: 8 }
         ]
     },
+    journey: {
+        bpm: 125,
+        notes: [
+            { freq: 349, dur: 4 }, { freq: 440, dur: 4 }, { freq: 523, dur: 4 }, { freq: 698, dur: 8 },
+            { freq: 523, dur: 4 }, { freq: 440, dur: 4 }, { freq: 349, dur: 8 },
+            { freq: 392, dur: 4 }, { freq: 493, dur: 4 }, { freq: 587, dur: 4 }, { freq: 783, dur: 8 },
+            { freq: 587, dur: 4 }, { freq: 493, dur: 4 }, { freq: 392, dur: 8 }
+        ]
+    },
+    adventure: {
+        bpm: 130,
+        notes: [
+            { freq: 440, dur: 2 }, { freq: 0, dur: 2 }, { freq: 440, dur: 2 }, { freq: 523, dur: 2 },
+            { freq: 440, dur: 4 }, { freq: 349, dur: 4 }, { freq: 329, dur: 8 },
+            { freq: 294, dur: 2 }, { freq: 0, dur: 2 }, { freq: 294, dur: 2 }, { freq: 349, dur: 2 },
+            { freq: 392, dur: 4 }, { freq: 330, dur: 4 }, { freq: 220, dur: 8 }
+        ]
+    },
     fast: {
-        bpm: 140,
+        bpm: 150,
         notes: [
             { freq: 523, dur: 2 }, { freq: 0, dur: 2 }, { freq: 523, dur: 2 }, { freq: 659, dur: 2 },
             { freq: 392, dur: 4 }, { freq: 0, dur: 2 }, { freq: 392, dur: 2 },
