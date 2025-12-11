@@ -1035,7 +1035,7 @@ class BrickBreakerGame {
 
     showOverlay(title, message) {
         const overlay = document.getElementById('overlay');
-        document.getElementById('overlayTitle').textContent = title;
+        document.getElementById('overlayTitle').innerHTML = title;
         document.getElementById('overlayMessage').innerHTML = message.replace(/\n/g, '<br>');
         overlay.classList.remove('hidden');
     }
