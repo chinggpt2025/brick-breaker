@@ -285,6 +285,14 @@
                     </label>
                 </div>
 
+                <div class="setting-item">
+                    <span class="setting-label">🎬 減少動態效果</span>
+                    <label class="switch">
+                        <input type="checkbox" id="settingReduceMotionCheck">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
                 <div class="setting-divider"></div>
 
                 <div class="setting-item">
@@ -295,6 +303,12 @@
                 <button class="card-btn primary" id="closeSettingsBtn" data-i18n="settings.close">完成</button>
             </div>
         </div>
+
+        <!-- Toast 通知容器 -->
+        <div class="toast-container" id="toastContainer"></div>
+
+        <!-- Powerup 時間條顯示 -->
+        <div class="powerup-timers" id="powerupTimers"></div>
     </div>
 
     <!-- Modular Game Scripts -->

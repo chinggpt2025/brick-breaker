@@ -254,6 +254,59 @@ class BrickBreakerGame {
         console.log('BrickBreakerGame instance destroyed, event listeners removed.');
     }
 
+    // ========== Toast 通知系統 ==========
+    showToast(message, type = 'info', duration = 3000) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const icons = {
+            error: '❌',
+            success: '✅',
+            info: 'ℹ️',
+            warning: '⚠️'
+        };
+
+        toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+        container.appendChild(toast);
+
+        // 自動移除
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, duration);
+    }
+
+    // ========== Powerup 時間條 UI ==========
+    updatePowerupTimersUI() {
+        const container = document.getElementById('powerupTimers');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        for (const [type, remaining] of Object.entries(this.activePowerups)) {
+            if (remaining <= 0) continue;
+
+            const config = ALL_POWERUP_TYPES[type];
+            if (!config || !config.duration) continue;
+
+            const percentage = (remaining / config.duration) * 100;
+
+            const timerEl = document.createElement('div');
+            timerEl.className = 'powerup-timer';
+            timerEl.innerHTML = `
+                <span class="powerup-timer-icon">${config.emoji}</span>
+                <div class="powerup-timer-bar">
+                    <div class="powerup-timer-fill ${type}" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            container.appendChild(timerEl);
+        }
+    }
+
     initPaddle() {
         this.paddle = {
             x: (CONFIG.canvasWidth - CONFIG.paddleWidth) / 2,
@@ -461,6 +514,20 @@ class BrickBreakerGame {
         return this.endlessMode;
     }
 
+    // 切換減少動態效果
+    toggleReduceMotion(enabled) {
+        if (enabled) {
+            document.body.classList.add('reduce-motion');
+        } else {
+            document.body.classList.remove('reduce-motion');
+        }
+        localStorage.setItem('brickBreaker_reduceMotion', enabled.toString());
+
+        // 可選：顯示 Toast 通知
+        const message = enabled ? '已開啟減少動態效果' : '已關閉減少動態效果';
+        this.showToast(message, 'info');
+    }
+
     // 更新无尽模式 UI
     updateEndlessModeUI() {
         const btn = document.getElementById('endlessModeBtn');
@@ -611,6 +678,17 @@ class BrickBreakerGame {
         const endlessCheck = document.getElementById('settingEndlessCheck');
         if (endlessCheck) {
             endlessCheck.addEventListener('change', (e) => this.toggleEndlessMode(e.target.checked));
+        }
+
+        // 減少動態效果開關監聽
+        const reduceMotionCheck = document.getElementById('settingReduceMotionCheck');
+        if (reduceMotionCheck) {
+            // 讀取已儲存的偏好
+            const savedPref = localStorage.getItem('brickBreaker_reduceMotion') === 'true';
+            reduceMotionCheck.checked = savedPref;
+            if (savedPref) document.body.classList.add('reduce-motion');
+
+            reduceMotionCheck.addEventListener('change', (e) => this.toggleReduceMotion(e.target.checked));
         }
 
         // 清除数据按钮监听
@@ -1162,6 +1240,9 @@ class BrickBreakerGame {
                 delete this.activePowerups[type];
             }
         }
+
+        // 更新 UI 時間條
+        this.updatePowerupTimersUI();
     }
 
     // 移除道具效果
