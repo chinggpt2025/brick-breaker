@@ -1549,6 +1549,10 @@ class BrickBreakerGame {
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
 
+        // 重置閒置掉落計時器（每次擊中磚塊後允許再次觸發）
+        this.lastBrickHitTime = performance.now();
+        this.idleDropTriggered = false;
+
         // 觸發連擊視覺效果
         this.triggerComboEffect(
             this.combo,
