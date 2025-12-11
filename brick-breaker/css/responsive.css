@@ -100,6 +100,8 @@
         height: auto !important;
         max-width: calc(100vw - 40px);
         aspect-ratio: 800 / 600;
+        touch-action: none;
+        /* 防止滑動時觸發頁面滾動 */
     }
 
     .game-controls {
@@ -181,5 +183,74 @@
         width: 90%;
         max-width: 350px;
         padding: 20px;
+    }
+}
+
+/* Portrait Mode Warning */
+#portrait-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.warning-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    animation: rotateIcon 2s infinite ease-in-out;
+}
+
+#portrait-warning h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--accent-gold);
+}
+
+#portrait-warning p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+@keyframes rotateIcon {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(90deg);
+    }
+
+    50% {
+        transform: rotate(90deg);
+    }
+
+    75% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@media screen and (max-width: 850px) and (orientation: portrait) {
+    #portrait-warning {
+        display: flex;
+    }
+
+    /* Hide game content to prevent interaction */
+    .game-container {
+        opacity: 0.1;
+        pointer-events: none;
     }
 }
