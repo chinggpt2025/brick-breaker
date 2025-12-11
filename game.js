@@ -1,237 +1,12 @@
-// 游戏配置
-const CONFIG = {
-    canvasWidth: 800,
-    canvasHeight: 600,
-    paddleWidth: 120,
-    paddleHeight: 15,
-    paddleSpeed: 10,
-    ballRadius: 10,
-    ballSpeed: 4.6, // 初始球速
-    maxBallSpeed: 7, // 最高球速
-    brickRowCount: 5,
-    brickColumnCount: 10,
-    brickWidth: 68,
-    brickHeight: 25,
-    brickPadding: 8,
-    brickOffsetTop: 50,
-    brickOffsetLeft: 24
-};
-
-// 多語言配置
-const LANGUAGES = {
-    'zh-TW': {
-        name: '繁體中文',
-        ui: {
-            score: '分數',
-            lives: '生命',
-            level: '關卡',
-            combo: '連擊',
-            highScore: '最高分',
-            soundOn: '🔊 音效',
-            soundOff: '🔇 靜音',
-            endlessOn: '♾️ 無盡模式: 開',
-            endlessOff: '♾️ 無盡模式: 關',
-            language: '🌐 語言',
-            help: '❓ 說明',
-            settings: '⚙️ 設定'
-        },
-        controls: {
-            arrows: '⬅️ ➡️ 方向鍵控制擋板',
-            touch: '👆 觸控：點擊開始，滑動移動擋板',
-            spaceStart: '按 <kbd>空格鍵</kbd> 開始/暫停遊戲',
-            mute: '按 <kbd>M</kbd> 靜音'
-        },
-        messages: {
-            title: '打磚塊',
-            start: '按空格鍵開始遊戲',
-            paused: '暫停',
-            pauseMsg: '按空格鍵繼續',
-            gameOver: '遊戲結束',
-            gameOverMsg: '再接再厲！',
-            win: '恭喜過關！',
-            winMsg: '準備挑戰下一關',
-            loseLife: '💔 失去一條生命',
-            livesLeft: (n) => `剩餘 ${n} 條生命  按空格鍵繼續`,
-            copied: '✅ 已複製到剪貼板！',
-            saved: '✅ 成績已儲存！'
-        },
-        powerups: {
-            expand: '擴大擋板',
-            multiball: '多球',
-            pierce: '穿透球',
-            slow: '減速',
-            shrink: '縮小擋板'
-        },
-        scoreCard: {
-            title: (isWin) => isWin ? '🎉 恭喜過關！' : '💀 遊戲結束',
-            finalScore: '最終得分',
-            maxCombo: '最高連擊',
-            dailyChallenge: '每日挑戰',
-            playAgain: '🔄 再玩一次',
-            share: '📋 複製成績',
-            enterName: '輸入暱稱儲存成績',
-            saveScore: '💾 儲存',
-            viewLeaderboard: '🏆 查看排行榜'
-        },
-        leaderboard: {
-            title: '🏆 排行榜',
-            rank: '排名',
-            name: '名稱',
-            score: '分數',
-            combo: '連擊',
-            close: '關閉',
-            loading: '載入中...',
-            empty: '目前還沒有成績記錄'
-        },
-        help: {
-            title: '❓ 遊戲說明',
-            controls: '🎮 操作方式',
-            controlArrows: '⬅️➡️ 方向鍵移動擋板',
-            controlSpace: '空格鍵 開始/暫停/發射球',
-            controlTouch: '👆 觸控滑動移動擋板',
-            controlM: 'M 鍵靜音',
-            powerups: '🎁 道具效果',
-            powerupExpand: '擴大擋板',
-            powerupMultiball: '多球模式',
-            powerupPierce: '穿透球（不反彈）',
-            powerupSlow: '減速球',
-            powerupShrink: '縮小擋板（危險！）',
-            bricks: '🧱 磚塊類型',
-            brick1: '1 血磚塊：紅色/黃色',
-            brick2: '2 血磚塊：顯示數字 2',
-            brick3: '3 血磚塊：顯示數字 3',
-            brickBomb: '💣 炸彈磚塊：爆炸波及周圍',
-            tips: '💡 小技巧',
-            tip1: '連擊可獲得額外分數！',
-            tip2: '每日關卡固定，挑戰排行榜！',
-            tip3: '球速每過一關會增加',
-            close: '知道了！'
-        },
-        settings: {
-            title: '⚙️ 遊戲設定',
-            language: '語言 / Language',
-            sound: '音效',
-            endless: '無盡模式',
-            clearData: '清除數據',
-            clear: '🗑️ 清除',
-            close: '完成',
-            cleared: '數據已清除！'
-        }
-    },
-    'en': {
-        name: 'English',
-        ui: {
-            score: 'Score',
-            lives: 'Lives',
-            level: 'Level',
-            combo: 'Combo',
-            highScore: 'High Score',
-            soundOn: '🔊 Sound',
-            soundOff: '🔇 Muted',
-            endlessOn: '♾️ Endless: ON',
-            endlessOff: '♾️ Endless: OFF',
-            language: '🌐 Language',
-            help: '❓ Help',
-            settings: '⚙️ Settings'
-        },
-        controls: {
-            arrows: '⬅️ ➡️ Arrow keys to move paddle',
-            touch: '👆 Touch: Tap to start, swipe to move',
-            spaceStart: 'Press <kbd>SPACE</kbd> to start/pause',
-            mute: 'Press <kbd>M</kbd> to mute'
-        },
-        messages: {
-            title: 'Brick Breaker',
-            start: 'Press SPACE to start',
-            paused: 'Paused',
-            pauseMsg: 'Press SPACE to continue',
-            gameOver: 'Game Over',
-            gameOverMsg: 'Better luck next time!',
-            win: 'Level Complete!',
-            winMsg: 'Get ready for next level',
-            loseLife: '💔 Lost a Life',
-            livesLeft: (n) => `${n} ${n === 1 ? 'life' : 'lives'} left  Press SPACE to continue`,
-            copied: '✅ Copied to clipboard!',
-            saved: '✅ Score saved!'
-        },
-        powerups: {
-            expand: 'Expand Paddle',
-            multiball: 'Multi Ball',
-            pierce: 'Pierce Ball',
-            slow: 'Slow Ball',
-            shrink: 'Shrink Paddle'
-        },
-        scoreCard: {
-            title: (isWin) => isWin ? '🎉 Level Complete!' : '💀 Game Over',
-            finalScore: 'Final Score',
-            maxCombo: 'Max Combo',
-            dailyChallenge: 'Daily Challenge',
-            playAgain: '🔄 Play Again',
-            share: '📋 Copy Score',
-            enterName: 'Enter nickname to save',
-            saveScore: '💾 Save',
-            viewLeaderboard: '🏆 View Leaderboard'
-        },
-        leaderboard: {
-            title: '🏆 Leaderboard',
-            rank: 'Rank',
-            name: 'Name',
-            score: 'Score',
-            combo: 'Combo',
-            close: 'Close',
-            loading: 'Loading...',
-            empty: 'No scores yet'
-        },
-        help: {
-            title: '❓ Game Help',
-            controls: '🎮 Controls',
-            controlArrows: '⬅️➡️ Arrow keys to move paddle',
-            controlSpace: 'SPACE to start/pause/launch',
-            controlTouch: '👆 Swipe to move paddle',
-            controlM: 'M key to mute',
-            powerups: '🎁 Power-ups',
-            powerupExpand: 'Expand Paddle',
-            powerupMultiball: 'Multi-ball Mode',
-            powerupPierce: 'Pierce Ball (no bounce)',
-            powerupSlow: 'Slow Ball',
-            powerupShrink: 'Shrink Paddle (danger!)',
-            bricks: '🧱 Brick Types',
-            brick1: '1 HP: Red/Yellow',
-            brick2: '2 HP: Shows number 2',
-            brick3: '3 HP: Shows number 3',
-            brickBomb: '💣 Bomb: Explodes nearby',
-            tips: '💡 Tips',
-            tip1: 'Combos give bonus points!',
-            tip2: 'Daily levels are fixed, compete!',
-            tip3: 'Ball speed increases each level',
-            close: 'Got it!'
-        },
-        settings: {
-            title: '⚙️ Game Settings',
-            language: 'Language',
-            sound: 'Sound',
-            endless: 'Endless Mode',
-            clearData: 'Clear Data',
-            clear: '🗑️ Clear',
-            close: 'Done',
-            cleared: 'Data cleared!'
-        }
-    }
-};
-
-// 當前語言（從 localStorage 讀取，默認繁體中文）
-let currentLang = localStorage.getItem('brickBreakerLang') || 'zh-TW';
-
-// 獲取翻譯文本的輔助函數
-function t(path) {
-    const keys = path.split('.');
-    let value = LANGUAGES[currentLang];
-    for (const key of keys) {
-        value = value[key];
-        if (value === undefined) return path;
-    }
-    return value;
-}
+/**
+ * Brick Breaker - Main Game Logic
+ * 
+ * Dependencies (loaded via separate scripts in order):
+ *   - config.js: CONFIG, LANGUAGES, ACHIEVEMENTS, BGM_THEMES, BRICK_COLORS, POWERUP_TYPES, t()
+ *   - SoundManager.js: SoundManager class & soundManager instance
+ *   - ParticleSystem.js: ParticlePool class
+ *   - AchievementSystem.js: PlayerStats class
+ */
 
 // Supabase 配置
 const SUPABASE_URL = 'https://ruqsvvefpemqptnsyymj.supabase.co';
@@ -253,258 +28,9 @@ class SeededRNG {
     }
 
     nextFloat() {
-        // 返回 [0, 1) 区间的浮点数
         return this.nextInt() / (this.m - 1);
     }
 }
-
-// 音效系统类
-class SoundManager {
-    constructor() {
-        this.audioContext = null;
-        this.enabled = true;
-        this.volume = 0.3;
-    }
-
-    // 初始化音频上下文（需要用户交互后调用）
-    init() {
-        if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (this.audioContext.state === 'suspended') {
-            this.audioContext.resume();
-        }
-    }
-
-    // 播放音调
-    playTone(frequency, duration, type = 'square', volumeMultiplier = 1) {
-        if (!this.enabled || !this.audioContext) return;
-
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
-
-        oscillator.frequency.value = frequency;
-        oscillator.type = type;
-
-        const volume = this.volume * volumeMultiplier;
-        gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
-
-        oscillator.start(this.audioContext.currentTime);
-        oscillator.stop(this.audioContext.currentTime + duration);
-    }
-
-    // 击中挡板声音
-    playPaddleHit() {
-        this.playTone(220, 0.1, 'sine', 0.8);
-    }
-
-    // 击中砖块声音（根据行数变化音调）
-    playBrickHit(row = 0) {
-        const baseFreq = 400 + row * 50;
-        this.playTone(baseFreq, 0.1, 'square', 0.6);
-        setTimeout(() => this.playTone(baseFreq * 1.5, 0.05, 'sine', 0.3), 50);
-    }
-
-    // 撞墙声音
-    playWallHit() {
-        this.playTone(150, 0.05, 'triangle', 0.4);
-    }
-
-    // 失去生命声音
-    playLoseLife() {
-        this.playTone(200, 0.15, 'sawtooth', 0.5);
-        setTimeout(() => this.playTone(150, 0.15, 'sawtooth', 0.4), 150);
-        setTimeout(() => this.playTone(100, 0.2, 'sawtooth', 0.3), 300);
-    }
-
-    // 游戏结束声音
-    playGameOver() {
-        const notes = [392, 330, 294, 262];
-        notes.forEach((freq, i) => {
-            setTimeout(() => this.playTone(freq, 0.3, 'sine', 0.5), i * 200);
-        });
-    }
-
-    // 过关声音
-    playLevelComplete() {
-        const notes = [523, 659, 784, 1047];
-        notes.forEach((freq, i) => {
-            setTimeout(() => this.playTone(freq, 0.15, 'sine', 0.6), i * 100);
-        });
-    }
-
-    // 开始游戏声音
-    playStart() {
-        this.playTone(440, 0.1, 'sine', 0.5);
-        setTimeout(() => this.playTone(554, 0.1, 'sine', 0.5), 100);
-        setTimeout(() => this.playTone(659, 0.15, 'sine', 0.6), 200);
-    }
-
-    // 爆炸音效
-    playExplosion() {
-        this.playTone(100, 0.1, 'sawtooth', 0.8);
-        setTimeout(() => this.playTone(80, 0.15, 'square', 0.6), 50);
-        setTimeout(() => this.playTone(50, 0.2, 'sawtooth', 0.5), 150);
-    }
-
-    // 道具音效
-    playPowerup() {
-        this.playTone(880, 0.08, 'sine', 0.5);
-        setTimeout(() => this.playTone(1100, 0.08, 'sine', 0.5), 80);
-        setTimeout(() => this.playTone(1320, 0.12, 'sine', 0.6), 160);
-    }
-
-    // 🪙 金幣音效（高音叮噹聲）
-    playCoin() {
-        this.playTone(1200, 0.08, 'sine', 0.6);
-        setTimeout(() => this.playTone(1500, 0.1, 'sine', 0.5), 60);
-        setTimeout(() => this.playTone(1800, 0.12, 'sine', 0.4), 120);
-    }
-
-    // ⚡ 閃電音效（電擊嗡嗡聲）
-    playLightning() {
-        this.playTone(800, 0.05, 'sawtooth', 0.7);
-        setTimeout(() => this.playTone(1200, 0.08, 'square', 0.5), 40);
-        setTimeout(() => this.playTone(600, 0.1, 'sawtooth', 0.6), 80);
-        setTimeout(() => this.playTone(1000, 0.06, 'square', 0.4), 140);
-    }
-
-    // 🛡️ 護盾音效（柔和嗡鳴聲）
-    playShield() {
-        this.playTone(400, 0.15, 'sine', 0.4);
-        setTimeout(() => this.playTone(500, 0.15, 'sine', 0.5), 100);
-        setTimeout(() => this.playTone(600, 0.2, 'sine', 0.4), 200);
-    }
-
-    // ❄️ 冰凍音效（清脆冰晶聲）
-    playFreeze() {
-        this.playTone(1500, 0.1, 'sine', 0.5);
-        setTimeout(() => this.playTone(1800, 0.08, 'triangle', 0.4), 50);
-        setTimeout(() => this.playTone(2000, 0.12, 'sine', 0.3), 100);
-    }
-
-    // 🌀 傳送音效（神秘嗡鳴）
-    playTeleport() {
-        this.playTone(300, 0.1, 'sine', 0.5);
-        setTimeout(() => this.playTone(600, 0.15, 'sine', 0.6), 100);
-        setTimeout(() => this.playTone(1200, 0.1, 'sine', 0.4), 200);
-        setTimeout(() => this.playTone(400, 0.1, 'triangle', 0.3), 300);
-    }
-
-    // 切换音效开关
-    toggle() {
-        this.enabled = !this.enabled;
-        return this.enabled;
-    }
-}
-
-// 粒子对象池优化
-class ParticlePool {
-    constructor(size = 200) {
-        this.pool = [];
-        this.activeParticles = [];
-        this.size = size;
-
-        // 预创建粒子对象
-        for (let i = 0; i < size; i++) {
-            this.pool.push({
-                x: 0, y: 0, dx: 0, dy: 0,
-                radius: 0, color: '', life: 0,
-                active: false
-            });
-        }
-    }
-
-    // 获取一个空闲粒子
-    spawn(x, y, color, isExplosion = false) {
-        let p = null;
-        // 找一个非活跃粒子
-        for (let i = 0; i < this.size; i++) {
-            if (!this.pool[i].active) {
-                p = this.pool[i];
-                break;
-            }
-        }
-
-        // 如果池满了，强制复用最旧的活跃粒子（头部）
-        if (!p && this.activeParticles.length > 0) {
-            p = this.activeParticles.shift();
-        }
-
-        if (p) {
-            p.x = x;
-            p.y = y;
-            const speed = isExplosion ? 6 : 4;
-            const angle = Math.random() * Math.PI * 2;
-            const velocity = Math.random() * speed;
-
-            p.dx = Math.cos(angle) * velocity;
-            p.dy = Math.sin(angle) * velocity;
-            p.radius = Math.random() * (isExplosion ? 6 : 3) + 2;
-            p.color = color;
-            p.life = 1.0;
-            p.active = true;
-            this.activeParticles.push(p);
-        }
-    }
-
-    updateAndDraw(ctx, hexToRgbFn) {
-        for (let i = this.activeParticles.length - 1; i >= 0; i--) {
-            const p = this.activeParticles[i];
-
-            p.x += p.dx;
-            p.y += p.dy;
-            p.life -= 0.02;
-            p.radius *= 0.96;
-
-            // 绘制
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${hexToRgbFn(p.color)}, ${p.life})`;
-            ctx.fill();
-
-            // 回收
-            if (p.life <= 0) {
-                p.active = false;
-                this.activeParticles.splice(i, 1);
-            }
-        }
-    }
-
-    reset() {
-        this.activeParticles.forEach(p => p.active = false);
-        this.activeParticles = [];
-    }
-}
-
-// 创建全局音效管理器
-const soundManager = new SoundManager();
-
-// 砖块颜色配置（渐变色）
-const BRICK_COLORS = [
-    { main: '#ff6b6b', light: '#ff8787', dark: '#fa5252' },
-    { main: '#feca57', light: '#fed77a', dark: '#f9c22e' },
-    { main: '#48dbfb', light: '#72e4fc', dark: '#1dd1fd' },
-    { main: '#ff9ff3', light: '#ffb8f6', dark: '#f368e0' },
-    { main: '#54a0ff', light: '#74b3ff', dark: '#2e86de' }
-];
-
-// 道具类型配置
-const POWERUP_TYPES = {
-    expand: { color: '#ff6b6b', emoji: '🔴', duration: 10000, name: '扩大挡板' },
-    multiball: { color: '#48dbfb', emoji: '🔵', duration: 0, name: '多球' },
-    pierce: { color: '#feca57', emoji: '⚡', duration: 8000, name: '穿透球' },
-    slow: { color: '#1dd1a1', emoji: '🐢', duration: 8000, name: '减速' },
-    shrink: { color: '#9b59b6', emoji: '💀', duration: 5000, name: '缩小挡板' }
-};
-const POWERUP_KEYS = Object.keys(POWERUP_TYPES);
-const POWERUP_DROP_CHANCE = 0.20; // 20% 掉落机率
-const POWERUP_SPEED = 3; // 道具下落速度
-const POWERUP_SIZE = 25; // 道具大小
 
 // 游戏类
 class BrickBreakerGame {
@@ -521,6 +47,7 @@ class BrickBreakerGame {
         this.maxCombo = 0; // 本局最高连击
         this.score = 0;
         this.lives = 5;
+        this.consecutiveLosses = 0; // 追蹤連續失敗次數
         this.highScore = parseInt(localStorage.getItem('brickBreakerHighScore')) || 0;
 
         // 使用当天日期作为种子 (YYYYMMDD)
@@ -577,6 +104,29 @@ class BrickBreakerGame {
         this.missCount = 0;            // 失誤次數（失去生命）
         this.loadBestRanks();          // 從 localStorage 載入
 
+        // 浮動文字效果
+        this.floatingTexts = [];
+        this.fireworkTimer = 0;
+
+        // 閒置掉落系統（2秒未撞擊磚塊，掉3個道具）
+        this.lastBrickHitTime = performance.now();
+        this.idleDropTriggered = false;
+
+        // 初始化能力和成就
+        this.playerStats = new PlayerStats(this);
+
+        // 綁定事件處理器（用於後續移除）
+        this._boundHandlers = {
+            keydown: this._handleKeyDown.bind(this),
+            keyup: this._handleKeyUp.bind(this),
+            touchstart: this._handleTouchStart.bind(this),
+            touchmove: this._handleTouchMove.bind(this),
+            touchend: this._handleTouchEnd.bind(this),
+            mousedown: this._handleMouseDown.bind(this),
+            mousemove: this._handleMouseMove.bind(this),
+            mouseup: this._handleMouseUp.bind(this)
+        };
+
         // 初始化事件监听
         this.initEventListeners();
 
@@ -589,6 +139,172 @@ class BrickBreakerGame {
 
         // 开始游戏循环
         this.gameLoop();
+    }
+
+    // ========== 私有事件處理器（可移除）==========
+    _handleKeyDown(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'Left') {
+            this.keys.left = true;
+        } else if (e.key === 'ArrowRight' || e.key === 'Right') {
+            this.keys.right = true;
+        } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+            e.preventDefault();
+            const scoreCard = document.getElementById('scoreCard');
+            const settingsModal = document.getElementById('settingsModal');
+            const helpModal = document.getElementById('helpModal');
+            const isAnyModalVisible =
+                (scoreCard && !scoreCard.classList.contains('hidden')) ||
+                (settingsModal && !settingsModal.classList.contains('hidden')) ||
+                (helpModal && !helpModal.classList.contains('hidden'));
+            if (!isAnyModalVisible) {
+                this.toggleGame();
+            }
+        } else if (e.key === 'm' || e.key === 'M') {
+            this.toggleSound();
+        }
+    }
+
+    _handleKeyUp(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'Left') {
+            this.keys.left = false;
+        } else if (e.key === 'ArrowRight' || e.key === 'Right') {
+            this.keys.right = false;
+        }
+    }
+
+    _handleTouchStart(e) {
+        e.preventDefault();
+        this._isTouching = true;
+        if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
+            this.toggleGame();
+        } else if (this.gameState === 'playing') {
+            const heldBall = this.balls.find(b => b.held);
+            if (heldBall) heldBall.held = false;
+        } else if (this.gameState === 'paused') {
+            this.resumeGame();
+        }
+    }
+
+    _handleTouchMove(e) {
+        e.preventDefault();
+        if (!this._isTouching) return;
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const touchX = (touch.clientX - rect.left) * scaleX;
+        this.paddle.x = touchX - this.paddle.width / 2;
+        if (this.paddle.x < 0) this.paddle.x = 0;
+        if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
+            this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
+        }
+    }
+
+    _handleTouchEnd() {
+        this._isTouching = false;
+    }
+
+    _handleMouseDown(e) {
+        this._isMouseDown = true;
+        if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
+            this.toggleGame();
+        } else if (this.gameState === 'playing') {
+            const heldBall = this.balls.find(b => b.held);
+            if (heldBall) heldBall.held = false;
+        }
+    }
+
+    _handleMouseMove(e) {
+        if (!this._isMouseDown) return;
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        this.paddle.x = mouseX - this.paddle.width / 2;
+        if (this.paddle.x < 0) this.paddle.x = 0;
+        if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
+            this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
+        }
+    }
+
+    _handleMouseUp() {
+        this._isMouseDown = false;
+    }
+
+    // ========== 銷毀方法（清理事件監聽器）==========
+    destroy() {
+        // 移除 window 級事件
+        window.removeEventListener('keydown', this._boundHandlers.keydown);
+        window.removeEventListener('keyup', this._boundHandlers.keyup);
+
+        // 移除 canvas 級事件
+        this.canvas.removeEventListener('touchstart', this._boundHandlers.touchstart);
+        this.canvas.removeEventListener('touchmove', this._boundHandlers.touchmove);
+        this.canvas.removeEventListener('touchend', this._boundHandlers.touchend);
+        this.canvas.removeEventListener('touchcancel', this._boundHandlers.touchend);
+        this.canvas.removeEventListener('mousedown', this._boundHandlers.mousedown);
+        this.canvas.removeEventListener('mousemove', this._boundHandlers.mousemove);
+        this.canvas.removeEventListener('mouseup', this._boundHandlers.mouseup);
+        this.canvas.removeEventListener('mouseleave', this._boundHandlers.mouseup);
+
+        // 停止 BGM
+        this.sound.stopBgm();
+
+        // 標記為已銷毀
+        this._destroyed = true;
+
+        console.log('BrickBreakerGame instance destroyed, event listeners removed.');
+    }
+
+    // ========== Toast 通知系統 ==========
+    showToast(message, type = 'info', duration = 3000) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const icons = {
+            error: '❌',
+            success: '✅',
+            info: 'ℹ️',
+            warning: '⚠️'
+        };
+
+        toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+        container.appendChild(toast);
+
+        // 自動移除
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, duration);
+    }
+
+    // ========== Powerup 時間條 UI ==========
+    updatePowerupTimersUI() {
+        const container = document.getElementById('powerupTimers');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        for (const [type, remaining] of Object.entries(this.activePowerups)) {
+            if (remaining <= 0) continue;
+
+            const config = ALL_POWERUP_TYPES[type];
+            if (!config || !config.duration) continue;
+
+            const percentage = (remaining / config.duration) * 100;
+
+            const timerEl = document.createElement('div');
+            timerEl.className = 'powerup-timer';
+            timerEl.innerHTML = `
+                <span class="powerup-timer-icon">${config.emoji}</span>
+                <div class="powerup-timer-bar">
+                    <div class="powerup-timer-fill ${type}" style="width: ${percentage}%"></div>
+                </div>
+            `;
+            container.appendChild(timerEl);
+        }
     }
 
     initPaddle() {
@@ -798,6 +514,20 @@ class BrickBreakerGame {
         return this.endlessMode;
     }
 
+    // 切換減少動態效果
+    toggleReduceMotion(enabled) {
+        if (enabled) {
+            document.body.classList.add('reduce-motion');
+        } else {
+            document.body.classList.remove('reduce-motion');
+        }
+        localStorage.setItem('brickBreaker_reduceMotion', enabled.toString());
+
+        // 可選：顯示 Toast 通知
+        const message = enabled ? '已開啟減少動態效果' : '已關閉減少動態效果';
+        this.showToast(message, 'info');
+    }
+
     // 更新无尽模式 UI
     updateEndlessModeUI() {
         const btn = document.getElementById('endlessModeBtn');
@@ -872,137 +602,22 @@ class BrickBreakerGame {
     // ===== 结束无尽模式方法 =====
 
     initEventListeners() {
-        // 键盘事件
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'Left') {
-                this.keys.left = true;
-            } else if (e.key === 'ArrowRight' || e.key === 'Right') {
-                this.keys.right = true;
-            } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
-                e.preventDefault();
-                // 檢查是否有任何彈窗正在顯示中
-                const scoreCard = document.getElementById('scoreCard');
-                const settingsModal = document.getElementById('settingsModal');
-                const helpModal = document.getElementById('helpModal');
+        // 核心輸入事件（使用綁定的處理器，可被 destroy() 移除）
+        window.addEventListener('keydown', this._boundHandlers.keydown);
+        window.addEventListener('keyup', this._boundHandlers.keyup);
 
-                const isAnyModalVisible =
-                    (scoreCard && !scoreCard.classList.contains('hidden')) ||
-                    (settingsModal && !settingsModal.classList.contains('hidden')) ||
-                    (helpModal && !helpModal.classList.contains('hidden'));
+        // 觸控支援
+        this.canvas.addEventListener('touchstart', this._boundHandlers.touchstart, { passive: false });
+        this.canvas.addEventListener('touchmove', this._boundHandlers.touchmove, { passive: false });
+        this.canvas.addEventListener('touchend', this._boundHandlers.touchend);
+        this.canvas.addEventListener('touchcancel', this._boundHandlers.touchend);
 
-                // 如果有彈窗正在顯示，不觸發遊戲開始
-                if (!isAnyModalVisible) {
-                    this.toggleGame();
-                }
-            } else if (e.key === 'm' || e.key === 'M') {
-                this.toggleSound();
-            }
-        });
+        // 滑鼠支援
+        this.canvas.addEventListener('mousedown', this._boundHandlers.mousedown);
+        this.canvas.addEventListener('mousemove', this._boundHandlers.mousemove);
+        this.canvas.addEventListener('mouseup', this._boundHandlers.mouseup);
+        this.canvas.addEventListener('mouseleave', this._boundHandlers.mouseup);
 
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'Left') {
-                this.keys.left = false;
-            } else if (e.key === 'ArrowRight' || e.key === 'Right') {
-                this.keys.right = false;
-            }
-        });
-
-        // ========== 觸控支援 ==========
-        let touchStartX = 0;
-        let isTouching = false;
-
-        // 觸控開始
-        this.canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            isTouching = true;
-
-            // 點擊 canvas 觸發遊戲開始/發射球
-            if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
-                this.toggleGame();
-            } else if (this.gameState === 'playing') {
-                const heldBall = this.balls.find(b => b.held);
-                if (heldBall) {
-                    heldBall.held = false; // 發射球
-                }
-            } else if (this.gameState === 'paused') {
-                this.resumeGame();
-            }
-        }, { passive: false });
-
-        // 觸控移動 - 直接跟隨手指位置
-        this.canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (!isTouching) return;
-
-            const touch = e.touches[0];
-            const rect = this.canvas.getBoundingClientRect();
-            const scaleX = this.canvas.width / rect.width;
-
-            // 計算手指在 canvas 中的 X 位置
-            const touchX = (touch.clientX - rect.left) * scaleX;
-
-            // 將擋板中心移動到手指位置
-            this.paddle.x = touchX - this.paddle.width / 2;
-
-            // 邊界檢查
-            if (this.paddle.x < 0) {
-                this.paddle.x = 0;
-            }
-            if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
-                this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
-            }
-        }, { passive: false });
-
-        // 觸控結束
-        this.canvas.addEventListener('touchend', () => {
-            isTouching = false;
-        });
-
-        // 防止頁面滾動干擾遊戲
-        this.canvas.addEventListener('touchcancel', () => {
-            isTouching = false;
-        });
-
-        // ========== 滑鼠支援（桌面觸控板）==========
-        let isMouseDown = false;
-
-        this.canvas.addEventListener('mousedown', (e) => {
-            isMouseDown = true;
-            // 點擊也可以開始遊戲
-            if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
-                this.toggleGame();
-            } else if (this.gameState === 'playing') {
-                const heldBall = this.balls.find(b => b.held);
-                if (heldBall) {
-                    heldBall.held = false;
-                }
-            }
-        });
-
-        this.canvas.addEventListener('mousemove', (e) => {
-            if (!isMouseDown) return;
-
-            const rect = this.canvas.getBoundingClientRect();
-            const scaleX = this.canvas.width / rect.width;
-            const mouseX = (e.clientX - rect.left) * scaleX;
-
-            this.paddle.x = mouseX - this.paddle.width / 2;
-
-            if (this.paddle.x < 0) this.paddle.x = 0;
-            if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
-                this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
-            }
-        });
-
-        this.canvas.addEventListener('mouseup', () => {
-            isMouseDown = false;
-        });
-
-        this.canvas.addEventListener('mouseleave', () => {
-            isMouseDown = false;
-        });
 
         // Overlay 點擊/觸控事件（讓手機用戶可以開始遊戲）
         const overlay = document.getElementById('overlay');
@@ -1053,10 +668,27 @@ class BrickBreakerGame {
             soundCheck.addEventListener('change', (e) => this.toggleSound(e.target.checked));
         }
 
+        // 背景音樂开关监听
+        const bgmCheck = document.getElementById('settingBgmCheck');
+        if (bgmCheck) {
+            bgmCheck.addEventListener('change', (e) => this.toggleBgm(e.target.checked));
+        }
+
         // 无尽模式开关监听
         const endlessCheck = document.getElementById('settingEndlessCheck');
         if (endlessCheck) {
             endlessCheck.addEventListener('change', (e) => this.toggleEndlessMode(e.target.checked));
+        }
+
+        // 減少動態效果開關監聽
+        const reduceMotionCheck = document.getElementById('settingReduceMotionCheck');
+        if (reduceMotionCheck) {
+            // 讀取已儲存的偏好
+            const savedPref = localStorage.getItem('brickBreaker_reduceMotion') === 'true';
+            reduceMotionCheck.checked = savedPref;
+            if (savedPref) document.body.classList.add('reduce-motion');
+
+            reduceMotionCheck.addEventListener('change', (e) => this.toggleReduceMotion(e.target.checked));
         }
 
         // 清除数据按钮监听
@@ -1075,6 +707,34 @@ class BrickBreakerGame {
         const closeHelpBtn = document.getElementById('closeHelpBtn');
         if (closeHelpBtn) {
             closeHelpBtn.addEventListener('click', () => this.hideHelp());
+        }
+
+        // Help Modal Tab Switching
+        const helpTabs = document.querySelectorAll('.help-tab');
+        helpTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+
+                // Update active tab
+                helpTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update active content
+                document.querySelectorAll('.help-tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`tab-${tabName}`)?.classList.add('active');
+            });
+        });
+
+        // 成就按鈕點擊事件
+        const viewAchievementsBtn = document.getElementById('viewAchievementsBtn');
+        if (viewAchievementsBtn) {
+            viewAchievementsBtn.addEventListener('click', () => this.showAchievements());
+        }
+
+        // 關閉成就按鈕點擊事件
+        const closeAchievementsBtn = document.getElementById('closeAchievementsBtn');
+        if (closeAchievementsBtn) {
+            closeAchievementsBtn.addEventListener('click', () => this.hideAchievements());
         }
     }
 
@@ -1107,14 +767,90 @@ class BrickBreakerGame {
         }
     }
 
+    // 顯示成就
+    showAchievements() {
+        const modal = document.getElementById('achievementsModal');
+        const list = document.getElementById('achievementsList');
+        const progressEl = document.getElementById('achProgress');
+
+        if (!modal || !list) return;
+
+        // 清空列表
+        list.innerHTML = '';
+
+        // 統計進度
+        const unlockedCount = this.playerStats.unlockedAchievements.length;
+        const totalCount = ACHIEVEMENTS.length;
+        if (progressEl) {
+            progressEl.textContent = `${unlockedCount}/${totalCount}`;
+        }
+
+        // 生成列錶
+        ACHIEVEMENTS.forEach(ach => {
+            const isUnlocked = this.playerStats.unlockedAchievements.includes(ach.id);
+            const item = document.createElement('div');
+            item.className = `ach-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+
+            // 如果是統計類成就，顯示進度
+            let progressText = '';
+            if (ach.type === 'stat' && !isUnlocked) {
+                const current = this.playerStats.stats[ach.stat] || 0;
+                progressText = ` (${current}/${ach.target})`;
+            }
+
+            item.innerHTML = `
+                <div class="icon">${ach.icon}</div>
+                <div class="info">
+                    <div class="ach-view-title">${ach.title}</div>
+                    <div class="ach-view-desc">${ach.desc}${progressText}</div>
+                </div>
+                <div class="status">${isUnlocked ? '✅' : '🔒'}</div>
+            `;
+            list.appendChild(item);
+        });
+
+        modal.classList.remove('hidden');
+
+        // 暫停遊戲
+        if (this.gameState === 'playing') {
+            this.pauseGame();
+        }
+    }
+
+    hideAchievements() {
+        const modal = document.getElementById('achievementsModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
     toggleSound(enabled) {
         if (enabled !== undefined) {
             this.sound.enabled = enabled;
         } else {
             this.sound.toggle();
         }
-        // Save preference could be added here
         localStorage.setItem('brickBreakerSound', this.sound.enabled);
+    }
+
+    toggleBgm(enabled) {
+        if (enabled !== undefined) {
+            this.sound.bgmEnabled = enabled;
+        } else {
+            this.sound.bgmEnabled = !this.sound.bgmEnabled;
+        }
+        localStorage.setItem('brickBreakerBgm', this.sound.bgmEnabled);
+
+        // 如果關閉 BGM，立即停止
+        if (!this.sound.bgmEnabled) {
+            this.sound.stopBgm();
+        } else if (this.gameState === 'playing') {
+            // 如果開啟且正在遊戲中，重新開始 BGM
+            let theme = 'normal';
+            if (this.isBossLevel(this.level)) theme = 'boss';
+            else if (this.level >= 4) theme = 'fast';
+            this.sound.startBgm(theme);
+        }
     }
 
     toggleEndlessMode(enabled) {
@@ -1238,16 +974,38 @@ class BrickBreakerGame {
         // 初始化并播放开始音效
         this.sound.init();
         this.sound.playStart();
+
+        // 播放 BGM
+        let theme = 'normal';
+
+        if (this.isBossLevel(this.level)) {
+            theme = 'boss';
+        } else if (this.level >= 10) {
+            theme = 'fast'; // 10關以後這麽快
+        } else {
+            // 1-9 關循環：Normal -> Journey -> Adventure
+            const cycle = ['normal', 'journey', 'adventure'];
+            theme = cycle[(this.level - 1) % 3];
+        }
+
+        this.sound.startBgm(theme);
     }
 
     pauseGame() {
         this.gameState = 'paused';
         this.showOverlay(t('messages.paused'), t('messages.pauseMsg'));
+        this.sound.stopBgm();
     }
 
     resumeGame() {
         this.gameState = 'playing';
         this.hideOverlay();
+
+        // 恢復 BGM
+        let theme = 'normal';
+        if (this.isBossLevel(this.level)) theme = 'boss';
+        else if (this.level >= 4) theme = 'fast';
+        this.sound.startBgm(theme);
     }
 
     resetGame() {
@@ -1257,10 +1015,10 @@ class BrickBreakerGame {
         this.combo = 0;
         this.currentBallSpeed = CONFIG.ballSpeed; // 重置球速
         this.maxCombo = 0;
-        this.initPaddle();
         this.initBall();
         this.initBricks();
         this.particlePool.reset();
+        this.sound.stopBgm();
         this.shakeTime = 0;
 
         // 重置道具系统
@@ -1278,7 +1036,7 @@ class BrickBreakerGame {
     showOverlay(title, message) {
         const overlay = document.getElementById('overlay');
         document.getElementById('overlayTitle').textContent = title;
-        document.getElementById('overlayMessage').textContent = message;
+        document.getElementById('overlayMessage').innerHTML = message.replace(/\n/g, '<br>');
         overlay.classList.remove('hidden');
     }
 
@@ -1319,7 +1077,25 @@ class BrickBreakerGame {
 
     // 生成道具
     spawnPowerup(x, y) {
-        if (Math.random() > POWERUP_DROP_CHANCE) return;
+        // 計算剩餘磚塊數量
+        let remainingBricks = 0;
+        for (let c = 0; c < CONFIG.brickColumnCount; c++) {
+            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+                if (this.bricks[c][r].status === 1) {
+                    remainingBricks++;
+                }
+            }
+        }
+
+        // 最後衝刺獎勵：剩餘 < 5 塊時，道具掉落率提升至 80%
+        let dropChance = POWERUP_DROP_CHANCE;
+        if (remainingBricks > 0 && remainingBricks <= 5) {
+            dropChance = 0.8; // 80% 掉落
+        } else if (remainingBricks > 0 && remainingBricks <= 10) {
+            dropChance = 0.5; // 50% 掉落
+        }
+
+        if (Math.random() > dropChance) return;
 
         const type = POWERUP_KEYS[Math.floor(Math.random() * POWERUP_KEYS.length)];
         this.powerups.push({
@@ -1330,11 +1106,37 @@ class BrickBreakerGame {
         });
     }
 
+    // 閒置掉落：2秒未撞擊磚塊，掉3個隨機道具
+    triggerIdleDrop() {
+        const startY = CONFIG.canvasHeight * 0.3; // 從畫面上方30%處掉落
+        const margin = 100; // 邊距
+
+        // 掉落3個隨機道具（分散在畫面不同位置）
+        for (let i = 0; i < 3; i++) {
+            const type = ALL_POWERUP_KEYS[Math.floor(Math.random() * ALL_POWERUP_KEYS.length)];
+
+            // 隨機 X 位置 (保留邊距)
+            const randomX = margin + Math.random() * (CONFIG.canvasWidth - margin * 2);
+
+            this.powerups.push({
+                x: randomX,
+                y: startY + (i * 30), // 稍微錯開高度
+                type: type,
+                ...ALL_POWERUP_TYPES[type]
+            });
+        }
+
+        // 播放道具音效
+        this.sound.playPowerup();
+    }
+
     // 更新道具位置与碰撞
     updatePowerups() {
+        const ts = this.timeScale || 1;
+
         for (let i = this.powerups.length - 1; i >= 0; i--) {
             const p = this.powerups[i];
-            p.y += POWERUP_SPEED;
+            p.y += POWERUP_SPEED * ts;
 
             // 碰撞检测：道具碰到挡板
             if (p.y + POWERUP_SIZE / 2 > this.paddle.y &&
@@ -1356,7 +1158,7 @@ class BrickBreakerGame {
 
     // 套用道具效果
     applyPowerup(type) {
-        const config = POWERUP_TYPES[type];
+        const config = ALL_POWERUP_TYPES[type];
 
         switch (type) {
             case 'expand':
@@ -1406,6 +1208,40 @@ class BrickBreakerGame {
                 });
                 this.activePowerups.slow = config.duration;
                 break;
+
+            // ===== 新道具效果 =====
+            case 'fireball':
+                // 火球效果：球帶火焰，撞擊時燒毀周圍磚塊
+                this.balls.forEach(b => b.fireball = true);
+                this.activePowerups.fireball = config.duration;
+                break;
+
+            case 'magnet':
+                // 磁鐵效果：球自動追蹤擋板
+                this.balls.forEach(b => b.magnet = true);
+                this.activePowerups.magnet = config.duration;
+                break;
+
+            case 'invincible':
+                // 無敵護盾：底部保護，球不會掉落
+                this.shield.active = true;
+                this.shield.y = CONFIG.canvasHeight - 10;
+                this.shield.height = 5;
+                this.shield.timeLeft = config.duration;
+                this.activePowerups.invincible = config.duration;
+                break;
+
+            case 'scoreDouble':
+                // 分數加倍：15秒內分數 x2
+                this.scoreMultiplier = 2;
+                this.activePowerups.scoreDouble = config.duration;
+                break;
+
+            case 'timeSlow':
+                // 時間減速：遊戲速度變慢50%
+                this.gameSpeedMultiplier = 0.5;
+                this.activePowerups.timeSlow = config.duration;
+                break;
         }
     }
 
@@ -1420,6 +1256,9 @@ class BrickBreakerGame {
                 delete this.activePowerups[type];
             }
         }
+
+        // 更新 UI 時間條
+        this.updatePowerupTimersUI();
     }
 
     // 移除道具效果
@@ -1506,16 +1345,19 @@ class BrickBreakerGame {
 
     // 更新挡板位置
     updatePaddle() {
+        const speed = this.paddle.speed * (this.timeScale || 1);
         if (this.keys.left && this.paddle.x > 0) {
-            this.paddle.x -= this.paddle.speed;
+            this.paddle.x -= speed;
         }
         if (this.keys.right && this.paddle.x < CONFIG.canvasWidth - this.paddle.width) {
-            this.paddle.x += this.paddle.speed;
+            this.paddle.x += speed;
         }
     }
 
     // 更新球位置（支持多球）
     updateBall() {
+        const ts = this.timeScale || 1;
+
         for (let i = this.balls.length - 1; i >= 0; i--) {
             const ball = this.balls[i];
 
@@ -1526,8 +1368,8 @@ class BrickBreakerGame {
                 continue;
             }
 
-            ball.x += ball.dx;
-            ball.y += ball.dy;
+            ball.x += ball.dx * ts;
+            ball.y += ball.dy * ts;
 
             // 左右边界碰撞
             if (ball.x - ball.radius < 0) {
@@ -1609,6 +1451,11 @@ class BrickBreakerGame {
                 this.sound.playPaddleHit();
                 this.combo = 0; // 碰到挡板，连击归零
                 this.updateUI();
+
+                // 檢查完美反彈 (擊中邊緣 10% 區域)
+                if (Math.abs(hitPos - 0.5) > 0.4) {
+                    this.playerStats.incrementStat('perfectBounces');
+                }
             }
         }
 
@@ -1629,6 +1476,10 @@ class BrickBreakerGame {
                             ball.x < brick.x + CONFIG.brickWidth &&
                             ball.y > brick.y &&
                             ball.y < brick.y + CONFIG.brickHeight) {
+
+                            // 重置閒置計時器（有撞到磚塊）
+                            this.lastBrickHitTime = performance.now();
+                            this.idleDropTriggered = false;
 
                             // 如果不是穿透模式，反弹
                             if (!ball.pierce) {
@@ -1689,6 +1540,14 @@ class BrickBreakerGame {
 
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+        // 觸發連擊視覺效果
+        this.triggerComboEffect(
+            this.combo,
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2
+        );
+
         const points = 10 * (1 + (this.combo - 1) * 0.5);
         this.score += points;
 
@@ -1716,6 +1575,14 @@ class BrickBreakerGame {
 
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+        // 觸發連擊視覺效果
+        this.triggerComboEffect(
+            this.combo,
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2
+        );
+
         const points = 20 * (1 + (this.combo - 1) * 0.5); // 雙倍分數
         this.score += points;
 
@@ -1753,11 +1620,23 @@ class BrickBreakerGame {
         // 分數和連擊
         this.combo += clearedCount;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+        // 觸發連擊視覺效果 (使用該排中心位置)
+        if (clearedCount > 0) {
+            this.triggerComboEffect(
+                this.combo,
+                CONFIG.canvasWidth / 2,
+                row * (CONFIG.brickHeight + CONFIG.brickPadding) + CONFIG.brickOffsetTop
+            );
+        }
+
         this.score += clearedCount * 15;
 
         // 震動效果
         this.triggerShake(10, 8);
         this.sound.playLightning();
+        // 統計
+        this.playerStats.incrementStat('lightningTriggers');
     }
 
     // 🛡️ 護盾磚：生成底部護盾
@@ -1766,6 +1645,14 @@ class BrickBreakerGame {
 
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+        // 觸發連擊視覺效果
+        this.triggerComboEffect(
+            this.combo,
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2
+        );
+
         this.score += 15;
 
         // 設定護盾（8 秒）
@@ -1792,6 +1679,14 @@ class BrickBreakerGame {
 
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+        // 觸發連擊視覺效果
+        this.triggerComboEffect(
+            this.combo,
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2
+        );
+
         this.score += 15;
 
         // 只減速擊中的這顆球（70% 減速）
@@ -1832,6 +1727,8 @@ class BrickBreakerGame {
         );
 
         this.sound.playFreeze();
+        // 統計
+        this.playerStats.incrementStat('freezeTriggers');
     }
 
     // 🌀 傳送磚：球傳送到隨機位置
@@ -1840,6 +1737,14 @@ class BrickBreakerGame {
 
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+        // 觸發連擊視覺效果
+        this.triggerComboEffect(
+            this.combo,
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2
+        );
+
         this.score += 15;
 
         // 傳送球到隨機安全位置
@@ -1865,6 +1770,14 @@ class BrickBreakerGame {
 
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+        // 觸發連擊視覺效果
+        this.triggerComboEffect(
+            this.combo,
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2
+        );
+
         this.score += 15;
 
         // 隨機選擇一個道具類型
@@ -1898,6 +1811,14 @@ class BrickBreakerGame {
         brick.status = 0;
         this.combo++;
         if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+        // 觸發連擊視覺效果
+        this.triggerComboEffect(
+            this.combo,
+            brick.x + CONFIG.brickWidth / 2,
+            brick.y + CONFIG.brickHeight / 2
+        );
+
         this.score += 20 * (1 + (this.combo - 1) * 0.5); // 炸弹得分更高 + 连击
 
         // 视觉效果
@@ -1912,6 +1833,8 @@ class BrickBreakerGame {
         // 核心音效和震动
         this.sound.playExplosion();
         this.triggerShake(15, 10);
+        // 統計
+        this.playerStats.incrementStat('bombExplosions');
 
         // 检查周围 3x3 区域
         for (let i = -1; i <= 1; i++) {
@@ -1977,10 +1900,41 @@ class BrickBreakerGame {
         this.updateHighScore();
         this.sound.playGameOver();
         this.hideOverlay();
-        this.showScoreCard('💀 游戏结束');
+
+        // 失敗回饋與動機
+        this.consecutiveLosses++;
+
+        // 計算剩餘磚塊
+        let remainingBricks = 0;
+        for (let c = 0; c < CONFIG.brickColumnCount; c++) {
+            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+                if (this.bricks[c][r].status === 1) {
+                    remainingBricks++;
+                }
+            }
+        }
+
+        let title = '💀 游戏结束';
+
+        // 接近成功提示 (剩餘 < 5)
+        if (remainingBricks > 0 && remainingBricks <= 5) {
+            title = '😫 只差一點點！ SO CLOSE!';
+        }
+
+        // 連續失敗鼓勵 (>= 3 次)
+        if (this.consecutiveLosses >= 3) {
+            title = '💪 別灰心！再來一次！';
+            if (this.currentBallSpeed > CONFIG.ballSpeed) {
+                // 稍微降低難度 (如果速度夠快)
+                this.currentBallSpeed = Math.max(CONFIG.ballSpeed, this.currentBallSpeed - 0.5);
+            }
+        }
+
+        this.showScoreCard(title);
     }
 
     winGame() {
+        this.consecutiveLosses = 0; // 重置連續失敗計數
         const completedLevel = this.level;
         const wasBossLevel = this.isBossLevel(completedLevel);
 
@@ -2032,6 +1986,11 @@ class BrickBreakerGame {
 
         this.updateUI();
         this.sound.playLevelComplete();
+
+        // 檢查過關成就
+        if (this.currentRank === 'S') this.playerStats.incrementStat('sRankCount');
+        if (wasBossLevel) this.playerStats.incrementStat('bossKills');
+        this.checkAchievementCondition('speed_demon');
 
         // 顯示過關訊息（含評級 - 獎牌+霓虹字母風格）
         const rankDisplay = this.getRankDisplay(this.currentRank);
@@ -2128,11 +2087,11 @@ class BrickBreakerGame {
     // 取得評級顯示文字（獎牌+霓虹字母+描述）
     getRankDisplay(rank) {
         const displays = {
-            'S': '🏆 [S] PERFECT!',
-            'A': '🥇 [A] EXCELLENT!',
-            'B': '🥈 [B] GOOD!',
-            'C': '🥉 [C] PASS',
-            'D': '⚫ [D] TRY AGAIN'
+            'S': '<span class="rank-s">🏆 [S] PERFECT!</span>',
+            'A': '<span class="rank-a">🥇 [A] EXCELLENT!</span>',
+            'B': '<span class="rank-b">🥈 [B] GOOD!</span>',
+            'C': '<span class="rank-c">🥉 [C] PASS</span>',
+            'D': '<span class="rank-d">⚫ [D] TRY AGAIN</span>'
         };
         return displays[rank] || '⚫ [?]';
     }
@@ -2660,12 +2619,208 @@ class BrickBreakerGame {
         }
     }
 
+    // 觸發連擊視覺效果
+    triggerComboEffect(combo, x, y) {
+        if (combo < 3) return; // 3連擊以上才顯示
+
+        let text = `COMBO x${combo}`;
+        let color = '#fff';
+        let size = 20;
+        let shake = 0;
+
+        if (combo >= 16) {
+            text = `ULTIMATE x${combo}!!!`;
+            color = '#ff00ff'; // 彩虹脉冲需在 draw 中处理，这里给个基色
+            size = 40;
+            shake = 10;
+        } else if (combo >= 10) {
+            text = `SUPER x${combo}!!`;
+            color = '#ff4500'; // 橙红色
+            size = 30;
+            shake = 5;
+        } else if (combo >= 6) {
+            text = `COMBO x${combo}!`;
+            color = '#00bfff'; // 亮蓝色
+            size = 25;
+            shake = 2;
+        }
+
+        // 添加到浮動文字列表
+        this.floatingTexts.push({
+            text: text,
+            x: x,
+            y: y,
+            color: color,
+            size: size,
+            life: 1.0, // 生命週期 1.0 -> 0
+            velocity: { x: (Math.random() - 0.5) * 2, y: -2 }, // 向上飄
+            shake: shake,
+            isRainbow: combo >= 16
+        });
+
+        // 震動屏幕
+        if (shake > 0) {
+            this.triggerShake(shake, shake * 2);
+        }
+
+        // 檢查連擊成就
+        this.checkAchievementCondition('combo');
+
+        // 播放連擊音效
+        this.sound.playComboSound(combo);
+    }
+
+
+    // 更新浮動文字
+    updateFloatingTexts(deltaTime) {
+        // 使用 deltaTime 但要考慮它是毫秒，我們需要秒或幀
+        // 這裡簡單用 1/60 或 deltaTime/16 來調整
+        const dt = 0.016; // 假設 60fps
+
+        for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
+            const ft = this.floatingTexts[i];
+            ft.life -= dt;
+            ft.x += ft.velocity.x;
+            ft.y += ft.velocity.y;
+
+            if (ft.life <= 0) {
+                this.floatingTexts.splice(i, 1);
+            }
+        }
+    }
+
+    // 更新勝利動畫效果
+    updateWinEffects(deltaTime) {
+        this.fireworkTimer += deltaTime;
+
+        // 每 500ms 發射一次煙火
+        if (this.fireworkTimer > 500) {
+            this.fireworkTimer = 0;
+
+            // 隨機位置
+            const x = Math.random() * CONFIG.canvasWidth;
+            const y = Math.random() * (CONFIG.canvasHeight / 2); // 上半部
+
+            // 隨機顏色
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            // 產生爆炸粒子
+            this.createParticles(x, y, color, 30, true);
+
+            // 播放音效 (隨機音調)
+            if (this.sound.enabled) {
+                this.sound.playTone(400 + Math.random() * 400, 0.1, 'square', 0.2);
+            }
+        }
+    }
+
+    // 解鎖成就
+    unlockAchievement(achievement) {
+        if (this.playerStats.unlockAchievement(achievement.id)) {
+            this.showAchievementPopup(achievement);
+            if (this.sound.enabled) {
+                // 成就解鎖音效 (上行琶音)
+                this.sound.playTone(523, 0.1, 'sine'); // C5
+                setTimeout(() => this.sound.playTone(659, 0.1, 'sine'), 100); // E5
+                setTimeout(() => this.sound.playTone(784, 0.2, 'sine'), 200); // G5
+            }
+        }
+    }
+
+    // 檢查條件類成就
+    checkAchievementCondition(type) {
+        ACHIEVEMENTS.forEach(ach => {
+            if (ach.type === 'event' && !this.playerStats.unlockedAchievements.includes(ach.id)) {
+                if (ach.condition(this)) {
+                    this.unlockAchievement(ach);
+                }
+            }
+        });
+    }
+
+    // 顯示成就彈窗
+    showAchievementPopup(achievement) {
+        const popup = document.createElement('div');
+        popup.className = 'achievement-popup';
+        popup.innerHTML = `
+            <div class="ach-icon">${achievement.icon}</div>
+            <div class="ach-content">
+                <div class="ach-title">ACHIEVEMENT UNLOCKED!</div>
+                <div class="ach-name">${achievement.title}</div>
+                <div class="ach-desc">${achievement.desc}</div>
+            </div>
+        `;
+        document.body.appendChild(popup);
+
+        // 動畫進場
+        requestAnimationFrame(() => popup.classList.add('visible'));
+
+        // 5秒後移除
+        setTimeout(() => {
+            popup.classList.remove('visible');
+            setTimeout(() => popup.remove(), 500);
+        }, 4000);
+    }
+
+    // 繪製浮動文字
+    drawFloatingTexts() {
+        for (const ft of this.floatingTexts) {
+            this.ctx.save();
+
+            // 震動效果
+            let dx = 0, dy = 0;
+            if (ft.shake > 0) {
+                dx = (Math.random() - 0.5) * ft.shake;
+                dy = (Math.random() - 0.5) * ft.shake;
+            }
+
+            this.ctx.translate(ft.x + dx, ft.y + dy);
+
+            // 縮放動畫 (彈出效果)
+            const scale = 1 + Math.sin((1 - ft.life) * Math.PI) * 0.2;
+            this.ctx.scale(scale, scale);
+
+            // 設置字體和顏色
+            this.ctx.font = `bold ${ft.size}px "Press Start 2P", Arial`; // 優先使用 pixel font
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+
+            // 透明度漸變
+            this.ctx.globalAlpha = Math.max(0, ft.life);
+
+            if (ft.isRainbow) {
+                // 彩虹效果
+                const hue = (Date.now() / 5) % 360;
+                this.ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                this.ctx.shadowColor = `hsl(${hue}, 100%, 70%)`;
+                this.ctx.shadowBlur = 10;
+            } else {
+                this.ctx.fillStyle = ft.color;
+                this.ctx.shadowColor = ft.color;
+                this.ctx.shadowBlur = 10;
+            }
+
+            // 描邊
+            this.ctx.strokeStyle = 'black';
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeText(ft.text, 0, 0);
+            this.ctx.fillText(ft.text, 0, 0);
+
+            this.ctx.restore();
+        }
+    }
+
     // 游戏主循环
     gameLoop() {
         // 计算 deltaTime
         const now = performance.now();
         const deltaTime = now - this.lastTime;
         this.lastTime = now;
+
+        // 幀率獨立：計算時間縮放因子（目標 60 FPS = 16.67ms 每幀）
+        const targetFrameTime = 1000 / 60; // 16.67ms
+        this.timeScale = Math.min(deltaTime / targetFrameTime, 3); // 限制最大 3 倍，防止跳幀過大
 
         // 清除画布
         this.ctx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
@@ -2683,7 +2838,7 @@ class BrickBreakerGame {
         this.drawBackground();
 
         // 绘制和更新粒子（使用对象池）
-        this.particlePool.updateAndDraw(this.ctx, this.hexToRgb);
+        this.particlePool.updateAndDraw(this.ctx, this.hexToRgb, this.timeScale);
 
         // 绘制游戏对象
         this.drawBricks();
@@ -2692,9 +2847,21 @@ class BrickBreakerGame {
         this.drawPowerups(); // 绘制道具
         this.drawShield(); // 繪製護盾
 
+        // 繪製浮動文字 (最上層)
+        this.drawFloatingTexts();
+
         this.ctx.restore(); // 恢复坐标系
 
         // 如果游戏正在进行中，更新游戏逻辑
+        if (this.gameState === 'playing' || this.gameState === 'win') {
+            // 即使在 win 狀態下也讓文字繼續飄動
+            this.updateFloatingTexts(deltaTime);
+
+            if (this.gameState === 'win') {
+                this.updateWinEffects(deltaTime);
+            }
+        }
+
         if (this.gameState === 'playing') {
             this.updatePaddle();
             this.updateBall();
@@ -2703,6 +2870,13 @@ class BrickBreakerGame {
             this.updateActivePowerups(deltaTime); // 更新道具计时器
             this.updateShield(deltaTime); // 更新護盾計時器
             this.updateEndlessMode(deltaTime); // 更新无尽模式
+
+            // 閒置掉落檢查：2秒未撞擊磚塊，掉3個隨機道具
+            const timeSinceLastHit = now - this.lastBrickHitTime;
+            if (timeSinceLastHit >= 2000 && !this.idleDropTriggered) {
+                this.triggerIdleDrop();
+                this.idleDropTriggered = true;
+            }
         }
 
         // 继续游戏循环

@@ -1220,3 +1220,525 @@ input:checked+.slider:before {
         grid-template-columns: 1fr;
     }
 }
+
+/* Rank Neon Styles */
+.rank-s {
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #e6c200;
+    animation: neonPulse 1.5s infinite alternate;
+    font-weight: bold;
+}
+
+.rank-a {
+    color: #9b59b6;
+    text-shadow: 0 0 10px #9b59b6, 0 0 20px #8e44ad;
+    animation: glow 2s infinite alternate;
+    font-weight: bold;
+}
+
+.rank-b {
+    color: #3498db;
+    text-shadow: 0 0 10px #3498db, 0 0 20px #2980b9;
+    font-weight: bold;
+}
+
+.rank-c {
+    color: #2ecc71;
+    text-shadow: 0 0 5px #2ecc71;
+    font-weight: bold;
+}
+
+.rank-d {
+    color: #95a5a6;
+}
+
+@keyframes neonPulse {
+    from {
+        text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #e6c200;
+        transform: scale(1);
+    }
+
+    to {
+        text-shadow: 0 0 20px #ffd700, 0 0 30px #ffd700, 0 0 40px #e6c200;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px #9b59b6, 0 0 20px #8e44ad;
+    }
+
+    to {
+        text-shadow: 0 0 15px #9b59b6, 0 0 25px #8e44ad;
+    }
+}
+
+
+/* Achievement Popup */
+.achievement-popup {
+    position: fixed;
+    top: 20px;
+    right: -350px;
+    /* Start off-screen */
+    width: 300px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    z-index: 1000;
+    transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    backdrop-filter: blur(10px);
+}
+
+.achievement-popup.visible {
+    right: 20px;
+}
+
+.ach-icon {
+    font-size: 2.5rem;
+    animation: bounce 0.5s infinite alternate;
+}
+
+.ach-content {
+    flex: 1;
+}
+
+.ach-title {
+    color: #ffd700;
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+}
+
+.ach-name {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 2px;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.ach-desc {
+    color: #aaa;
+    font-size: 0.8rem;
+}
+
+@keyframes bounce {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-5px);
+    }
+}
+
+
+/* Achievements Modal Styles */
+.achievements-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    backdrop-filter: blur(10px);
+}
+
+.achievements-modal.hidden {
+    display: none;
+}
+
+.achievements-content {
+    background: linear-gradient(145deg, rgba(20, 30, 48, 0.9), rgba(36, 59, 85, 0.9));
+    padding: 30px;
+    border-radius: 20px;
+    border: 2px solid #00d2ff;
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.achievements-content h2 {
+    text-align: center;
+    color: #fff;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px #00d2ff;
+}
+
+.achievements-stats-summary {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.achievements-list {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    padding-right: 10px;
+}
+
+.ach-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.ach-item.locked {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.ach-item.unlocked {
+    background: linear-gradient(145deg, rgba(74, 222, 128, 0.1), rgba(74, 222, 128, 0.05));
+    border-color: rgba(74, 222, 128, 0.5);
+    box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
+}
+
+.ach-item .icon {
+    font-size: 2rem;
+}
+
+.ach-item .info {
+    flex: 1;
+}
+
+.ach-item .ach-view-title {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.ach-item .ach-view-desc {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+.ach-item .status {
+    font-size: 1.2rem;
+}
+
+/* Scrollbar for achievements */
+.achievements-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.achievements-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.achievements-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.achievements-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ========== Toast 通知系統 ========== */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.toast {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: toastSlideIn 0.3s ease, toastFadeOut 0.3s ease 2.7s forwards;
+    pointer-events: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.toast.error {
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.9), rgba(185, 28, 28, 0.9));
+    color: #fff;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+}
+
+.toast.success {
+    background: linear-gradient(145deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.9));
+    color: #fff;
+    border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
+.toast.info {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.9));
+    color: #fff;
+    border: 1px solid rgba(59, 130, 246, 0.5);
+}
+
+.toast.warning {
+    background: linear-gradient(145deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9));
+    color: #fff;
+    border: 1px solid rgba(245, 158, 11, 0.5);
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toastFadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* ========== Powerup 時間條 ========== */
+.powerup-timers {
+    position: absolute;
+    top: 20px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 100;
+    min-width: 120px;
+}
+
+.powerup-timer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #fff;
+}
+
+.powerup-timer-icon {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+}
+
+.powerup-timer-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.powerup-timer-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.1s linear;
+}
+
+.powerup-timer-fill.expand {
+    background: linear-gradient(90deg, #ff6b6b, #ff8787);
+}
+
+.powerup-timer-fill.shrink {
+    background: linear-gradient(90deg, #9b59b6, #a855f7);
+}
+
+.powerup-timer-fill.pierce {
+    background: linear-gradient(90deg, #feca57, #fed77a);
+}
+
+.powerup-timer-fill.slow {
+    background: linear-gradient(90deg, #1dd1a1, #10b981);
+}
+
+.powerup-timer-fill.fireball {
+    background: linear-gradient(90deg, #ff4757, #ff6b81);
+}
+
+.powerup-timer-fill.magnet {
+    background: linear-gradient(90deg, #ffa502, #ff7f50);
+}
+
+.powerup-timer-fill.invincible {
+    background: linear-gradient(90deg, #00d2d3, #0abde3);
+}
+
+.powerup-timer-fill.scoreDouble {
+    background: linear-gradient(90deg, #ffd700, #f39c12);
+}
+
+.powerup-timer-fill.timeSlow {
+    background: linear-gradient(90deg, #a29bfe, #6c5ce7);
+}
+
+/* 手機版調整 */
+@media (max-width: 600px) {
+    .powerup-timers {
+        top: auto;
+        bottom: 60px;
+        right: 10px;
+        min-width: 100px;
+    }
+
+    .powerup-timer {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+
+    .toast-container {
+        bottom: 10px;
+        width: 90%;
+    }
+
+    .toast {
+        font-size: 0.85rem;
+        padding: 10px 16px;
+    }
+}
+
+/* ========== Reduce Motion 支援 ========== */
+@media (prefers-reduced-motion: reduce) {
+
+    .toast,
+    .overlay-content,
+    .score-card-content,
+    .powerup-timer-fill {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+.reduce-motion .toast,
+.reduce-motion .overlay-content,
+.reduce-motion .particle,
+.reduce-motion .combo-text {
+    animation: none !important;
+}
+
+/* ========== Help Modal Tabs ========== */
+.help-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.help-tab {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.help-tab:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.help-tab.active {
+    background: linear-gradient(145deg, rgba(99, 179, 237, 0.3), rgba(99, 179, 237, 0.2));
+    border-color: rgba(99, 179, 237, 0.5);
+    color: #63b3ed;
+}
+
+.help-tab-content {
+    display: none;
+    animation: fadeIn 0.2s ease;
+}
+
+.help-tab-content.active {
+    display: block;
+}
+
+.help-tab-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.help-tab-content li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9rem;
+}
+
+.help-tab-content li:last-child {
+    border-bottom: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* 手機版調整 */
+@media (max-width: 600px) {
+    .help-tabs {
+        gap: 3px;
+    }
+
+    .help-tab {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+
+    .help-tab-content li {
+        font-size: 0.8rem;
+        padding: 6px 0;
+    }
+}
