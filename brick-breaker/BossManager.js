@@ -15,7 +15,7 @@ const BOSS_TYPES = {
         attackInterval: 3000, // 每 3 秒攻擊
         projectileSprite: 'assets/projectile_fireball.png',
         projectileSpeed: 4,
-        projectileSize: 30,
+        projectileSize: 45,  // 更大的火球
         color: '#ff4444'
     }
     // 未來可加入: kraken, mecha
