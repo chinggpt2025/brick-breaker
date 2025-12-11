@@ -210,10 +210,10 @@
 }
 
 /* =========================================
-   Mobile Landscape "True Desktop" Mode v1.4
-   (Restores Visitor Stats, uses wide resolution for small UI)
+   Mobile Landscape "True Desktop" Mode v1.5
+   (Ultra-Wide 1500px for smaller UI feel)
    ========================================= */
-@media screen and (max-width: 1300px) and (orientation: landscape) {
+@media screen and (max-width: 1500px) and (orientation: landscape) {
 
     /* Reset body */
     body {
@@ -228,13 +228,13 @@
         margin: 0;
     }
 
-    /* Force Container to FULL DESKTOP SIZE */
+    /* Force Container to ULTRA WIDE DESKTOP SIZE */
     .game-container {
-        width: 1200px !important;
-        /* Wide Desktop Width */
-        height: 850px !important;
-        /* Tall Desktop Height */
-        min-height: 850px !important;
+        width: 1500px !important;
+        /* Ultra Wide Width */
+        height: 900px !important;
+        /* Tall Height */
+        min-height: 900px !important;
         max-width: none !important;
         max-height: none !important;
 
@@ -250,17 +250,17 @@
         box-sizing: border-box;
     }
 
-    /* Ensure Stats are VISIBLE (Un-hide them) */
+    /* Ensure Stats are VISIBLE */
     .visitor-stats {
         display: flex !important;
         margin-bottom: 0 !important;
         /* Adjust layout */
-        transform: scale(0.9);
-        /* Slightly shrink stats if needed */
+        transform: scale(1.0);
+        /* Normal scale */
     }
 
     #gameCanvas {
-        box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.7);
     }
 
     /* Minimalist Header for Landscape */

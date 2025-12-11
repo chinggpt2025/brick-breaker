@@ -616,11 +616,17 @@ class BrickBreakerGame {
         window.addEventListener('keydown', this._boundHandlers.keydown);
         window.addEventListener('keyup', this._boundHandlers.keyup);
 
-        // 觸控支援
-        this.canvas.addEventListener('touchstart', this._boundHandlers.touchstart, { passive: false });
-        this.canvas.addEventListener('touchmove', this._boundHandlers.touchmove, { passive: false });
-        this.canvas.addEventListener('touchend', this._boundHandlers.touchend);
-        this.canvas.addEventListener('touchcancel', this._boundHandlers.touchend);
+        // 觸控支援 (改為全螢幕監聽，解決黑邊觸控無效問題)
+        window.addEventListener('touchstart', this._boundHandlers.touchstart, { passive: false });
+        window.addEventListener('touchmove', this._boundHandlers.touchmove, { passive: false });
+        window.addEventListener('touchend', this._boundHandlers.touchend);
+        window.addEventListener('touchcancel', this._boundHandlers.touchend);
+
+        // Detect Touch and Update UI Text
+        // v1.5: Fix "Press Space" text on mobile
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            this._updateMobileText();
+        }
 
         // 滑鼠支援
         this.canvas.addEventListener('mousedown', this._boundHandlers.mousedown);
@@ -652,6 +658,19 @@ class BrickBreakerGame {
                     this.resumeGame();
                 }
             });
+        }
+
+        _updateMobileText() {
+            // Replace "Press Space" keys in config for future renders
+            if (CONFIG && CONFIG[this.language] && CONFIG[this.language].messages) {
+                CONFIG[this.language].messages.start = "點擊螢幕開始遊戲";
+                CONFIG[this.language].messages.pauseMsg = "點擊螢幕繼續";
+                CONFIG[this.language].messages.livesLeft = (n) => `剩餘 ${n} 條生命  點擊螢幕繼續`;
+            }
+
+            // Update currently visible elements if any
+            const overlayMsg = document.getElementById('overlayMessage');
+            if (overlayMsg) overlayMsg.textContent = "點擊螢幕開始遊戲";
         }
 
         // 设置按钮点击事件

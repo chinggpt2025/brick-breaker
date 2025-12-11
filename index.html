@@ -27,7 +27,7 @@
         </div>
         <div class="game-header">
             <h1 data-i18n-prefix="messages.title">🎮 打磚塊</h1>
-            <div id="version" style="font-size: 10px; opacity: 0.5;">v1.4</div>
+            <div id="version" style="font-size: 10px; opacity: 0.5;">v1.5</div>
             <div class="stats">
                 <div class="stat-item">
                     <span class="stat-label" data-i18n="ui.score">分數</span>
@@ -359,33 +359,29 @@
 
             const isLandscape = window.innerWidth > window.innerHeight;
 
-            // True Desktop Target Dimensions
-            // These match the CSS forcing for "Desktop Look"
-            const landscapeTargetW = 1200;
-            const landscapeTargetH = 850;
+            // True Desktop Target Dimensions (v1.5 Ultra-Hires)
+            // Increased to 1500px to effectively "Zoom Out" even more
+            const landscapeTargetW = 1500;
+            const landscapeTargetH = 900;
 
-            // Portrait Target Dimensions (Standard Game Width + Padding)
+            // Portrait Target Dimensions
             const portraitTargetW = 900;
 
             let scale = 1;
 
             if (isLandscape) {
-                // LANDSCAPE: Fit to Height primarily (Cinema Mode), but ensure Width fits too
+                // LANDSCAPE: Fit to Height primarily (Cinema Mode)
                 const scaleW = window.innerWidth / landscapeTargetW;
                 const scaleH = window.innerHeight / landscapeTargetH;
-                scale = Math.min(scaleW, scaleH) * 0.95; // 0.95 safety margin
+                scale = Math.min(scaleW, scaleH) * 0.95;
             } else {
                 // PORTRAIT: Fit to Width
-                // We assume the CSS naturally flows vertically, but we scale it down to fit the width
                 scale = window.innerWidth / portraitTargetW;
-
-                // Cap portrait scale to avoid extreme tiny-ness
                 scale = Math.max(scale, 0.35);
             }
 
-            // Apply Scale
-            // Only apply if it drastically needs it (e.g., mobile)
-            if (window.innerWidth < 1300) {
+            // Apply Scale if needed (covering most mobiles/tablets)
+            if (window.innerWidth < 1600) {
                 container.style.transform = `scale(${scale})`;
             } else {
                 container.style.transform = '';
