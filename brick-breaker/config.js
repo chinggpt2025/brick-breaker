@@ -128,12 +128,18 @@ const BGM_THEMES = {
         ]
     },
     boss: {
-        bpm: 160,
+        bpm: 180,  // 更快的節奏增加緊張感
         notes: [
-            { freq: 110, dur: 2 }, { freq: 110, dur: 2 }, { freq: 123, dur: 4 },
-            { freq: 110, dur: 2 }, { freq: 110, dur: 2 }, { freq: 130, dur: 4 },
-            { freq: 110, dur: 2 }, { freq: 110, dur: 2 }, { freq: 146, dur: 4 },
-            { freq: 164, dur: 4 }, { freq: 146, dur: 4 }
+            // 低沉威脅的開場
+            { freq: 82, dur: 2 }, { freq: 0, dur: 1 }, { freq: 82, dur: 2 }, { freq: 0, dur: 1 },
+            { freq: 98, dur: 2 }, { freq: 0, dur: 1 }, { freq: 98, dur: 2 }, { freq: 110, dur: 2 },
+            // 緊張上升
+            { freq: 110, dur: 2 }, { freq: 123, dur: 2 }, { freq: 130, dur: 2 }, { freq: 146, dur: 2 },
+            // 高潮段落
+            { freq: 164, dur: 1 }, { freq: 0, dur: 1 }, { freq: 164, dur: 1 }, { freq: 0, dur: 1 },
+            { freq: 174, dur: 2 }, { freq: 146, dur: 2 }, { freq: 130, dur: 4 },
+            // 重低音結尾
+            { freq: 82, dur: 4 }, { freq: 0, dur: 2 }, { freq: 65, dur: 4 }
         ]
     }
 };
@@ -156,7 +162,8 @@ const LANGUAGES = {
             endlessOff: '♾️ 無盡模式: 關',
             language: '🌐 語言',
             help: '❓ 說明',
-            settings: '⚙️ 設定'
+            settings: '⚙️ 設定',
+            achievements: '🏅 成就'
         },
         controls: {
             arrows: '⬅️ ➡️ 方向鍵控制擋板',
@@ -260,7 +267,8 @@ const LANGUAGES = {
             endlessOff: '♾️ Endless: OFF',
             language: '🌐 Language',
             help: '❓ Help',
-            settings: '⚙️ Settings'
+            settings: '⚙️ Settings',
+            achievements: '🏅 Achievements'
         },
         controls: {
             arrows: '⬅️ ➡️ Arrow keys to move paddle',
