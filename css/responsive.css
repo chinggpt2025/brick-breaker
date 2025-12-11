@@ -200,63 +200,67 @@
     }
 }
 
-@media screen and (max-width: 850px) and (orientation: portrait) {
-    #portrait-warning {
-        display: flex;
-    }
+/* =========================================
+   Mobile Optimization
+   ========================================= */
 
-    .game-container {
-        opacity: 0.1;
-        pointer-events: none;
-    }
+/* Disable Portrait Warning - Let user play vertically */
+#portrait-warning {
+    display: none !important;
 }
 
 /* =========================================
-   Mobile Landscape "Fit-to-Screen" Fix
-   Forces the game to behave like "Desktop Mode"
-   but scaled down to fit the screen.
+   Mobile Landscape "True Desktop" Mode v1.4
+   (Restores Visitor Stats, uses wide resolution for small UI)
    ========================================= */
-@media screen and (max-width: 900px) and (orientation: landscape) {
+@media screen and (max-width: 1300px) and (orientation: landscape) {
+
+    /* Reset body */
     body {
-        padding: 0;
-        margin: 0;
         height: 100vh;
         width: 100vw;
         overflow: hidden;
-        /* No scrolling allowed */
         display: flex;
-        justify-content: center;
         align-items: center;
+        justify-content: center;
         background: #111;
-    }
-
-    .game-container {
-        /* Force container to exactly fit the viewport */
-        width: 100vw;
-        height: 100vh;
-        max-width: none;
         padding: 0;
         margin: 0;
-        border-radius: 0;
+    }
+
+    /* Force Container to FULL DESKTOP SIZE */
+    .game-container {
+        width: 1200px !important;
+        /* Wide Desktop Width */
+        height: 850px !important;
+        /* Tall Desktop Height */
+        min-height: 850px !important;
+        max-width: none !important;
+        max-height: none !important;
+
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background: transparent;
-        box-shadow: none;
+        padding: 0 !important;
+        margin: 0 !important;
+
+        /* Scaling Origin */
+        transform-origin: center center;
+        box-sizing: border-box;
+    }
+
+    /* Ensure Stats are VISIBLE (Un-hide them) */
+    .visitor-stats {
+        display: flex !important;
+        margin-bottom: 0 !important;
+        /* Adjust layout */
+        transform: scale(0.9);
+        /* Slightly shrink stats if needed */
     }
 
     #gameCanvas {
-        /* Strict Containment */
-        width: auto !important;
-        height: auto !important;
-        max-width: 95vw;
-        max-height: 85vh;
-        /* Reserve space for header/controls */
-        object-fit: contain;
-        margin: 0 auto;
-        border-radius: 8px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
     }
 
     /* Minimalist Header for Landscape */

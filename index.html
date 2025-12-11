@@ -27,7 +27,7 @@
         </div>
         <div class="game-header">
             <h1 data-i18n-prefix="messages.title">🎮 打磚塊</h1>
-            <div id="version" style="font-size: 10px; opacity: 0.5;">v1.3</div>
+            <div id="version" style="font-size: 10px; opacity: 0.5;">v1.4</div>
             <div class="stats">
                 <div class="stat-item">
                     <span class="stat-label" data-i18n="ui.score">分數</span>
@@ -351,48 +351,52 @@
             });
         }
     </script>
-    <!-- Auto-Scaler for Mobile Landscape -->
+    <!-- Auto-Scaler (Landscape & Portrait) -->
     <script>
-        function handleMobileLandscapeScaling() {
+        function handleMobileScaling() {
             const container = document.querySelector('.game-container');
             if (!container) return;
 
             const isLandscape = window.innerWidth > window.innerHeight;
-            // Relaxed check: just check landscape and width < 1024 (tablet/mobile)
-            const isMobileShape = window.innerWidth < 1024;
 
-            if (isLandscape && isMobileShape) {
-                // We enforced these dimensions in CSS for this media query
-                const targetWidth = 850;
-                const targetHeight = 700;
+            // True Desktop Target Dimensions
+            // These match the CSS forcing for "Desktop Look"
+            const landscapeTargetW = 1200;
+            const landscapeTargetH = 850;
 
-                // 1. Calculate ratios
-                const scaleW = window.innerWidth / targetWidth;
-                const scaleH = window.innerHeight / targetHeight;
+            // Portrait Target Dimensions (Standard Game Width + Padding)
+            const portraitTargetW = 900;
 
-                // 2. Pick the smaller scale to fit entirely (contain)
-                // Use 0.95 factor to give a small safety margin
-                let scale = Math.min(scaleW, scaleH) * 0.95;
+            let scale = 1;
 
-                // 3. Apply
-                container.style.transform = `scale(${scale})`;
-
-                // 4. Force centering if body flex fails (optional safety)
-                // Since confirm body is flex center, this transform-origin center should work perfect.
-                // Log for debug
-                // console.log(`Scaling to ${scale} (Window: ${window.innerWidth}x${window.innerHeight})`);
-
+            if (isLandscape) {
+                // LANDSCAPE: Fit to Height primarily (Cinema Mode), but ensure Width fits too
+                const scaleW = window.innerWidth / landscapeTargetW;
+                const scaleH = window.innerHeight / landscapeTargetH;
+                scale = Math.min(scaleW, scaleH) * 0.95; // 0.95 safety margin
             } else {
-                // Reset for portrait or desktop
+                // PORTRAIT: Fit to Width
+                // We assume the CSS naturally flows vertically, but we scale it down to fit the width
+                scale = window.innerWidth / portraitTargetW;
+
+                // Cap portrait scale to avoid extreme tiny-ness
+                scale = Math.max(scale, 0.35);
+            }
+
+            // Apply Scale
+            // Only apply if it drastically needs it (e.g., mobile)
+            if (window.innerWidth < 1300) {
+                container.style.transform = `scale(${scale})`;
+            } else {
                 container.style.transform = '';
             }
         }
 
-        window.addEventListener('resize', handleMobileLandscapeScaling);
+        window.addEventListener('resize', handleMobileScaling);
         window.addEventListener('orientationchange', () => {
-            setTimeout(handleMobileLandscapeScaling, 200); // Slight delay for rotation
+            setTimeout(handleMobileScaling, 200);
         });
-        window.addEventListener('load', handleMobileLandscapeScaling);
+        window.addEventListener('load', handleMobileScaling);
     </script>
 </body>
 
