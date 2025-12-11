@@ -52,14 +52,14 @@ class ParticlePool {
         }
     }
 
-    updateAndDraw(ctx, hexToRgbFn) {
+    updateAndDraw(ctx, hexToRgbFn, timeScale = 1) {
         for (let i = this.activeParticles.length - 1; i >= 0; i--) {
             const p = this.activeParticles[i];
 
-            p.x += p.dx;
-            p.y += p.dy;
-            p.life -= 0.02;
-            p.radius *= 0.96;
+            p.x += p.dx * timeScale;
+            p.y += p.dy * timeScale;
+            p.life -= 0.02 * timeScale;
+            p.radius *= Math.pow(0.96, timeScale);
 
             // 繪製
             ctx.beginPath();

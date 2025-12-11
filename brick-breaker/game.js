@@ -1028,9 +1028,11 @@ class BrickBreakerGame {
 
     // 更新道具位置与碰撞
     updatePowerups() {
+        const ts = this.timeScale || 1;
+
         for (let i = this.powerups.length - 1; i >= 0; i--) {
             const p = this.powerups[i];
-            p.y += POWERUP_SPEED;
+            p.y += POWERUP_SPEED * ts;
 
             // 碰撞检测：道具碰到挡板
             if (p.y + POWERUP_SIZE / 2 > this.paddle.y &&
@@ -1236,16 +1238,19 @@ class BrickBreakerGame {
 
     // 更新挡板位置
     updatePaddle() {
+        const speed = this.paddle.speed * (this.timeScale || 1);
         if (this.keys.left && this.paddle.x > 0) {
-            this.paddle.x -= this.paddle.speed;
+            this.paddle.x -= speed;
         }
         if (this.keys.right && this.paddle.x < CONFIG.canvasWidth - this.paddle.width) {
-            this.paddle.x += this.paddle.speed;
+            this.paddle.x += speed;
         }
     }
 
     // 更新球位置（支持多球）
     updateBall() {
+        const ts = this.timeScale || 1;
+
         for (let i = this.balls.length - 1; i >= 0; i--) {
             const ball = this.balls[i];
 
@@ -1256,8 +1261,8 @@ class BrickBreakerGame {
                 continue;
             }
 
-            ball.x += ball.dx;
-            ball.y += ball.dy;
+            ball.x += ball.dx * ts;
+            ball.y += ball.dy * ts;
 
             // 左右边界碰撞
             if (ball.x - ball.radius < 0) {
@@ -2706,6 +2711,10 @@ class BrickBreakerGame {
         const deltaTime = now - this.lastTime;
         this.lastTime = now;
 
+        // 幀率獨立：計算時間縮放因子（目標 60 FPS = 16.67ms 每幀）
+        const targetFrameTime = 1000 / 60; // 16.67ms
+        this.timeScale = Math.min(deltaTime / targetFrameTime, 3); // 限制最大 3 倍，防止跳幀過大
+
         // 清除画布
         this.ctx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
 
@@ -2722,7 +2731,7 @@ class BrickBreakerGame {
         this.drawBackground();
 
         // 绘制和更新粒子（使用对象池）
-        this.particlePool.updateAndDraw(this.ctx, this.hexToRgb);
+        this.particlePool.updateAndDraw(this.ctx, this.hexToRgb, this.timeScale);
 
         // 绘制游戏对象
         this.drawBricks();
