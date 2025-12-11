@@ -2033,16 +2033,17 @@ class BrickBreakerGame {
         this.updateUI();
         this.sound.playLevelComplete();
 
-        // 顯示過關訊息（含評級）
-        const rankText = `RANK: ${this.currentRank}${isNewBest ? ' 🎉NEW!' : ''}`;
+        // 顯示過關訊息（含評級 - 獎牌+霓虹字母風格）
+        const rankDisplay = this.getRankDisplay(this.currentRank);
+        const rankText = `${rankDisplay}${isNewBest ? ' 🎉NEW!' : ''}`;
 
         if (wasBossLevel) {
-            this.showOverlay(`👑 第 ${completedLevel} 关 BOSS 擊敗! ${rankText}`, `${bonusMessage}`);
+            this.showOverlay(`👑 第 ${completedLevel} 关 BOSS 擊敗!`, `${rankText}\n${bonusMessage}`);
         } else if (this.isBossLevel(this.level)) {
             // 下一關是 Boss 關
-            this.showOverlay(`🎉 第 ${completedLevel} 关完成! ${rankText}`, `${lifeMessage}⚠️ 下一關是 BOSS 關！`);
+            this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${rankText}\n${lifeMessage}⚠️ 下一關是 BOSS 關！`);
         } else {
-            this.showOverlay(`🎉 第 ${completedLevel} 关完成! ${rankText}`, `${lifeMessage}按空格键进入下一关`);
+            this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${rankText}\n${lifeMessage}按空格键进入下一关`);
         }
 
         this.gameState = 'win';
@@ -2122,6 +2123,18 @@ class BrickBreakerGame {
             'D': '#95A5A6'   // 灰色
         };
         return colors[rank] || '#95A5A6';
+    }
+
+    // 取得評級顯示文字（獎牌+霓虹字母+描述）
+    getRankDisplay(rank) {
+        const displays = {
+            'S': '🏆 [S] PERFECT!',
+            'A': '🥇 [A] EXCELLENT!',
+            'B': '🥈 [B] GOOD!',
+            'C': '🥉 [C] PASS',
+            'D': '⚫ [D] TRY AGAIN'
+        };
+        return displays[rank] || '⚫ [?]';
     }
 
     // 显示成绩卡片
