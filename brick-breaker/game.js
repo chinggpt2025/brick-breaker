@@ -709,6 +709,22 @@ class BrickBreakerGame {
             closeHelpBtn.addEventListener('click', () => this.hideHelp());
         }
 
+        // Help Modal Tab Switching
+        const helpTabs = document.querySelectorAll('.help-tab');
+        helpTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+
+                // Update active tab
+                helpTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update active content
+                document.querySelectorAll('.help-tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`tab-${tabName}`)?.classList.add('active');
+            });
+        });
+
         // 成就按鈕點擊事件
         const viewAchievementsBtn = document.getElementById('viewAchievementsBtn');
         if (viewAchievementsBtn) {
