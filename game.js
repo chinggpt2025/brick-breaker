@@ -2961,7 +2961,10 @@ window.addEventListener('load', () => {
 });
 
 // ===== 訪客統計系統 =====
+// ===== 訪客統計系統 =====
 async function initVisitorStats() {
+    let supabaseActive = true; // Circuit breaker
+
     // 1. 生成或讀取訪客 ID
     let visitorId = localStorage.getItem('brick_visitor_id');
     if (!visitorId) {
@@ -2970,32 +2973,46 @@ async function initVisitorStats() {
     }
 
     // 2. 記錄訪問
-    try {
-        await supabase.from('visits').insert({ visitor_id: visitorId });
-    } catch (e) {
-        console.warn('記錄訪問失敗:', e);
+    if (supabaseActive) {
+        try {
+            const { error } = await supabase.from('visits').insert({ visitor_id: visitorId });
+            if (error) throw error;
+        } catch (e) {
+            console.debug('記錄訪問失敗 (後端可能未連接):', e);
+            supabaseActive = false; // Disable further requests
+        }
     }
 
     // 3. 更新在線狀態（心跳）
     async function updateHeartbeat() {
+        if (!supabaseActive) return;
         try {
-            await supabase.from('active_users').upsert(
+            const { error } = await supabase.from('active_users').upsert(
                 { visitor_id: visitorId, last_seen: new Date().toISOString() },
                 { onConflict: 'visitor_id' }
             );
+            if (error) throw error;
         } catch (e) {
-            console.warn('心跳更新失敗:', e);
+            console.debug('心跳更新失敗:', e);
+            // Don't disable on heartbeat fail immediately, but maybe count errors?
+            // For now, simple approach: if it fails continuously, user won't notice much.
+            // But if 400, it's permanent.
+            if (e.code === '400' || e.status === 400) supabaseActive = false;
         }
     }
 
     // 首次心跳
-    updateHeartbeat();
+    if (supabaseActive) updateHeartbeat();
 
     // 每 30 秒心跳一次
-    const heartbeatInterval = setInterval(updateHeartbeat, 30000);
+    const heartbeatInterval = setInterval(() => {
+        if (supabaseActive) updateHeartbeat();
+        else clearInterval(heartbeatInterval);
+    }, 30000);
 
     // 4. 離開頁面時清理
     window.addEventListener('beforeunload', async () => {
+        if (!supabaseActive) return;
         clearInterval(heartbeatInterval);
         try {
             await supabase.from('active_users').delete().eq('visitor_id', visitorId);
@@ -3006,6 +3023,11 @@ async function initVisitorStats() {
 
     // 5. 查詢並顯示統計數據
     async function updateStats() {
+        if (!supabaseActive) {
+            updateOfflineUI();
+            return;
+        }
+
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
@@ -3013,28 +3035,32 @@ async function initVisitorStats() {
 
         try {
             // 總訪客數（不重複）
-            const { count: totalVisitors } = await supabase
+            const { count: totalVisitors, error: err1 } = await supabase
                 .from('visits')
                 .select('visitor_id', { count: 'exact', head: true });
+            if (err1) throw err1;
 
             // 今日訪客數（不重複）
-            const { data: todayData } = await supabase
+            const { data: todayData, error: err2 } = await supabase
                 .from('visits')
                 .select('visitor_id')
                 .gte('visited_at', todayStart);
+            if (err2) throw err2;
             const todayVisitors = todayData ? new Set(todayData.map(v => v.visitor_id)).size : 0;
 
             // 正在遊玩人數
-            const { count: onlinePlayers } = await supabase
+            const { count: onlinePlayers, error: err3 } = await supabase
                 .from('active_users')
                 .select('visitor_id', { count: 'exact', head: true })
                 .gte('last_seen', fiveMinutesAgo);
+            if (err3) throw err3;
 
             // 今日挑戰者（提交過成績的）
-            const { count: todayChallengers } = await supabase
+            const { count: todayChallengers, error: err4 } = await supabase
                 .from('scores')
                 .select('id', { count: 'exact', head: true })
                 .eq('seed', seedStr);
+            if (err4) throw err4;
 
             // 更新 UI
             document.getElementById('statTotalVisitors').textContent = formatNumber(totalVisitors || 0);
@@ -3043,8 +3069,16 @@ async function initVisitorStats() {
             document.getElementById('statTodayChallengers').textContent = formatNumber(todayChallengers || 0);
 
         } catch (e) {
-            console.warn('統計查詢失敗:', e);
-            // 離線狀態提示
+            console.debug('統計查詢失敗:', e);
+            if (e.code === '400' || e.status === 400 || e.message?.includes('400')) {
+                supabaseActive = false; // Stop trying
+            }
+            updateOfflineUI();
+        }
+    }
+
+    function updateOfflineUI() {
+        if (document.getElementById('statTotalVisitors').textContent !== '離線') {
             document.getElementById('statTotalVisitors').textContent = '離線';
             document.getElementById('statTodayVisitors').textContent = '-';
             document.getElementById('statOnlinePlayers').textContent = '-';
@@ -3061,8 +3095,11 @@ async function initVisitorStats() {
     }
 
     // 首次載入統計
-    updateStats();
+    if (supabaseActive) updateStats();
 
     // 每 60 秒更新一次統計
-    setInterval(updateStats, 60000);
+    const statsInterval = setInterval(() => {
+        if (supabaseActive) updateStats();
+        else clearInterval(statsInterval);
+    }, 60000);
 }
