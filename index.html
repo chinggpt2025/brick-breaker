@@ -348,6 +348,49 @@
             });
         }
     </script>
+    <!-- Auto-Scaler for Mobile Landscape -->
+    <script>
+        function handleMobileLandscapeScaling() {
+            const container = document.querySelector('.game-container');
+            if (!container) return;
+
+            const isLandscape = window.innerWidth > window.innerHeight;
+            // Relaxed check: just check landscape and width < 1024 (tablet/mobile)
+            const isMobileShape = window.innerWidth < 1024;
+
+            if (isLandscape && isMobileShape) {
+                // We enforced these dimensions in CSS for this media query
+                const targetWidth = 850;
+                const targetHeight = 700;
+
+                // 1. Calculate ratios
+                const scaleW = window.innerWidth / targetWidth;
+                const scaleH = window.innerHeight / targetHeight;
+
+                // 2. Pick the smaller scale to fit entirely (contain)
+                // Use 0.95 factor to give a small safety margin
+                let scale = Math.min(scaleW, scaleH) * 0.95;
+
+                // 3. Apply
+                container.style.transform = `scale(${scale})`;
+
+                // 4. Force centering if body flex fails (optional safety)
+                // Since confirm body is flex center, this transform-origin center should work perfect.
+                // Log for debug
+                // console.log(`Scaling to ${scale} (Window: ${window.innerWidth}x${window.innerHeight})`);
+
+            } else {
+                // Reset for portrait or desktop
+                container.style.transform = '';
+            }
+        }
+
+        window.addEventListener('resize', handleMobileLandscapeScaling);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(handleMobileLandscapeScaling, 200); // Slight delay for rotation
+        });
+        window.addEventListener('load', handleMobileLandscapeScaling);
+    </script>
 </body>
 
 </html>
