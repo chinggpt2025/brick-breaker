@@ -35,9 +35,9 @@ const BRICK_COLORS = [
     { main: '#54a0ff', light: '#74b3ff', dark: '#2e86de' }
 ];
 
-// ============================
 // 道具設定 (Powerup Types)
 // ============================
+// 普通道具 (可從磚塊掉落 + 2秒未撞擊掉落)
 const POWERUP_TYPES = {
     expand: { color: '#ff6b6b', emoji: '🔴', duration: 10000, name: '扩大挡板' },
     multiball: { color: '#48dbfb', emoji: '🔵', duration: 0, name: '多球' },
@@ -45,7 +45,23 @@ const POWERUP_TYPES = {
     slow: { color: '#1dd1a1', emoji: '🐢', duration: 8000, name: '减速' },
     shrink: { color: '#9b59b6', emoji: '💀', duration: 5000, name: '缩小挡板' }
 };
+
+// 特殊道具 (只在2秒未撞擊時掉落，不會從普通磚塊掉落)
+const SPECIAL_POWERUP_TYPES = {
+    fireball: { color: '#ff4757', emoji: '🔥', duration: 6000, name: '火球', desc: '球帶火焰，撞擊時燒毀周圍磚塊' },
+    magnet: { color: '#ffa502', emoji: '🧲', duration: 8000, name: '磁鐵', desc: '球自動追蹤擋板' },
+    invincible: { color: '#00d2d3', emoji: '🌟', duration: 10000, name: '無敵護盾', desc: '底部出現保護層，球不會掉落' },
+    scoreDouble: { color: '#ffd700', emoji: '💎', duration: 15000, name: '分數加倍', desc: '15秒內分數 x2' },
+    timeSlow: { color: '#a29bfe', emoji: '⏱️', duration: 10000, name: '時間減速', desc: '遊戲速度變慢50%' }
+};
+
+// 合併所有道具
+const ALL_POWERUP_TYPES = { ...POWERUP_TYPES, ...SPECIAL_POWERUP_TYPES };
+
 const POWERUP_KEYS = Object.keys(POWERUP_TYPES);
+const SPECIAL_POWERUP_KEYS = Object.keys(SPECIAL_POWERUP_TYPES);
+const ALL_POWERUP_KEYS = Object.keys(ALL_POWERUP_TYPES);
+
 const POWERUP_DROP_CHANCE = 0.20;
 const POWERUP_SPEED = 3;
 const POWERUP_SIZE = 25;
@@ -149,7 +165,12 @@ const LANGUAGES = {
             multiball: '多球',
             pierce: '穿透球',
             slow: '減速',
-            shrink: '縮小擋板'
+            shrink: '縮小擋板',
+            fireball: '火球',
+            magnet: '磁鐵',
+            invincible: '無敵護盾',
+            scoreDouble: '分數加倍',
+            timeSlow: '時間減速'
         },
         scoreCard: {
             title: (isWin) => isWin ? '🎉 恭喜過關！' : '💀 遊戲結束',
@@ -248,7 +269,12 @@ const LANGUAGES = {
             multiball: 'Multi Ball',
             pierce: 'Piercing Ball',
             slow: 'Slow Down',
-            shrink: 'Shrink Paddle'
+            shrink: 'Shrink Paddle',
+            fireball: 'Fireball',
+            magnet: 'Magnet',
+            invincible: 'Invincible Shield',
+            scoreDouble: 'Score Double',
+            timeSlow: 'Time Slow'
         },
         scoreCard: {
             title: (isWin) => isWin ? '🎉 Level Complete!' : '💀 Game Over',

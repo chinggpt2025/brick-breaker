@@ -108,6 +108,10 @@ class BrickBreakerGame {
         this.floatingTexts = [];
         this.fireworkTimer = 0;
 
+        // 閒置掉落系統（2秒未撞擊磚塊，掉3個道具）
+        this.lastBrickHitTime = performance.now();
+        this.idleDropTriggered = false;
+
         // 初始化能力和成就
         this.playerStats = new PlayerStats(this);
 
@@ -989,6 +993,29 @@ class BrickBreakerGame {
         });
     }
 
+    // 閒置掉落：2秒未撞擊磚塊，掉3個隨機道具
+    triggerIdleDrop() {
+        // 隨機選擇擋板上方中間位置掉落
+        const baseX = this.paddle.x + this.paddle.width / 2;
+        const startY = CONFIG.canvasHeight * 0.3; // 從畫面上方30%處掉落
+
+        // 掉落3個隨機道具（新舊道具混合）
+        for (let i = 0; i < 3; i++) {
+            const type = ALL_POWERUP_KEYS[Math.floor(Math.random() * ALL_POWERUP_KEYS.length)];
+            const offsetX = (i - 1) * 50; // 左中右分佈
+
+            this.powerups.push({
+                x: baseX + offsetX,
+                y: startY + (i * 30), // 稍微錯開高度
+                type: type,
+                ...ALL_POWERUP_TYPES[type]
+            });
+        }
+
+        // 播放道具音效
+        this.sound.playPowerup();
+    }
+
     // 更新道具位置与碰撞
     updatePowerups() {
         for (let i = this.powerups.length - 1; i >= 0; i--) {
@@ -1015,7 +1042,7 @@ class BrickBreakerGame {
 
     // 套用道具效果
     applyPowerup(type) {
-        const config = POWERUP_TYPES[type];
+        const config = ALL_POWERUP_TYPES[type];
 
         switch (type) {
             case 'expand':
@@ -1064,6 +1091,40 @@ class BrickBreakerGame {
                     }
                 });
                 this.activePowerups.slow = config.duration;
+                break;
+
+            // ===== 新道具效果 =====
+            case 'fireball':
+                // 火球效果：球帶火焰，撞擊時燒毀周圍磚塊
+                this.balls.forEach(b => b.fireball = true);
+                this.activePowerups.fireball = config.duration;
+                break;
+
+            case 'magnet':
+                // 磁鐵效果：球自動追蹤擋板
+                this.balls.forEach(b => b.magnet = true);
+                this.activePowerups.magnet = config.duration;
+                break;
+
+            case 'invincible':
+                // 無敵護盾：底部保護，球不會掉落
+                this.shield.active = true;
+                this.shield.y = CONFIG.canvasHeight - 10;
+                this.shield.height = 5;
+                this.shield.timeLeft = config.duration;
+                this.activePowerups.invincible = config.duration;
+                break;
+
+            case 'scoreDouble':
+                // 分數加倍：15秒內分數 x2
+                this.scoreMultiplier = 2;
+                this.activePowerups.scoreDouble = config.duration;
+                break;
+
+            case 'timeSlow':
+                // 時間減速：遊戲速度變慢50%
+                this.gameSpeedMultiplier = 0.5;
+                this.activePowerups.timeSlow = config.duration;
                 break;
         }
     }
@@ -1293,6 +1354,10 @@ class BrickBreakerGame {
                             ball.x < brick.x + CONFIG.brickWidth &&
                             ball.y > brick.y &&
                             ball.y < brick.y + CONFIG.brickHeight) {
+
+                            // 重置閒置計時器（有撞到磚塊）
+                            this.lastBrickHitTime = performance.now();
+                            this.idleDropTriggered = false;
 
                             // 如果不是穿透模式，反弹
                             if (!ball.pierce) {
@@ -2679,6 +2744,13 @@ class BrickBreakerGame {
             this.updateActivePowerups(deltaTime); // 更新道具计时器
             this.updateShield(deltaTime); // 更新護盾計時器
             this.updateEndlessMode(deltaTime); // 更新无尽模式
+
+            // 閒置掉落檢查：2秒未撞擊磚塊，掉3個隨機道具
+            const timeSinceLastHit = now - this.lastBrickHitTime;
+            if (timeSinceLastHit >= 2000 && !this.idleDropTriggered) {
+                this.triggerIdleDrop();
+                this.idleDropTriggered = true;
+            }
         }
 
         // 继续游戏循环
