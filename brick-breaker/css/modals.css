@@ -1,0 +1,338 @@
+/* ========== Modals ========== */
+
+/* Base Overlay */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--radius-xl);
+    z-index: 10;
+    backdrop-filter: blur(5px);
+    transition: opacity var(--transition-normal);
+}
+
+.overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay-content {
+    text-align: center;
+    color: var(--text-primary);
+    animation: fadeInUp 0.5s ease;
+}
+
+.overlay-content h2 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    animation: gradientShift 3s ease infinite;
+}
+
+.overlay-content p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+/* Score Card Modal */
+.score-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--radius-xl);
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.score-card.hidden {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.score-card-content {
+    text-align: center;
+    padding: 40px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: fadeInUp 0.5s ease;
+    min-width: 320px;
+    max-width: 340px;
+}
+
+.score-card-content h2 {
+    font-size: 2.2rem;
+    margin-bottom: 25px;
+    color: var(--text-primary);
+}
+
+.score-card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.card-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.card-stat.main-score {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+    border-radius: 12px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    position: relative;
+    overflow: visible;
+}
+
+.card-stat.main-score .card-value {
+    font-size: 2.5rem;
+    color: var(--accent-gold);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.card-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+.card-value {
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.card-stat.seed-info .card-value {
+    font-family: 'Consolas', monospace;
+    color: var(--accent-blue);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Card Feedback */
+.card-feedback {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 1.1rem;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin: -5px 0 5px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, rgba(74, 222, 128, 0.15), rgba(74, 222, 128, 0.05));
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    color: var(--accent-green);
+    animation: feedbackPulse 2s ease-in-out infinite;
+}
+
+.card-feedback.new-record {
+    background: linear-gradient(145deg, rgba(255, 200, 55, 0.2), rgba(255, 200, 55, 0.1));
+    border: 1px solid rgba(255, 200, 55, 0.4);
+    color: #ffc837;
+}
+
+.card-feedback.try-again {
+    background: linear-gradient(145deg, rgba(255, 107, 107, 0.15), rgba(255, 107, 107, 0.05));
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    color: var(--accent-red-light);
+}
+
+/* Combo Highlight */
+.card-stat.combo-highlight {
+    background: linear-gradient(145deg, rgba(255, 107, 107, 0.15), rgba(255, 107, 107, 0.05));
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    transition: var(--transition-normal);
+}
+
+.card-stat.combo-highlight.awesome {
+    background: linear-gradient(145deg, rgba(255, 159, 67, 0.2), rgba(255, 159, 67, 0.1));
+    border: 1px solid rgba(255, 159, 67, 0.4);
+    animation: comboGlow 1.5s ease-in-out infinite;
+}
+
+.card-stat.combo-highlight.awesome .card-value {
+    color: var(--accent-orange);
+    font-size: 1.5rem;
+}
+
+/* Leaderboard Modal */
+.leaderboard-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--radius-xl);
+    z-index: 200;
+    backdrop-filter: blur(10px);
+    visibility: visible;
+    opacity: 1;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.leaderboard-modal.hidden {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.leaderboard-content {
+    text-align: center;
+    padding: 30px 40px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: fadeInUp 0.5s ease;
+    min-width: 300px;
+    max-width: 400px;
+}
+
+/* Help Modal */
+.help-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.help-modal.hidden {
+    display: none;
+}
+
+.help-content {
+    background: #111;
+    color: var(--text-primary);
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    text-align: center;
+}
+
+.help-content h2 {
+    color: var(--accent-gold);
+    margin-bottom: 20px;
+}
+
+.help-content li {
+    color: #eee;
+    text-align: left;
+    padding-left: 10px;
+}
+
+/* Settings Modal */
+.settings-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 300;
+    backdrop-filter: blur(10px);
+}
+
+.settings-modal.hidden {
+    display: none;
+}
+
+.settings-content {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    min-width: 320px;
+    color: var(--text-primary);
+}
+
+/* Achievements Modal */
+.achievements-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    backdrop-filter: blur(10px);
+}
+
+.achievements-modal.hidden {
+    display: none;
+}
+
+.achievements-content {
+    background: linear-gradient(145deg, rgba(20, 30, 48, 0.9), rgba(36, 59, 85, 0.9));
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--accent-cyan);
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.achievements-content h2 {
+    text-align: center;
+    color: var(--text-primary);
+    font-size: 2rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px var(--accent-cyan);
+}

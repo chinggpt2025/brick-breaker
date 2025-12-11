@@ -1,0 +1,45 @@
+/* ========== CSS Variables ========== */
+:root {
+    /* Colors */
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-tertiary: #0f3460;
+    --bg-dark: #0d1b2a;
+    --bg-canvas: #1b263b;
+
+    --text-primary: #fff;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.6);
+
+    --accent-green: #4ade80;
+    --accent-green-dark: #22c55e;
+    --accent-red: #ef4444;
+    --accent-red-light: #ff6b6b;
+    --accent-blue: #48dbfb;
+    --accent-blue-light: #63b3ed;
+    --accent-gold: #ffd700;
+    --accent-orange: #ff9f43;
+    --accent-cyan: #00d2ff;
+
+    /* Spacing */
+    --spacing-xs: 5px;
+    --spacing-sm: 8px;
+    --spacing-md: 15px;
+    --spacing-lg: 20px;
+    --spacing-xl: 30px;
+
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 24px;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 25px 50px rgba(0, 0, 0, 0.3);
+
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+}

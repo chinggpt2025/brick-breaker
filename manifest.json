@@ -1,0 +1,26 @@
+{
+  "name": "打磚塊遊戲",
+  "short_name": "打磚塊",
+  "description": "一個復古風格的打磚塊遊戲，支援道具、成就與排行榜",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#4ade80",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/rank_s.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/rank_s.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "lang": "zh-TW"
+}
