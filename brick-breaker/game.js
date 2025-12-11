@@ -2096,6 +2096,14 @@ class BrickBreakerGame {
         return displays[rank] || '⚫ [?]';
     }
 
+    // 计算游戏评级
+    calculateRank() {
+        if (this.score >= 10000 || this.maxCombo >= 20) return 's';
+        if (this.score >= 5000 || this.maxCombo >= 15) return 'a';
+        if (this.score >= 2000 || this.maxCombo >= 10) return 'b';
+        return 'c';
+    }
+
     // 显示成绩卡片
     showScoreCard(title) {
         const card = document.getElementById('scoreCard');
@@ -2108,6 +2116,19 @@ class BrickBreakerGame {
         const today = new Date();
         const seedStr = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
         document.getElementById('cardSeed').textContent = seedStr;
+
+        // ===== 评级徽章系统 (Assets) =====
+        const rank = this.calculateRank();
+        const rankBadge = document.getElementById('cardRankBadge');
+        if (rankBadge) {
+            rankBadge.src = `assets/rank_${rank}.png`;
+            rankBadge.alt = `Rank ${rank.toUpperCase()}`;
+            rankBadge.classList.remove('hidden');
+            // 添加弹入动画
+            rankBadge.style.animation = 'none';
+            rankBadge.offsetHeight; /* trigger reflow */
+            rankBadge.style.animation = 'popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }
 
         // ===== 情緒反饋系統 =====
         const feedbackEl = document.getElementById('cardFeedback');
