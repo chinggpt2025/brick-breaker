@@ -1004,17 +1004,18 @@ class BrickBreakerGame {
 
     // 閒置掉落：2秒未撞擊磚塊，掉3個隨機道具
     triggerIdleDrop() {
-        // 隨機選擇擋板上方中間位置掉落
-        const baseX = this.paddle.x + this.paddle.width / 2;
         const startY = CONFIG.canvasHeight * 0.3; // 從畫面上方30%處掉落
+        const margin = 100; // 邊距
 
-        // 掉落3個隨機道具（新舊道具混合）
+        // 掉落3個隨機道具（分散在畫面不同位置）
         for (let i = 0; i < 3; i++) {
             const type = ALL_POWERUP_KEYS[Math.floor(Math.random() * ALL_POWERUP_KEYS.length)];
-            const offsetX = (i - 1) * 50; // 左中右分佈
+
+            // 隨機 X 位置 (保留邊距)
+            const randomX = margin + Math.random() * (CONFIG.canvasWidth - margin * 2);
 
             this.powerups.push({
-                x: baseX + offsetX,
+                x: randomX,
                 y: startY + (i * 30), // 稍微錯開高度
                 type: type,
                 ...ALL_POWERUP_TYPES[type]
