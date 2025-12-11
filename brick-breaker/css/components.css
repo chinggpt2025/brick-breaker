@@ -40,6 +40,41 @@
     transform: scale(1.05);
 }
 
+/* Achievements Button */
+.achievements-toggle {
+    padding: 8px 20px;
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 20px;
+    color: var(--accent-gold);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.achievements-toggle:hover {
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.2));
+    transform: scale(1.05);
+}
+
+/* Help Button */
+.help-toggle {
+    padding: 8px 20px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.help-toggle:hover {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    transform: scale(1.05);
+    color: #fff;
+}
+
 /* Visitor Stats */
 .visitor-stats {
     position: absolute;
