@@ -1992,17 +1992,18 @@ class BrickBreakerGame {
         if (wasBossLevel) this.playerStats.incrementStat('bossKills');
         this.checkAchievementCondition('speed_demon');
 
-        // 顯示過關訊息（含評級 - 獎牌+霓虹字母風格）
+        // 顯示過關訊息（評級為主，關卡為輔）
         const rankDisplay = this.getRankDisplay(this.currentRank);
-        const rankText = `${rankDisplay}${isNewBest ? ' 🎉NEW!' : ''}`;
+        const newBestText = isNewBest ? ' 🎉NEW BEST!' : '';
+        const levelSubtitle = `<span style="font-size: 0.9rem; opacity: 0.7;">🎉 第 ${completedLevel} 关完成!</span>`;
 
         if (wasBossLevel) {
-            this.showOverlay(`👑 第 ${completedLevel} 关 BOSS 擊敗!`, `${rankText}\n${bonusMessage}`);
+            this.showOverlay(`${rankDisplay}${newBestText}`, `${levelSubtitle}<br>${bonusMessage}`);
         } else if (this.isBossLevel(this.level)) {
             // 下一關是 Boss 關
-            this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${rankText}\n${lifeMessage}⚠️ 下一關是 BOSS 關！`);
+            this.showOverlay(`${rankDisplay}${newBestText}`, `${levelSubtitle}<br>${lifeMessage}<br>⚠️ 下一關是 BOSS 關！`);
         } else {
-            this.showOverlay(`🎉 第 ${completedLevel} 关完成!`, `${rankText}\n${lifeMessage}按空格键进入下一关`);
+            this.showOverlay(`${rankDisplay}${newBestText}`, `${levelSubtitle}<br>${lifeMessage}按空格键进入下一关`);
         }
 
         this.gameState = 'win';
@@ -2086,18 +2087,19 @@ class BrickBreakerGame {
 
     // 取得評級顯示文字（獎牌+霓虹字母+描述）
     getRankDisplay(rank) {
-        // 使用 Assets圖片
         const imgPath = `assets/rank_${rank.toLowerCase()}.png`;
-        const imgHtml = `<img src="${imgPath}" alt="${rank}" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 5px;">`;
+        // 評級圖片為主角 - 大圖片 + 動畫
+        const imgHtml = `<img src="${imgPath}" alt="${rank}" class="rank-display-img" style="width: 120px; height: 120px; display: block; margin: 0 auto 10px; animation: popIn 0.8s ease;">`;
 
-        const displays = {
-            'S': `${imgHtml}<span class="rank-s">S-Rank</span>`,
-            'A': `${imgHtml}<span class="rank-a">A-Rank</span>`,
-            'B': `${imgHtml}<span class="rank-b">B-Rank</span>`,
-            'C': `${imgHtml}<span class="rank-c">C-Rank</span>`,
-            'D': `${imgHtml}<span class="rank-d">Target Missed</span>`
+        const rankLabels = {
+            'S': 'S-Rank ★ PERFECT!',
+            'A': 'A-Rank ★ EXCELLENT!',
+            'B': 'B-Rank ★ GOOD!',
+            'C': 'C-Rank ★ PASS',
+            'D': 'D-Rank ★ TRY AGAIN'
         };
-        return displays[rank] || '⚫ [?]';
+
+        return `${imgHtml}<span class="rank-${rank.toLowerCase()}" style="font-size: 1.5rem;">${rankLabels[rank] || 'Rank'}</span>`;
     }
 
     // 计算游戏评级
