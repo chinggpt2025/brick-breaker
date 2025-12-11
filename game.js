@@ -115,6 +115,9 @@ class BrickBreakerGame {
         // 初始化能力和成就
         this.playerStats = new PlayerStats(this);
 
+        // Boss 系統
+        this.bossManager = new BossManager(this);
+
         // 綁定事件處理器（用於後續移除）
         this._boundHandlers = {
             keydown: this._handleKeyDown.bind(this),
@@ -426,6 +429,11 @@ class BrickBreakerGame {
                     maxHits: specialType ? 1 : maxHits
                 };
             }
+        }
+
+        // 初始化 Boss（如果是 Boss 關卡）
+        if (this.bossManager) {
+            this.bossManager.initBoss(this.level);
         }
     }
 
@@ -2874,6 +2882,11 @@ class BrickBreakerGame {
         this.drawPowerups(); // 绘制道具
         this.drawShield(); // 繪製護盾
 
+        // 繪製 Boss（如果存在）
+        if (this.bossManager) {
+            this.bossManager.draw(this.ctx);
+        }
+
         // 繪製浮動文字 (最上層)
         this.drawFloatingTexts();
 
@@ -2897,6 +2910,30 @@ class BrickBreakerGame {
             this.updateActivePowerups(deltaTime); // 更新道具计时器
             this.updateShield(deltaTime); // 更新護盾計時器
             this.updateEndlessMode(deltaTime); // 更新无尽模式
+
+            // Boss 系統更新
+            if (this.bossManager && this.bossManager.currentBoss) {
+                this.bossManager.update(deltaTime);
+
+                // Boss 碰撞檢測
+                const bossResult = this.bossManager.checkCollisions(this.balls, this.paddle);
+                if (bossResult.paddleHit) {
+                    this.lives--;
+                    this.updateUI();
+                    this.showToast('🔥 被火球擊中！-1 生命', 'error');
+                    if (this.lives <= 0) {
+                        this.bossManager.onPlayerFail();
+                        this.gameOver();
+                    }
+                }
+
+                // 檢查 Boss 是否被擊敗
+                if (this.bossManager.isBossDefeated()) {
+                    this.showToast(`🏆 ${this.bossManager.getBossName()} 被擊敗！`, 'success');
+                    this.bossManager.resetDifficultyReduction();
+                    this.winGame();
+                }
+            }
 
             // 閒置掉落檢查：2秒未撞擊磚塊，掉3個隨機道具
             const timeSinceLastHit = now - this.lastBrickHitTime;
