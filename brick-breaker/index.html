@@ -348,6 +348,48 @@
             });
         }
     </script>
+    <!-- Auto-Scaler for Mobile Landscape -->
+    <script>
+        function handleMobileLandscapeScaling() {
+            const container = document.querySelector('.game-container');
+            const isLandscape = window.innerWidth > window.innerHeight;
+            const isMobile = window.innerWidth < 900 || window.innerHeight < 600;
+
+            if (isLandscape && isMobile) {
+                // Target dimensions (Desktop mode)
+                const targetWidth = 850; 
+                const targetHeight = 700; // Approx height needed for game + UI
+
+                // Calculate scale to fit HEIGHT (critical for landscape)
+                const scaleH = window.innerHeight / targetHeight;
+                const scaleW = window.innerWidth / targetWidth;
+                
+                // Use the smaller scale to fit both dimensions (contain)
+                let scale = Math.min(scaleH, scaleW);
+                
+                // Cap scale at 1.0 to prevent blowing up desktop
+                scale = Math.min(scale, 1.0);
+                
+                // Apply transform
+                container.style.transform = `scale(${scale})`;
+                
+                // Fix margins to center it effectively after scaling
+                // The scaled element takes up the same layout space, so we need negative margins or flex centering
+                // Flex centering on body (set in CSS) handles the visual centering, 
+                // but we might need to ensure the container itself doesn't overflow layout.
+                
+            } else {
+                // Reset
+                container.style.transform = '';
+            }
+        }
+
+        window.addEventListener('resize', handleMobileLandscapeScaling);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(handleMobileLandscapeScaling, 100);
+        });
+        window.addEventListener('load', handleMobileLandscapeScaling);
+    </script>
 </body>
 
 </html>
