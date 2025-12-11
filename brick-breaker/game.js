@@ -238,11 +238,13 @@ class BrickBreakerGame {
         window.removeEventListener('keydown', this._boundHandlers.keydown);
         window.removeEventListener('keyup', this._boundHandlers.keyup);
 
+        // 移除 window 觸控事件
+        window.removeEventListener('touchstart', this._boundHandlers.touchstart);
+        window.removeEventListener('touchmove', this._boundHandlers.touchmove);
+        window.removeEventListener('touchend', this._boundHandlers.touchend);
+        window.removeEventListener('touchcancel', this._boundHandlers.touchend);
+
         // 移除 canvas 級事件
-        this.canvas.removeEventListener('touchstart', this._boundHandlers.touchstart);
-        this.canvas.removeEventListener('touchmove', this._boundHandlers.touchmove);
-        this.canvas.removeEventListener('touchend', this._boundHandlers.touchend);
-        this.canvas.removeEventListener('touchcancel', this._boundHandlers.touchend);
         this.canvas.removeEventListener('mousedown', this._boundHandlers.mousedown);
         this.canvas.removeEventListener('mousemove', this._boundHandlers.mousemove);
         this.canvas.removeEventListener('mouseup', this._boundHandlers.mouseup);
