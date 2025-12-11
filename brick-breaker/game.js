@@ -115,6 +115,18 @@ class BrickBreakerGame {
         // 初始化能力和成就
         this.playerStats = new PlayerStats(this);
 
+        // 綁定事件處理器（用於後續移除）
+        this._boundHandlers = {
+            keydown: this._handleKeyDown.bind(this),
+            keyup: this._handleKeyUp.bind(this),
+            touchstart: this._handleTouchStart.bind(this),
+            touchmove: this._handleTouchMove.bind(this),
+            touchend: this._handleTouchEnd.bind(this),
+            mousedown: this._handleMouseDown.bind(this),
+            mousemove: this._handleMouseMove.bind(this),
+            mouseup: this._handleMouseUp.bind(this)
+        };
+
         // 初始化事件监听
         this.initEventListeners();
 
@@ -127,6 +139,119 @@ class BrickBreakerGame {
 
         // 开始游戏循环
         this.gameLoop();
+    }
+
+    // ========== 私有事件處理器（可移除）==========
+    _handleKeyDown(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'Left') {
+            this.keys.left = true;
+        } else if (e.key === 'ArrowRight' || e.key === 'Right') {
+            this.keys.right = true;
+        } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+            e.preventDefault();
+            const scoreCard = document.getElementById('scoreCard');
+            const settingsModal = document.getElementById('settingsModal');
+            const helpModal = document.getElementById('helpModal');
+            const isAnyModalVisible =
+                (scoreCard && !scoreCard.classList.contains('hidden')) ||
+                (settingsModal && !settingsModal.classList.contains('hidden')) ||
+                (helpModal && !helpModal.classList.contains('hidden'));
+            if (!isAnyModalVisible) {
+                this.toggleGame();
+            }
+        } else if (e.key === 'm' || e.key === 'M') {
+            this.toggleSound();
+        }
+    }
+
+    _handleKeyUp(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'Left') {
+            this.keys.left = false;
+        } else if (e.key === 'ArrowRight' || e.key === 'Right') {
+            this.keys.right = false;
+        }
+    }
+
+    _handleTouchStart(e) {
+        e.preventDefault();
+        this._isTouching = true;
+        if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
+            this.toggleGame();
+        } else if (this.gameState === 'playing') {
+            const heldBall = this.balls.find(b => b.held);
+            if (heldBall) heldBall.held = false;
+        } else if (this.gameState === 'paused') {
+            this.resumeGame();
+        }
+    }
+
+    _handleTouchMove(e) {
+        e.preventDefault();
+        if (!this._isTouching) return;
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const touchX = (touch.clientX - rect.left) * scaleX;
+        this.paddle.x = touchX - this.paddle.width / 2;
+        if (this.paddle.x < 0) this.paddle.x = 0;
+        if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
+            this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
+        }
+    }
+
+    _handleTouchEnd() {
+        this._isTouching = false;
+    }
+
+    _handleMouseDown(e) {
+        this._isMouseDown = true;
+        if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
+            this.toggleGame();
+        } else if (this.gameState === 'playing') {
+            const heldBall = this.balls.find(b => b.held);
+            if (heldBall) heldBall.held = false;
+        }
+    }
+
+    _handleMouseMove(e) {
+        if (!this._isMouseDown) return;
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        this.paddle.x = mouseX - this.paddle.width / 2;
+        if (this.paddle.x < 0) this.paddle.x = 0;
+        if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
+            this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
+        }
+    }
+
+    _handleMouseUp() {
+        this._isMouseDown = false;
+    }
+
+    // ========== 銷毀方法（清理事件監聽器）==========
+    destroy() {
+        // 移除 window 級事件
+        window.removeEventListener('keydown', this._boundHandlers.keydown);
+        window.removeEventListener('keyup', this._boundHandlers.keyup);
+
+        // 移除 canvas 級事件
+        this.canvas.removeEventListener('touchstart', this._boundHandlers.touchstart);
+        this.canvas.removeEventListener('touchmove', this._boundHandlers.touchmove);
+        this.canvas.removeEventListener('touchend', this._boundHandlers.touchend);
+        this.canvas.removeEventListener('touchcancel', this._boundHandlers.touchend);
+        this.canvas.removeEventListener('mousedown', this._boundHandlers.mousedown);
+        this.canvas.removeEventListener('mousemove', this._boundHandlers.mousemove);
+        this.canvas.removeEventListener('mouseup', this._boundHandlers.mouseup);
+        this.canvas.removeEventListener('mouseleave', this._boundHandlers.mouseup);
+
+        // 停止 BGM
+        this.sound.stopBgm();
+
+        // 標記為已銷毀
+        this._destroyed = true;
+
+        console.log('BrickBreakerGame instance destroyed, event listeners removed.');
     }
 
     initPaddle() {
@@ -410,137 +535,22 @@ class BrickBreakerGame {
     // ===== 结束无尽模式方法 =====
 
     initEventListeners() {
-        // 键盘事件
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'Left') {
-                this.keys.left = true;
-            } else if (e.key === 'ArrowRight' || e.key === 'Right') {
-                this.keys.right = true;
-            } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
-                e.preventDefault();
-                // 檢查是否有任何彈窗正在顯示中
-                const scoreCard = document.getElementById('scoreCard');
-                const settingsModal = document.getElementById('settingsModal');
-                const helpModal = document.getElementById('helpModal');
+        // 核心輸入事件（使用綁定的處理器，可被 destroy() 移除）
+        window.addEventListener('keydown', this._boundHandlers.keydown);
+        window.addEventListener('keyup', this._boundHandlers.keyup);
 
-                const isAnyModalVisible =
-                    (scoreCard && !scoreCard.classList.contains('hidden')) ||
-                    (settingsModal && !settingsModal.classList.contains('hidden')) ||
-                    (helpModal && !helpModal.classList.contains('hidden'));
+        // 觸控支援
+        this.canvas.addEventListener('touchstart', this._boundHandlers.touchstart, { passive: false });
+        this.canvas.addEventListener('touchmove', this._boundHandlers.touchmove, { passive: false });
+        this.canvas.addEventListener('touchend', this._boundHandlers.touchend);
+        this.canvas.addEventListener('touchcancel', this._boundHandlers.touchend);
 
-                // 如果有彈窗正在顯示，不觸發遊戲開始
-                if (!isAnyModalVisible) {
-                    this.toggleGame();
-                }
-            } else if (e.key === 'm' || e.key === 'M') {
-                this.toggleSound();
-            }
-        });
+        // 滑鼠支援
+        this.canvas.addEventListener('mousedown', this._boundHandlers.mousedown);
+        this.canvas.addEventListener('mousemove', this._boundHandlers.mousemove);
+        this.canvas.addEventListener('mouseup', this._boundHandlers.mouseup);
+        this.canvas.addEventListener('mouseleave', this._boundHandlers.mouseup);
 
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'Left') {
-                this.keys.left = false;
-            } else if (e.key === 'ArrowRight' || e.key === 'Right') {
-                this.keys.right = false;
-            }
-        });
-
-        // ========== 觸控支援 ==========
-        let touchStartX = 0;
-        let isTouching = false;
-
-        // 觸控開始
-        this.canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            isTouching = true;
-
-            // 點擊 canvas 觸發遊戲開始/發射球
-            if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
-                this.toggleGame();
-            } else if (this.gameState === 'playing') {
-                const heldBall = this.balls.find(b => b.held);
-                if (heldBall) {
-                    heldBall.held = false; // 發射球
-                }
-            } else if (this.gameState === 'paused') {
-                this.resumeGame();
-            }
-        }, { passive: false });
-
-        // 觸控移動 - 直接跟隨手指位置
-        this.canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (!isTouching) return;
-
-            const touch = e.touches[0];
-            const rect = this.canvas.getBoundingClientRect();
-            const scaleX = this.canvas.width / rect.width;
-
-            // 計算手指在 canvas 中的 X 位置
-            const touchX = (touch.clientX - rect.left) * scaleX;
-
-            // 將擋板中心移動到手指位置
-            this.paddle.x = touchX - this.paddle.width / 2;
-
-            // 邊界檢查
-            if (this.paddle.x < 0) {
-                this.paddle.x = 0;
-            }
-            if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
-                this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
-            }
-        }, { passive: false });
-
-        // 觸控結束
-        this.canvas.addEventListener('touchend', () => {
-            isTouching = false;
-        });
-
-        // 防止頁面滾動干擾遊戲
-        this.canvas.addEventListener('touchcancel', () => {
-            isTouching = false;
-        });
-
-        // ========== 滑鼠支援（桌面觸控板）==========
-        let isMouseDown = false;
-
-        this.canvas.addEventListener('mousedown', (e) => {
-            isMouseDown = true;
-            // 點擊也可以開始遊戲
-            if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
-                this.toggleGame();
-            } else if (this.gameState === 'playing') {
-                const heldBall = this.balls.find(b => b.held);
-                if (heldBall) {
-                    heldBall.held = false;
-                }
-            }
-        });
-
-        this.canvas.addEventListener('mousemove', (e) => {
-            if (!isMouseDown) return;
-
-            const rect = this.canvas.getBoundingClientRect();
-            const scaleX = this.canvas.width / rect.width;
-            const mouseX = (e.clientX - rect.left) * scaleX;
-
-            this.paddle.x = mouseX - this.paddle.width / 2;
-
-            if (this.paddle.x < 0) this.paddle.x = 0;
-            if (this.paddle.x + this.paddle.width > CONFIG.canvasWidth) {
-                this.paddle.x = CONFIG.canvasWidth - this.paddle.width;
-            }
-        });
-
-        this.canvas.addEventListener('mouseup', () => {
-            isMouseDown = false;
-        });
-
-        this.canvas.addEventListener('mouseleave', () => {
-            isMouseDown = false;
-        });
 
         // Overlay 點擊/觸控事件（讓手機用戶可以開始遊戲）
         const overlay = document.getElementById('overlay');
