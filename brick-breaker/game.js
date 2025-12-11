@@ -2086,22 +2086,26 @@ class BrickBreakerGame {
 
     // 取得評級顯示文字（獎牌+霓虹字母+描述）
     getRankDisplay(rank) {
+        // 使用 Assets圖片
+        const imgPath = `assets/rank_${rank.toLowerCase()}.png`;
+        const imgHtml = `<img src="${imgPath}" alt="${rank}" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 5px;">`;
+
         const displays = {
-            'S': '<span class="rank-s">🏆 [S] PERFECT!</span>',
-            'A': '<span class="rank-a">🥇 [A] EXCELLENT!</span>',
-            'B': '<span class="rank-b">🥈 [B] GOOD!</span>',
-            'C': '<span class="rank-c">🥉 [C] PASS</span>',
-            'D': '<span class="rank-d">⚫ [D] TRY AGAIN</span>'
+            'S': `${imgHtml}<span class="rank-s">S-Rank</span>`,
+            'A': `${imgHtml}<span class="rank-a">A-Rank</span>`,
+            'B': `${imgHtml}<span class="rank-b">B-Rank</span>`,
+            'C': `${imgHtml}<span class="rank-c">C-Rank</span>`,
+            'D': `${imgHtml}<span class="rank-d">Target Missed</span>`
         };
         return displays[rank] || '⚫ [?]';
     }
 
     // 计算游戏评级
     calculateRank() {
-        if (this.score >= 10000 || this.maxCombo >= 20) return 's';
-        if (this.score >= 5000 || this.maxCombo >= 15) return 'a';
-        if (this.score >= 2000 || this.maxCombo >= 10) return 'b';
-        return 'c';
+        if (this.score >= 10000 || this.maxCombo >= 20) return 'S';
+        if (this.score >= 5000 || this.maxCombo >= 15) return 'A';
+        if (this.score >= 2000 || this.maxCombo >= 10) return 'B';
+        return 'C';
     }
 
     // 显示成绩卡片
