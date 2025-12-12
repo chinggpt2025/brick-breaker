@@ -15,10 +15,39 @@ const BOSS_TYPES = {
         attackInterval: 3000, // 每 3 秒攻擊
         projectileSprite: 'assets/projectile_fireball.png',
         projectileSpeed: 4,
-        projectileSize: 45,  // 更大的火球
-        color: '#ff4444'
+        projectileSize: 45,
+        color: '#ff4444',
+        emoji: '🐲',
+        attackType: 'fire' // 火焰攻擊
+    },
+    kraken: {
+        name: '🐙 Ice Kraken',
+        hp: 12,
+        width: 140,
+        height: 110,
+        sprite: 'assets/boss_kraken.png',
+        attackInterval: 2500, // 較快的攻擊頻率
+        projectileSprite: 'assets/projectile_ice.png',
+        projectileSpeed: 3.5,
+        projectileSize: 40,
+        color: '#4fc3f7',
+        emoji: '🐙',
+        attackType: 'ice' // 冰凍攻擊（減速玩家）
+    },
+    mecha: {
+        name: '⚡ Thunder Mecha',
+        hp: 15,
+        width: 130,
+        height: 120,
+        sprite: 'assets/boss_mecha.png',
+        attackInterval: 2000, // 最快的攻擊頻率
+        projectileSprite: 'assets/projectile_lightning.png',
+        projectileSpeed: 5,
+        projectileSize: 35,
+        color: '#ffeb3b',
+        emoji: '⚡',
+        attackType: 'lightning' // 雷電攻擊（閃屏）
     }
-    // 未來可加入: kraken, mecha
 };
 
 class Boss {
@@ -293,29 +322,28 @@ class BossManager {
         this.difficultyReduction = 0; // 失敗次數導致的難度降低
     }
 
-    // 判斷是否為 Boss 關卡
+    // 判斷是否為有 Boss 實體的關卡（L14+）
     isBossLevel(level) {
-        return level >= 7 && level % 7 === 0;
+        return level >= 14 && level % 7 === 0;
     }
 
     // 取得 Boss 類型
     getBossType(level) {
         const bossIndex = Math.floor(level / 7);
-        if (bossIndex === 1) return 'dragon';
-        // 未來擴充
-        // if (bossIndex === 2) return 'kraken';
-        // if (bossIndex === 3) return 'mecha';
-        return 'dragon'; // 預設
+        if (bossIndex === 2) return 'dragon';  // L14
+        if (bossIndex === 3) return 'kraken';  // L21
+        if (bossIndex >= 4) return 'mecha';    // L28+
+        return null; // L7 (bossIndex=1) 不應該有 Boss
     }
 
     // 初始化 Boss
     initBoss(level) {
-        if (!this.isBossLevel(level)) {
+        const type = this.getBossType(level);
+        if (!type) {
             this.currentBoss = null;
             return;
         }
 
-        const type = this.getBossType(level);
         this.currentBoss = new Boss(type, CONFIG.canvasWidth);
 
         // 應用難度降低

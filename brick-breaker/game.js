@@ -124,6 +124,10 @@ class BrickBreakerGame {
         this.eliteFlashTimer = 0;        // 閃電閃屏計時器
         this.eliteSlowTimer = 0;         // 玩家減速計時器
 
+        // 遊戲通關標記
+        this.gameCompleted = false;      // 打敗 3 個 Boss 後為 true
+        this.bossDefeatedHandled = false; // 防止 Boss 擊敗 Toast 重複顯示
+
         // 綁定事件處理器（用於後續移除）
         this._boundHandlers = {
             keydown: this._handleKeyDown.bind(this),
@@ -318,7 +322,8 @@ class BrickBreakerGame {
             const percentage = (remaining / config.duration) * 100;
 
             const timerEl = document.createElement('div');
-            timerEl.className = 'powerup-timer';
+            const isLow = percentage < 30;
+            timerEl.className = 'powerup-timer' + (isLow ? ' running-low' : '');
             timerEl.innerHTML = `
                 <span class="powerup-timer-icon">${config.emoji}</span>
                 <div class="powerup-timer-bar">
@@ -454,6 +459,7 @@ class BrickBreakerGame {
         if (this.bossManager) {
             if (this.isDragonBossLevel(this.level)) {
                 this.bossManager.initBoss(this.level);
+                this.bossDefeatedHandled = false; // 重置旗標，允許新 Boss 擊敗 Toast
             } else {
                 // 非 Dragon 關卡：清除上一關的 Boss 實例
                 this.bossManager.currentBoss = null;
@@ -2182,16 +2188,46 @@ class BrickBreakerGame {
             const isDragonLevel = this.isDragonBossLevel(completedLevel);
 
             if (isDragonLevel) {
-                // 🐲 Dragon Boss 過關：+3 生命、+500 分、+1 代幣
-                if (!this.endlessMode) {
-                    const bonusLives = Math.min(3, maxLives - this.lives);
-                    this.lives = Math.min(this.lives + 3, maxLives);
-                    this.credits++; // 只有 Dragon 給代幣
-                    bonusMessage = `🐲 DRAGON 擊敗！+${bonusLives} 生命 +500 分 +1 代幣！`;
-                } else {
-                    bonusMessage = `🐲 DRAGON 擊敗！+500 分！`;
+                // 取得 Boss 類型判斷獎勵
+                const bossNum = Math.floor(completedLevel / 7);
+
+                if (bossNum === 2) {
+                    // 🐲 Dragon Boss (L14)：+3 生命、+500 分、+1 代幣
+                    if (!this.endlessMode) {
+                        const bonusLives = Math.min(3, maxLives - this.lives);
+                        this.lives = Math.min(this.lives + 3, maxLives);
+                        this.credits++;
+                        bonusMessage = `🐲 DRAGON 擊敗！+${bonusLives} 生命 +500 分 +1 代幣！`;
+                    } else {
+                        bonusMessage = `🐲 DRAGON 擊敗！+500 分！`;
+                    }
+                    this.score += 500;
+                } else if (bossNum === 3) {
+                    // 🐙 Kraken Boss (L21)：+3 生命、+600 分、+1 代幣
+                    if (!this.endlessMode) {
+                        const bonusLives = Math.min(3, maxLives - this.lives);
+                        this.lives = Math.min(this.lives + 3, maxLives);
+                        this.credits++;
+                        bonusMessage = `🐙 KRAKEN 擊敗！+${bonusLives} 生命 +600 分 +1 代幣！`;
+                    } else {
+                        bonusMessage = `🐙 KRAKEN 擊敗！+600 分！`;
+                    }
+                    this.score += 600;
+                } else if (bossNum >= 4) {
+                    // ⚡ Mecha Boss (L28)：+3 生命、+800 分、+1 代幣、遊戲通關！
+                    if (!this.endlessMode) {
+                        const bonusLives = Math.min(3, maxLives - this.lives);
+                        this.lives = Math.min(this.lives + 3, maxLives);
+                        this.credits++;
+                        bonusMessage = `⚡ MECHA 擊敗！+${bonusLives} 生命 +800 分 +1 代幣！`;
+
+                        // 🏆 遊戲通關！
+                        this.gameCompleted = true;
+                    } else {
+                        bonusMessage = `⚡ MECHA 擊敗！+800 分！`;
+                    }
+                    this.score += 800;
                 }
-                this.score += 500;
             } else {
                 // 🧱 Mini-Boss (Level 7)：+2 生命、+300 分、無代幣
                 if (!this.endlessMode) {
@@ -2214,6 +2250,45 @@ class BrickBreakerGame {
                 lifeMessage = '🎯 +100 分！';
                 this.score += 100;
             }
+        }
+
+        // 🏆 遊戲通關檢查（打敗 3 個 Boss, L28）
+        if (this.gameCompleted && !this.endlessMode) {
+            this.gameState = 'gameover'; // 停止遊戲邏輯
+            this.updateHighScore();
+            this.sound.playWin();
+
+            // 顯示通關畫面
+            const card = document.getElementById('scoreCard');
+            const cardTitle = document.getElementById('cardTitle');
+
+            // 使用 innerHTML 顯示 HTML 內容
+            cardTitle.innerHTML = `
+                <div style="font-size: 2.5rem; margin-bottom: 10px;">🏆 CONGRATULATIONS! 🏆</div>
+                <div style="font-size: 1.2rem; color: #ffd700;">你征服了所有 Boss！</div>
+                <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">
+                    🐲 Fire Dragon ✓ | 🐙 Ice Kraken ✓ | ⚡ Thunder Mecha ✓
+                </div>
+            `;
+
+            // 填入其他數據
+            document.getElementById('cardScore').textContent = Math.floor(this.score).toLocaleString();
+            document.getElementById('cardMaxCombo').textContent = this.maxCombo > 0 ? `x${this.maxCombo}` : '-';
+            document.getElementById('cardHighScore').textContent = Math.floor(this.highScore).toLocaleString();
+
+            // 顯示卡片
+            card.classList.remove('hidden');
+
+            // 綁定重玩按鈕
+            document.getElementById('playAgainBtn').onclick = () => {
+                document.getElementById('scoreCard').classList.add('hidden');
+                this.gameCompleted = false; // 重置通關狀態
+                this.resetGame();
+                this.gameState = 'idle';
+                this.showOverlay('打磚塊', '按空格鍵開始遊戲');
+            };
+
+            return; // 不繼續到下一關
         }
 
         // 增加难度：每过一关速度增加 0.2，上限為 7
@@ -3423,18 +3498,29 @@ class BrickBreakerGame {
                 if (bossResult.paddleHit) {
                     this.lives--;
                     this.updateUI();
-                    this.showToast('🔥 被火球擊中！-1 生命', 'error');
+
+                    // 根據 Boss 類型顯示不同的擊中訊息
+                    const attackMessages = {
+                        dragon: '🔥 被火球擊中！',
+                        kraken: '❄️ 被冰球擊中！',
+                        mecha: '⚡ 被雷電擊中！'
+                    };
+                    const bossType = this.bossManager.currentBoss.type || 'dragon';
+                    const msg = attackMessages[bossType] || '被攻擊！';
+                    this.showToast(`${msg}-1 生命`, 'error');
+
                     if (this.lives <= 0) {
                         this.bossManager.onPlayerFail();
                         this.gameOver();
                     }
                 }
 
-                // 檢查 Boss 是否被擊敗
-                if (this.bossManager.isBossDefeated()) {
+                // 檢查 Boss 是否被擊敗（僅顯示 Toast，不直接呼叫 winGame）
+                if (this.bossManager.isBossDefeated() && !this.bossDefeatedHandled) {
+                    this.bossDefeatedHandled = true; // 防止重複顯示
                     this.showToast(`🏆 ${this.bossManager.getBossName()} 被擊敗！`, 'success');
                     this.bossManager.resetDifficultyReduction();
-                    this.winGame();
+                    // 不直接呼叫 winGame()，讓 checkWin() 統一處理過關邏輯
                 }
             }
 
