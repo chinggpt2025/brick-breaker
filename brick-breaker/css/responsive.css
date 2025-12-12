@@ -210,10 +210,10 @@
 }
 
 /* =========================================
-   Mobile Landscape "True Desktop" Mode v1.5
-   (Ultra-Wide 1500px for smaller UI feel)
+   Mobile Landscape "Reference Desktop" Mode v1.6
+   (1280x800 Standard - Safe for all devices)
    ========================================= */
-@media screen and (max-width: 1500px) and (orientation: landscape) {
+@media screen and (max-width: 1280px) and (orientation: landscape) {
 
     /* Reset body */
     body {
@@ -223,18 +223,18 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #111;
+        background: #000;
         padding: 0;
         margin: 0;
     }
 
-    /* Force Container to ULTRA WIDE DESKTOP SIZE */
+    /* Force Container to STANDARD DESKTOP SIZE */
     .game-container {
-        width: 1500px !important;
-        /* Ultra Wide Width */
-        height: 900px !important;
-        /* Tall Height */
-        min-height: 900px !important;
+        width: 1280px !important;
+        /* Safe Standard Width */
+        height: 800px !important;
+        /* Safe Standard Height */
+        min-height: 800px !important;
         max-width: none !important;
         max-height: none !important;
 
@@ -250,17 +250,24 @@
         box-sizing: border-box;
     }
 
-    /* Ensure Stats are VISIBLE */
+    /* Ensure Stats are VISIBLE and Fixed Position inside scaled container */
     .visitor-stats {
         display: flex !important;
-        margin-bottom: 0 !important;
-        /* Adjust layout */
+        position: absolute !important;
+        left: 20px !important;
+        top: 100px !important;
+        width: 200px !important;
+        margin: 0 !important;
         transform: scale(1.0);
-        /* Normal scale */
+        z-index: 100;
+        background: rgba(0, 0, 0, 0.8) !important;
+        padding: 10px !important;
+        border-radius: 8px;
+        border: 1px solid #333;
     }
 
     #gameCanvas {
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.7);
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
     }
 
     /* Minimalist Header for Landscape */
