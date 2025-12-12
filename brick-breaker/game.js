@@ -2960,11 +2960,13 @@ class BrickBreakerGame {
                 }
             }
 
-            // 閒置掉落檢查：2秒未撞擊磚塊，掉3個隨機道具
+            // 閒置掉落檢查：3秒未撞擊磚塊，掉3個隨機道具 (持續觸發)
             const timeSinceLastHit = now - this.lastBrickHitTime;
-            if (timeSinceLastHit >= 2000 && !this.idleDropTriggered) {
+            // v1.6.1: Drop powerups every 3 seconds while idle (not just once)
+            if (timeSinceLastHit >= 3000) {
                 this.triggerIdleDrop();
-                this.idleDropTriggered = true;
+                // Reset timer so next drop is 3 seconds later (not immediately)
+                this.lastBrickHitTime = now;
             }
         }
 
