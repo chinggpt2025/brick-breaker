@@ -35,7 +35,10 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: none;
+    text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+    /* sharper edge */
+    filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.5));
+    /* better shadow than text-shadow for gradients */
     animation: gradientShift 3s ease infinite;
 }
 
@@ -43,6 +46,9 @@
     font-size: 1.2rem;
     color: var(--text-secondary);
     margin-bottom: 20px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    /* Better contrast against dark bg */
+    font-weight: 500;
 }
 
 /* Score Card Modal */
@@ -72,27 +78,32 @@
 
 .score-card-content {
     text-align: center;
-    padding: 40px;
+    padding: 25px;
+    /* Reduced from 40px */
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     border-radius: var(--radius-lg);
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     animation: fadeInUp 0.5s ease;
-    min-width: 320px;
+    min-width: 300px;
     max-width: 340px;
 }
 
 .score-card-content h2 {
-    font-size: 2.2rem;
-    margin-bottom: 25px;
+    font-size: 1.8rem;
+    /* Reduced from 2.2rem */
+    margin-bottom: 15px;
+    /* Reduced from 25px */
     color: var(--text-primary);
 }
 
 .score-card-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 8px;
+    /* Reduced from 10px */
+    margin-bottom: 12px;
+    /* Reduced from 15px */
 }
 
 .card-stat {
@@ -463,6 +474,56 @@ input:checked+.slider:before {
 #achievementsList::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
+}
+
+/* Continue Overlay */
+.continue-content h2 {
+    font-size: 3rem;
+    color: #ff4757;
+    text-shadow: 0 0 20px #ff4757;
+    animation: blink 0.5s infinite;
+    margin-bottom: 20px;
+}
+
+.continue-timer {
+    font-size: 8rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 30px #4ade80;
+    margin: 20px 0;
+    font-family: 'Courier New', monospace;
+}
+
+.continue-timer.urgent {
+    color: #ff4757;
+    text-shadow: 0 0 30px #ff4757;
+    animation: pulse 0.2s infinite;
+}
+
+.continue-cost {
+    font-size: 1.5rem;
+    color: #feca57;
+    margin-top: 20px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(254, 202, 87, 0.5);
+}
+
+.continue-hint {
+    margin-top: 30px;
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
 }
 
 .ach-item {

@@ -197,17 +197,41 @@ class Boss {
             ctx.globalAlpha = 0.5;
         }
 
-        // 繪製 Boss
+        // 繪製 Boss (圓形/有機形狀)
         if (this.sprite.complete && this.sprite.naturalWidth > 0) {
             ctx.drawImage(this.sprite, this.x, this.y, this.width, this.height);
         } else {
-            // 備用：簡單矩形 + 表情
+            // 備用：圓形光環 + 表情
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = this.color;
+
+            ctx.beginPath();
+            // 使用橢圓形更能代表龍的體型
+            ctx.ellipse(
+                this.x + this.width / 2,
+                this.y + this.height / 2,
+                this.width / 2,
+                this.height / 2,
+                0, 0, Math.PI * 2
+            );
             ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+            ctx.fill();
+
+            // 內圈漸層
+            const gradient = ctx.createRadialGradient(
+                this.x + this.width / 2, this.y + this.height / 2, 5,
+                this.x + this.width / 2, this.y + this.height / 2, this.width / 2
+            );
+            gradient.addColorStop(0, '#ff8a80');
+            gradient.addColorStop(1, this.color);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
             ctx.fillStyle = '#fff';
-            ctx.font = '40px Arial';
+            ctx.font = '50px Arial'; // 加大 emoji
             ctx.textAlign = 'center';
-            ctx.fillText('🐲', this.x + this.width / 2, this.y + this.height / 2 + 15);
+            ctx.fillText('🐲', this.x + this.width / 2, this.y + this.height / 2 + 18);
         }
 
         if (this.isHurt) {
@@ -239,15 +263,24 @@ class Boss {
             if (this.projectileSprite.complete && this.projectileSprite.naturalWidth > 0) {
                 ctx.drawImage(this.projectileSprite, p.x, p.y, p.size, p.size);
             } else {
-                // 備用：簡單圓形
+                // 備用：彗星效果 (區別於普通火球)
+                ctx.save();
+                ctx.shadowColor = '#ff4500'; // 深橘紅色
+                ctx.shadowBlur = 10;
+
                 ctx.beginPath();
                 ctx.arc(p.x + p.size / 2, p.y + p.size / 2, p.size / 2, 0, Math.PI * 2);
-                ctx.fillStyle = '#ff6600';
+                ctx.fillStyle = '#ff4500';
                 ctx.fill();
-                ctx.fillStyle = '#ffcc00';
-                ctx.font = '20px Arial';
+
+                ctx.shadowBlur = 0;
+                ctx.font = '24px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('🔥', p.x + p.size / 2, p.y + p.size / 2 + 7);
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText('☄️', p.x + p.size / 2, p.y + p.size / 2); // 使用彗星 emoji
+
+                ctx.restore();
             }
         });
     }

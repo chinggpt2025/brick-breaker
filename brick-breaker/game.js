@@ -182,10 +182,21 @@ class BrickBreakerGame {
     }
 
     _handleTouchStart(e) {
-        e.preventDefault();
+        // e.preventDefault(); // 移除這行，允許瀏覽器默認行為（如全螢幕手勢），但在 canvas 上可能會導致捲動
+        // 為了防止畫面捲動，我們在 style.css 中對 canvas 使用了 touch-action: none
+
         this._isTouching = true;
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        this.touchX = touch.clientX - rect.left;
+
+        if (this.isContinueActive) {
+            this.continueGame();
+            return;
+        }
+
         if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
-            this.toggleGame();
+            this.startGame();
         } else if (this.gameState === 'playing') {
             const heldBall = this.balls.find(b => b.held);
             if (heldBall) heldBall.held = false;
@@ -439,8 +450,8 @@ class BrickBreakerGame {
             }
         }
 
-        // 初始化 Boss（如果是 Boss 關卡）
-        if (this.bossManager) {
+        // 初始化 Dragon Boss（僅在第 14 關以後的 Boss 關卡）
+        if (this.bossManager && this.isDragonBossLevel(this.level)) {
             this.bossManager.initBoss(this.level);
         }
 
@@ -504,6 +515,11 @@ class BrickBreakerGame {
     // 检查是否为 Boss 关卡（每 7 关：第 7、14、21...）
     isBossLevel(level) {
         return level >= 7 && level % 7 === 0;
+    }
+
+    // 检查是否为 Dragon Boss 关卡（第 14、21、28...，即第 2 个 Boss 关及之后）
+    isDragonBossLevel(level) {
+        return level >= 14 && level % 7 === 0;
     }
 
     // 获取关卡图案
@@ -1088,7 +1104,7 @@ class BrickBreakerGame {
 
     resetGame() {
         this.score = 0;
-        this.lives = 5;
+        this.lives = CONFIG.lives;
         this.level = 1;
         this.combo = 0;
         this.currentBallSpeed = CONFIG.ballSpeed; // 重置球速
@@ -2003,6 +2019,16 @@ class BrickBreakerGame {
         this.sound.playGameOver();
         this.hideOverlay();
 
+        // 檢查是否可以接關 (分數夠扣 OR 有代幣)
+        if (this.score >= CONFIG.continueCost || this.credits > 0) {
+            this.startContinueCountdown();
+            return;
+        }
+
+        this.showGameOverScreen();
+    }
+
+    showGameOverScreen() {
         // 失敗回饋與動機
         this.consecutiveLosses++;
 
@@ -2033,6 +2059,92 @@ class BrickBreakerGame {
         }
 
         this.showScoreCard(title);
+        // 重置代幣 (Game Over 後重置)
+        this.credits = CONFIG.initialCredits;
+    }
+
+    // ===== 接關系統 =====
+    startContinueCountdown() {
+        this.isContinueActive = true;
+        this.continueTimer = CONFIG.continueCountdown;
+
+        const overlay = document.getElementById('continueOverlay');
+        const timerEl = document.getElementById('continueTimer');
+        const costEl = document.getElementById('continueCost');
+
+        overlay.classList.remove('hidden');
+        timerEl.classList.remove('urgent');
+
+        // 顯示費用
+        if (this.score >= CONFIG.continueCost) {
+            costEl.innerHTML = `COST: <span style="color: #ff4757">-${CONFIG.continueCost}</span> SCORE`;
+        } else {
+            costEl.innerHTML = `INSERT 1 TOKEN (<span style="color: #4ade80">${this.credits}</span> LEFT)`;
+        }
+
+        this.updateContinueUIData();
+
+        this.continueInterval = setInterval(() => {
+            this.continueTimer--;
+            this.updateContinueUIData();
+
+            if (this.continueTimer <= 3) {
+                this.sound.playBip(); // 倒數音效
+                document.getElementById('continueTimer').classList.add('urgent');
+            }
+
+            if (this.continueTimer < 0) {
+                this.stopContinueCountdown();
+                this.showGameOverScreen();
+            }
+        }, 1000);
+    }
+
+    stopContinueCountdown() {
+        this.isContinueActive = false;
+        clearInterval(this.continueInterval);
+        document.getElementById('continueOverlay').classList.add('hidden');
+    }
+
+    updateContinueUIData() {
+        document.getElementById('continueTimer').textContent = Math.max(0, this.continueTimer);
+    }
+
+    continueGame() {
+        if (!this.isContinueActive) return;
+
+        let canContinue = false;
+
+        // 優先扣分
+        if (this.score >= CONFIG.continueCost) {
+            this.score -= CONFIG.continueCost;
+            canContinue = true;
+            this.showToast(`扣除 ${CONFIG.continueCost} 分接關成功！`, 'info');
+        }
+        // 其次扣代幣
+        else if (this.credits > 0) {
+            this.credits--;
+            canContinue = true;
+            this.showToast(`使用代幣接關！剩餘: ${this.credits}`, 'warning');
+        }
+
+        if (canContinue) {
+            this.stopContinueCountdown();
+            this.lives = 3; // 恢復 3 命
+            this.resetBallAndPaddle();
+            this.gameState = 'playing';
+            this.updateUI();
+
+            // 復活無敵時間 (3秒)
+            this.paddle.isInvincible = true;
+            this.paddle.alpha = 0.5; // 半透明效果
+            setTimeout(() => {
+                this.paddle.isInvincible = false;
+                this.paddle.alpha = 1;
+            }, 3000);
+
+            this.sound.playPowerup(); // 復活音效
+        }
     }
 
     winGame() {
@@ -2057,7 +2169,11 @@ class BrickBreakerGame {
             if (!this.endlessMode) {
                 const bonusLives = Math.min(3, maxLives - this.lives);
                 this.lives = Math.min(this.lives + 3, maxLives);
-                bonusMessage = `🏆 BOSS 擊敗！+${bonusLives} 生命 +500 分！`;
+
+                // 獎勵代幣
+                this.credits++;
+
+                bonusMessage = `🏆 BOSS 擊敗！+${bonusLives} 生命 +500 分 +1 代幣！`;
             } else {
                 bonusMessage = `🏆 BOSS 擊敗！+500 分！`;
             }
@@ -2096,16 +2212,23 @@ class BrickBreakerGame {
 
         // 顯示過關訊息（評級為主，關卡為輔）
         const rankDisplay = this.getRankDisplay(this.currentRank);
-        const newBestText = isNewBest ? ' 🎉NEW BEST!' : '';
+
+        // NEW BEST 置頂且加大樣式
+        const newBestHtml = isNewBest
+            ? '<div style="font-size: 1.8rem; font-weight: 900; color: #fff; text-shadow: 0 0 10px #FFD700, 0 0 20px #FF00FF; margin-bottom: 15px; animation: pulse 0.5s infinite alternate;">🎉 NEW BEST! 🎉</div>'
+            : '';
+
         const levelSubtitle = `<span style="font-size: 0.9rem; opacity: 0.7;">🎉 第 ${completedLevel} 关完成!</span>`;
 
+        const titleContent = `${newBestHtml}${rankDisplay}`;
+
         if (wasBossLevel) {
-            this.showOverlay(`${rankDisplay}${newBestText}`, `${levelSubtitle}<br>${bonusMessage}`);
+            this.showOverlay(titleContent, `${levelSubtitle}<br>${bonusMessage}`);
         } else if (this.isBossLevel(this.level)) {
             // 下一關是 Boss 關
-            this.showOverlay(`${rankDisplay}${newBestText}`, `${levelSubtitle}<br>${lifeMessage}<br>⚠️ 下一關是 BOSS 關！`);
+            this.showOverlay(titleContent, `${levelSubtitle}<br>${lifeMessage}<br>⚠️ 下一關是 BOSS 關！`);
         } else {
-            this.showOverlay(`${rankDisplay}${newBestText}`, `${levelSubtitle}<br>${lifeMessage}按空格键进入下一关`);
+            this.showOverlay(titleContent, `${levelSubtitle}<br>${lifeMessage}按空格键进入下一关`);
         }
 
         this.gameState = 'win';
@@ -2958,7 +3081,7 @@ class BrickBreakerGame {
             this.ctx.font = '16px Arial';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
-            this.ctx.fillText('🔥', p.x, p.y);
+            this.ctx.fillText('☄️', p.x, p.y);
 
             this.ctx.restore();
         }
