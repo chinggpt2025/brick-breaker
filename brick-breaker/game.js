@@ -118,6 +118,12 @@ class BrickBreakerGame {
         // Boss 系統
         this.bossManager = new BossManager(this);
 
+        // 菁英磚塊系統 (Elite Bricks)
+        this.eliteBricks = [];           // 菁英磚塊陣列
+        this.eliteProjectiles = [];      // 菁英磚塊投射物 (火球等)
+        this.eliteFlashTimer = 0;        // 閃電閃屏計時器
+        this.eliteSlowTimer = 0;         // 玩家減速計時器
+
         // 綁定事件處理器（用於後續移除）
         this._boundHandlers = {
             keydown: this._handleKeyDown.bind(this),
@@ -437,6 +443,62 @@ class BrickBreakerGame {
         if (this.bossManager) {
             this.bossManager.initBoss(this.level);
         }
+
+        // === 菁英磚塊初始化 ===
+        // 在 Boss 關卡生成 1-3 個菁英磚塊
+        this.eliteBricks = [];
+        this.eliteProjectiles = [];
+        if (this.isBossLevel(this.level)) {
+            this.initEliteBricks();
+        }
+    }
+
+    // 初始化菁英磚塊
+    initEliteBricks() {
+        // 根據關卡決定菁英磚塊數量 (第7關1個, 第14關2個, 第21關+3個)
+        const bossNum = Math.floor(this.level / 7);
+        const eliteCount = Math.min(bossNum, 3);
+
+        // 隨機選擇位置（從可用磚塊中選）
+        const availablePositions = [];
+        for (let c = 0; c < CONFIG.brickColumnCount; c++) {
+            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+                if (this.bricks[c][r].status === 1) {
+                    availablePositions.push({ c, r });
+                }
+            }
+        }
+
+        // 洗牌並選取前 eliteCount 個
+        for (let i = availablePositions.length - 1; i > 0; i--) {
+            const j = Math.floor(this.rng.nextFloat() * (i + 1));
+            [availablePositions[i], availablePositions[j]] = [availablePositions[j], availablePositions[i]];
+        }
+
+        const selectedPositions = availablePositions.slice(0, eliteCount);
+
+        // 為每個位置創建菁英磚塊
+        selectedPositions.forEach((pos, index) => {
+            const eliteTypeKey = ELITE_BRICK_KEYS[index % ELITE_BRICK_KEYS.length];
+            const eliteType = ELITE_BRICK_TYPES[eliteTypeKey];
+            const brick = this.bricks[pos.c][pos.r];
+
+            // 標記為菁英磚塊
+            brick.isElite = true;
+            brick.eliteTypeKey = eliteTypeKey;
+            brick.eliteType = eliteType;
+            brick.hits = eliteType.hp;
+            brick.maxHits = eliteType.hp;
+            brick.attackTimer = 0;
+            brick.agitationPhase = Math.random() * Math.PI * 2; // 隨機相位避免同步
+
+            this.eliteBricks.push(brick);
+        });
+
+        // 通知玩家
+        if (eliteCount > 0) {
+            this.showToast(`⚠️ ${eliteCount} 個菁英磚塊出現！`, 'warning');
+        }
     }
 
     // 检查是否为 Boss 关卡（每 7 关：第 7、14、21...）
@@ -658,19 +720,6 @@ class BrickBreakerGame {
                     this.resumeGame();
                 }
             });
-        }
-
-        _updateMobileText() {
-            // Replace "Press Space" keys in config for future renders
-            if (CONFIG && CONFIG[this.language] && CONFIG[this.language].messages) {
-                CONFIG[this.language].messages.start = "點擊螢幕開始遊戲";
-                CONFIG[this.language].messages.pauseMsg = "點擊螢幕繼續";
-                CONFIG[this.language].messages.livesLeft = (n) => `剩餘 ${n} 條生命  點擊螢幕繼續`;
-            }
-
-            // Update currently visible elements if any
-            const overlayMsg = document.getElementById('overlayMessage');
-            if (overlayMsg) overlayMsg.textContent = "點擊螢幕開始遊戲";
         }
 
         // 设置按钮点击事件
@@ -1374,13 +1423,33 @@ class BrickBreakerGame {
 
     // 更新挡板位置
     updatePaddle() {
-        const speed = this.paddle.speed * (this.timeScale || 1);
+        let speed = this.paddle.speed * (this.timeScale || 1);
+
+        // 菁英磚塊雷擊減速效果
+        if (this.eliteSlowTimer && this.eliteSlowTimer > 0) {
+            speed *= 0.5; // 50% 減速
+        }
+
         if (this.keys.left && this.paddle.x > 0) {
             this.paddle.x -= speed;
         }
         if (this.keys.right && this.paddle.x < CONFIG.canvasWidth - this.paddle.width) {
             this.paddle.x += speed;
         }
+    }
+
+    // 更新手機觸控文字
+    _updateMobileText() {
+        // Replace "Press Space" keys in config for future renders
+        if (LANGUAGES && LANGUAGES[this.language] && LANGUAGES[this.language].messages) {
+            LANGUAGES[this.language].messages.start = "點擊螢幕開始遊戲";
+            LANGUAGES[this.language].messages.pauseMsg = "點擊螢幕繼續";
+            LANGUAGES[this.language].messages.livesLeft = (n) => `剩餘 ${n} 條生命  點擊螢幕繼續`;
+        }
+
+        // Update currently visible elements if any
+        const overlayMsg = document.getElementById('overlayMessage');
+        if (overlayMsg) overlayMsg.textContent = "點擊螢幕開始遊戲";
     }
 
     // 更新球位置（支持多球）
@@ -2653,9 +2722,270 @@ class BrickBreakerGame {
                                 break;
                         }
                     }
+
+                    // === 菁英磚塊專屬繪製 ===
+                    if (brick.isElite && brick.eliteType) {
+                        this.drawEliteBrickEffects(brick);
+                    }
                 }
             }
         }
+    }
+
+    // 繪製菁英磚塊特殊效果
+    drawEliteBrickEffects(brick) {
+        const now = performance.now();
+        const eliteType = brick.eliteType;
+
+        // === 躁動動畫計算 ===
+        const cycleTime = 3000; // 3秒一個週期
+        const phase = ((now + brick.agitationPhase * 1000) % cycleTime) / cycleTime;
+        const isAgitated = phase > 0.85; // 最後 15% 時間進入躁動
+
+        let offsetX = 0, offsetY = 0;
+
+        if (isAgitated) {
+            // 快速隨機抖動
+            offsetX = (Math.random() - 0.5) * 6;
+            offsetY = (Math.random() - 0.5) * 4;
+
+            // 躁動時播放音效（節流）
+            if (!brick.lastRumbleTime || now - brick.lastRumbleTime > 500) {
+                this.sound.playEliteRumble();
+                brick.lastRumbleTime = now;
+            }
+        }
+
+        const cx = brick.x + CONFIG.brickWidth / 2 + offsetX;
+        const cy = brick.y + CONFIG.brickHeight / 2 + offsetY;
+
+        this.ctx.save();
+
+        // === 發光邊框 ===
+        this.ctx.shadowColor = eliteType.glowColor;
+        this.ctx.shadowBlur = isAgitated ? 25 : 12;
+
+        // 重繪磚塊（帶發光）
+        this.ctx.beginPath();
+        this.ctx.roundRect(
+            brick.x + offsetX,
+            brick.y + offsetY,
+            CONFIG.brickWidth,
+            CONFIG.brickHeight,
+            4
+        );
+        this.ctx.strokeStyle = eliteType.color;
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+
+        // === 菁英磚塊 Emoji ===
+        this.ctx.shadowBlur = 0;
+        this.ctx.font = 'bold 20px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(eliteType.emoji, cx, cy);
+
+        // === HP 條 ===
+        const hpBarWidth = CONFIG.brickWidth - 10;
+        const hpBarHeight = 4;
+        const hpBarX = brick.x + 5 + offsetX;
+        const hpBarY = brick.y + CONFIG.brickHeight + 2 + offsetY;
+        const hpRatio = brick.hits / brick.maxHits;
+
+        // 背景
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        this.ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+        // 血量
+        this.ctx.fillStyle = eliteType.color;
+        this.ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
+
+        this.ctx.restore();
+    }
+
+    // 更新菁英磚塊 (攻擊計時)
+    updateEliteBricks(deltaTime) {
+        const now = performance.now();
+
+        for (let i = this.eliteBricks.length - 1; i >= 0; i--) {
+            const brick = this.eliteBricks[i];
+
+            // 如果磚塊已被消滅，從菁英列表移除
+            if (brick.status !== 1) {
+                this.eliteBricks.splice(i, 1);
+                this.score += brick.eliteType.points;
+                this.showToast(`💀 ${brick.eliteType.name} 被擊敗！+${brick.eliteType.points}`, 'success');
+                continue;
+            }
+
+            const eliteType = brick.eliteType;
+
+            // 磁力核心：持續效果（吸引球）
+            if (eliteType.attackType === 'magnet') {
+                this.applyMagnetEffect(brick);
+                continue;
+            }
+
+            // 其他類型：定時攻擊
+            if (eliteType.attackInterval > 0) {
+                brick.attackTimer += deltaTime;
+
+                // 蓄力提示 (攻擊前 500ms)
+                if (brick.attackTimer >= eliteType.attackInterval - 500 && !brick.chargePlayed) {
+                    this.sound.playEliteCharge();
+                    brick.chargePlayed = true;
+                }
+
+                if (brick.attackTimer >= eliteType.attackInterval) {
+                    brick.attackTimer = 0;
+                    brick.chargePlayed = false;
+                    this.executeEliteAttack(brick);
+                }
+            }
+        }
+    }
+
+    // 執行菁英磚塊攻擊
+    executeEliteAttack(brick) {
+        const eliteType = brick.eliteType;
+        const cx = brick.x + CONFIG.brickWidth / 2;
+        const cy = brick.y + CONFIG.brickHeight;
+
+        switch (eliteType.attackType) {
+            case 'fireball':
+                // 發射火球
+                this.eliteProjectiles.push({
+                    x: cx,
+                    y: cy,
+                    dx: (Math.random() - 0.5) * 2, // 輕微水平擺動
+                    dy: eliteType.projectileSpeed,
+                    type: 'fireball',
+                    color: eliteType.projectileColor,
+                    size: 15
+                });
+                this.sound.playEliteFireball();
+                break;
+
+            case 'lightning':
+                // 閃電攻擊：全螢幕閃光 + 玩家短暫減速
+                this.flashScreen('#74b9ff', 200);
+                this.eliteSlowTimer = eliteType.slowDuration;
+                this.sound.playLightning();
+                this.showToast('⚡ 雷擊！移動減速！', 'warning');
+                break;
+        }
+    }
+
+    // 磁力效果：吸引球向磚塊偏移
+    applyMagnetEffect(brick) {
+        const eliteType = brick.eliteType;
+        const brickCx = brick.x + CONFIG.brickWidth / 2;
+        const brickCy = brick.y + CONFIG.brickHeight / 2;
+
+        for (const ball of this.balls) {
+            if (ball.held) continue;
+
+            const dx = brickCx - ball.x;
+            const dy = brickCy - ball.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 200 && dist > 10) { // 在 200px 範圍內
+                const force = eliteType.pullStrength * (1 - dist / 200);
+                ball.x += (dx / dist) * force;
+                ball.y += (dy / dist) * force;
+            }
+        }
+    }
+
+    // 更新菁英投射物
+    updateEliteProjectiles(deltaTime) {
+        const ts = this.timeScale || 1;
+
+        for (let i = this.eliteProjectiles.length - 1; i >= 0; i--) {
+            const p = this.eliteProjectiles[i];
+
+            p.x += p.dx * ts;
+            p.y += p.dy * ts;
+
+            // 碰撞檢測：投射物 vs 擋板
+            if (p.y + p.size > this.paddle.y &&
+                p.y < this.paddle.y + this.paddle.height &&
+                p.x > this.paddle.x &&
+                p.x < this.paddle.x + this.paddle.width) {
+
+                // 擊中擋板
+                this.lives--;
+                this.updateUI();
+                this.showToast('🔥 被火球擊中！-1 生命', 'error');
+                this.eliteProjectiles.splice(i, 1);
+
+                if (this.lives <= 0) {
+                    this.gameOver();
+                }
+                continue;
+            }
+
+            // 超出畫面移除
+            if (p.y > CONFIG.canvasHeight + 20) {
+                this.eliteProjectiles.splice(i, 1);
+            }
+        }
+
+        // 更新玩家減速效果
+        if (this.eliteSlowTimer > 0) {
+            this.eliteSlowTimer -= deltaTime;
+            // 減速效果在 updatePaddle 中處理
+        }
+    }
+
+    // 繪製菁英投射物
+    drawEliteProjectiles() {
+        for (const p of this.eliteProjectiles) {
+            this.ctx.save();
+
+            // 發光效果
+            this.ctx.shadowColor = p.color;
+            this.ctx.shadowBlur = 15;
+
+            // 火球
+            this.ctx.beginPath();
+            this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            this.ctx.fillStyle = p.color;
+            this.ctx.fill();
+
+            // Emoji
+            this.ctx.shadowBlur = 0;
+            this.ctx.font = '16px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText('🔥', p.x, p.y);
+
+            this.ctx.restore();
+        }
+    }
+
+    // 閃屏效果
+    flashScreen(color, duration) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: ${color};
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity ${duration}ms ease-out;
+        `;
+        document.body.appendChild(overlay);
+
+        // 淡出
+        setTimeout(() => {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), duration);
+        }, 50);
     }
 
     // 绘制背景
@@ -2958,6 +3288,13 @@ class BrickBreakerGame {
                     this.bossManager.resetDifficultyReduction();
                     this.winGame();
                 }
+            }
+
+            // === 菁英磚塊系統更新 ===
+            if (this.eliteBricks && this.eliteBricks.length > 0) {
+                this.updateEliteBricks(deltaTime);
+                this.updateEliteProjectiles(deltaTime);
+                this.drawEliteProjectiles();
             }
 
             // 閒置掉落檢查：3秒未撞擊磚塊，掉3個隨機道具 (持續觸發)

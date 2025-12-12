@@ -221,6 +221,34 @@ class SoundManager {
         setTimeout(() => this.playTone(400, 0.1, 'triangle', 0.3), 300);
     }
 
+    // ===== 菁英磚塊音效 =====
+
+    // 躁動警告音 (低沉嗡嗡聲)
+    playEliteRumble() {
+        this.playTone(80, 0.15, 'sawtooth', 0.4);
+        setTimeout(() => this.playTone(90, 0.1, 'square', 0.3), 100);
+        setTimeout(() => this.playTone(70, 0.2, 'sawtooth', 0.5), 200);
+    }
+
+    // 蓄力音 (攻擊前上升音階)
+    playEliteCharge() {
+        this.playTone(200, 0.1, 'sine', 0.3);
+        setTimeout(() => this.playTone(300, 0.1, 'sine', 0.4), 100);
+        setTimeout(() => this.playTone(450, 0.15, 'sine', 0.5), 200);
+    }
+
+    // 火球發射音
+    playEliteFireball() {
+        this.playTone(150, 0.1, 'sawtooth', 0.6);
+        setTimeout(() => this.playTone(200, 0.08, 'square', 0.5), 50);
+        setTimeout(() => this.playTone(100, 0.15, 'sawtooth', 0.4), 100);
+    }
+
+    // 磁力嗡嗡聲
+    playEliteMagnet() {
+        this.playTone(120, 0.3, 'sine', 0.2);
+    }
+
     // 音效開關
     toggle() {
         this.enabled = !this.enabled;

@@ -67,6 +67,52 @@ const POWERUP_SPEED = 3;
 const POWERUP_SIZE = 25;
 
 // ============================
+// 菁英磚塊類型 (Elite Bricks)
+// 在特定關卡(7, 14, 21...)生成，擁有高血量和主動攻擊能力
+// ============================
+const ELITE_BRICK_TYPES = {
+    flameLord: {
+        name: '🔥 火焰領主',
+        emoji: '🔥',
+        hp: 8,
+        color: '#ff4757',
+        glowColor: '#ff6b81',
+        attackInterval: 3000, // 3秒發射一次
+        attackType: 'fireball',
+        projectileSpeed: 4,
+        projectileColor: '#ff4757',
+        points: 500
+    },
+    thunderGuard: {
+        name: '⚡ 雷霆守衛',
+        emoji: '⚡',
+        hp: 6,
+        color: '#74b9ff',
+        glowColor: '#a29bfe',
+        attackInterval: 4000, // 4秒放電一次
+        attackType: 'lightning',
+        slowDuration: 1000, // 玩家減速1秒
+        points: 400
+    },
+    magnetCore: {
+        name: '🧲 磁力核心',
+        emoji: '🧲',
+        hp: 10,
+        color: '#a855f7',
+        glowColor: '#c084fc',
+        attackInterval: 0, // 持續效果
+        attackType: 'magnet',
+        pullStrength: 0.3, // 吸引力強度
+        points: 600
+    }
+};
+
+const ELITE_BRICK_KEYS = Object.keys(ELITE_BRICK_TYPES);
+
+// 菁英磚塊出現的關卡 (每7關一次)
+const ELITE_BRICK_LEVELS = [7, 14, 21, 28, 35, 42, 49];
+
+// ============================
 // 成就定義 (Achievements)
 // ============================
 const ACHIEVEMENTS = [
