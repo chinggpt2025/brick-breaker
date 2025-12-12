@@ -359,10 +359,10 @@
 
             const isLandscape = window.innerWidth > window.innerHeight;
 
-            // True Desktop Target Dimensions (v1.5 Ultra-Hires)
-            // Increased to 1500px to effectively "Zoom Out" even more
-            const landscapeTargetW = 1500;
-            const landscapeTargetH = 900;
+            // Reference Desktop Target Dimensions (v1.6)
+            // 1280x800 is a safe standard. 
+            const landscapeTargetW = 1280;
+            const landscapeTargetH = 800;
 
             // Portrait Target Dimensions
             const portraitTargetW = 900;
@@ -373,15 +373,16 @@
                 // LANDSCAPE: Fit to Height primarily (Cinema Mode)
                 const scaleW = window.innerWidth / landscapeTargetW;
                 const scaleH = window.innerHeight / landscapeTargetH;
-                scale = Math.min(scaleW, scaleH) * 0.95;
+                scale = Math.min(scaleW, scaleH) * 0.96; // 0.96 for minimal margins
             } else {
                 // PORTRAIT: Fit to Width
                 scale = window.innerWidth / portraitTargetW;
                 scale = Math.max(scale, 0.35);
             }
 
-            // Apply Scale if needed (covering most mobiles/tablets)
-            if (window.innerWidth < 1600) {
+            // Apply Scale if window is smaller than target
+            // Use 1400 as threshold
+            if (window.innerWidth < 1400) {
                 container.style.transform = `scale(${scale})`;
             } else {
                 container.style.transform = '';
