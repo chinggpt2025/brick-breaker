@@ -451,8 +451,13 @@ class BrickBreakerGame {
         }
 
         // 初始化 Dragon Boss（僅在第 14 關以後的 Boss 關卡）
-        if (this.bossManager && this.isDragonBossLevel(this.level)) {
-            this.bossManager.initBoss(this.level);
+        if (this.bossManager) {
+            if (this.isDragonBossLevel(this.level)) {
+                this.bossManager.initBoss(this.level);
+            } else {
+                // 非 Dragon 關卡：清除上一關的 Boss 實例
+                this.bossManager.currentBoss = null;
+            }
         }
 
         // === 菁英磚塊初始化 ===
@@ -1998,6 +2003,7 @@ class BrickBreakerGame {
     }
 
     checkWin() {
+        // 檢查所有磚塊是否清除
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
             for (let r = 0; r < CONFIG.brickRowCount; r++) {
                 if (this.bricks[c][r].status === 1) {
@@ -2005,6 +2011,14 @@ class BrickBreakerGame {
                 }
             }
         }
+
+        // 如果是 Dragon Boss 關卡，還需要確認 Boss 已擊敗
+        if (this.isDragonBossLevel(this.level) && this.bossManager && this.bossManager.currentBoss) {
+            if (!this.bossManager.currentBoss.isDead) {
+                return false; // Boss 還活著，不能過關
+            }
+        }
+
         return true;
     }
 
@@ -2165,19 +2179,30 @@ class BrickBreakerGame {
         let bonusMessage = '';
 
         if (wasBossLevel) {
-            // 🏆 Boss 過關特殊獎勵：+3 生命、+500 分（無盡模式只加分）
-            if (!this.endlessMode) {
-                const bonusLives = Math.min(3, maxLives - this.lives);
-                this.lives = Math.min(this.lives + 3, maxLives);
+            const isDragonLevel = this.isDragonBossLevel(completedLevel);
 
-                // 獎勵代幣
-                this.credits++;
-
-                bonusMessage = `🏆 BOSS 擊敗！+${bonusLives} 生命 +500 分 +1 代幣！`;
+            if (isDragonLevel) {
+                // 🐲 Dragon Boss 過關：+3 生命、+500 分、+1 代幣
+                if (!this.endlessMode) {
+                    const bonusLives = Math.min(3, maxLives - this.lives);
+                    this.lives = Math.min(this.lives + 3, maxLives);
+                    this.credits++; // 只有 Dragon 給代幣
+                    bonusMessage = `🐲 DRAGON 擊敗！+${bonusLives} 生命 +500 分 +1 代幣！`;
+                } else {
+                    bonusMessage = `🐲 DRAGON 擊敗！+500 分！`;
+                }
+                this.score += 500;
             } else {
-                bonusMessage = `🏆 BOSS 擊敗！+500 分！`;
+                // 🧱 Mini-Boss (Level 7)：+2 生命、+300 分、無代幣
+                if (!this.endlessMode) {
+                    const bonusLives = Math.min(2, maxLives - this.lives);
+                    this.lives = Math.min(this.lives + 2, maxLives);
+                    bonusMessage = `🧱 MINI-BOSS 擊退！+${bonusLives} 生命 +300 分！`;
+                } else {
+                    bonusMessage = `🧱 MINI-BOSS 擊退！+300 分！`;
+                }
+                this.score += 300;
             }
-            this.score += 500;
         } else {
             // 普通關卡：+1 生命（無盡模式不加命）
             if (!this.endlessMode && this.lives < maxLives) {

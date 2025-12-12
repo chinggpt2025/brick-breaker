@@ -144,28 +144,29 @@
 /* Rank Neon Styles */
 .rank-s {
     color: #ffd700;
-    text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700, 0 0 30px #e6c200;
+    text-shadow: 0 0 5px #ffd700, 0 0 10px #e6c200;
     animation: neonPulse 1.5s infinite alternate;
-    font-weight: bold;
+    font-weight: 800;
+    -webkit-text-stroke: 1px rgba(255, 215, 0, 0.5);
 }
 
 .rank-a {
     color: #9b59b6;
-    text-shadow: 0 0 10px #9b59b6, 0 0 20px #8e44ad;
+    text-shadow: 0 0 5px #9b59b6, 0 0 10px #8e44ad;
     animation: glow 2s infinite alternate;
-    font-weight: bold;
+    font-weight: 800;
 }
 
 .rank-b {
     color: #3498db;
-    text-shadow: 0 0 10px #3498db, 0 0 20px #2980b9;
-    font-weight: bold;
+    text-shadow: 0 0 5px #3498db, 0 0 10px #2980b9;
+    font-weight: 800;
 }
 
 .rank-c {
     color: #2ecc71;
-    text-shadow: 0 0 5px #2ecc71;
-    font-weight: bold;
+    text-shadow: 0 0 3px #2ecc71;
+    font-weight: 800;
 }
 
 .rank-d {
