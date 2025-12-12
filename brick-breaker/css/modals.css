@@ -347,7 +347,7 @@
     justify-content: center;
     align-items: center;
     border-radius: var(--radius-xl);
-    z-index: 200;
+    z-index: 800;
     backdrop-filter: blur(10px);
     visibility: visible;
     opacity: 1;
@@ -469,7 +469,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 800;
     backdrop-filter: blur(5px);
 }
 
@@ -513,7 +513,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 300;
+    z-index: 800;
     backdrop-filter: blur(10px);
 }
 
@@ -644,7 +644,7 @@ input:checked+.slider:before {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 200;
+    z-index: 800;
     backdrop-filter: blur(10px);
 }
 
