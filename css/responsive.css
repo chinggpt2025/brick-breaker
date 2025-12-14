@@ -1,119 +1,107 @@
 /* ========== Responsive Styles ========== */
 
-/* Mobile Optimization (Johari P1) - Max Width 600px */
+/* Mobile Optimization (Johari P1) - Max Width 600px (Portrait mostly) */
 @media (max-width: 600px) {
     .visitor-stats {
-        position: static;
+        display: none !important; /* Hide visitor stats on mobile to save space */
+    }
+
+    /* Compact Header */
+    .game-header {
+        margin-bottom: 5px;
+        padding: 5px;
+    }
+
+    .game-header h1 {
+        font-size: 1.2rem; /* Smaller Title */
+        margin: 0;
+    }
+
+    #version {
+        font-size: 0.7rem !important;
+    }
+
+    /* Compact Stats Bar */
+    .stats {
+        gap: 4px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
         width: 100%;
-        margin-bottom: 10px;
-        padding: 8px;
-        font-size: 0.8rem;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 15px;
-        background: rgba(0, 0, 0, 0.4);
+        margin-top: 5px;
     }
 
-    .visitor-stat {
-        gap: 6px;
+    .stat-item {
+        padding: 4px 2px;
+        min-width: 0;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 6px;
     }
 
-    .visitor-label {
-        display: none;
+    .stat-label {
+        font-size: 0.6rem;
+        margin-bottom: 0;
     }
 
-    /* Boost Tap Targets for Control Buttons */
+    .stat-value {
+        font-size: 0.9rem;
+        line-height: 1.1;
+    }
+
+    /* Compact Controls Area */
+    .game-controls {
+        margin-top: 5px;
+        padding: 5px 0;
+    }
+
+    .game-controls p {
+        font-size: 0.75rem;
+        margin: 2px 0;
+        opacity: 0.8;
+    }
+
+    .game-controls p.touch-hint {
+        font-size: 0.7rem;
+        color: #4ade80;
+    }
+
+    /* Compact Control Buttons */
     .control-buttons {
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 8px;
         width: 100%;
         justify-content: center;
+        margin-top: 5px;
     }
 
     .control-buttons button {
-        font-size: 0.95rem;
-        padding: 12px 20px;
-        /* ~44px height */
-        min-height: 44px;
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        min-height: 36px; /* Smaller but still tappable */
         flex: 1 1 40%;
-        max-width: 160px;
+        max-width: 140px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
-    /* Enlarge Start Button */
+    /* Enlarge Start Button for easy tap */
     .start-btn {
-        width: 90%;
-        padding: 18px;
-        font-size: 1.4rem;
-        margin: 20px auto;
+        width: 85%;
+        padding: 15px;
+        font-size: 1.3rem;
+        margin: 15px auto;
     }
 
     /* Modals Readability */
     .overlay-content h2,
     .score-card-content h2 {
-        font-size: 2rem;
-        line-height: 1.2;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
     }
 
     .overlay-content p {
-        font-size: 1.1rem;
-        line-height: 1.5;
-        padding: 0 10px;
-    }
-
-    /* Modal Sizing & Scrolling */
-    .help-content,
-    .settings-content {
-        width: 95%;
-        max-height: 80vh;
-        padding: 20px 15px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Input Fields optimization */
-    .name-input-section {
-        flex-direction: column;
-        width: 100%;
-        gap: 12px;
-    }
-
-    .name-input-section input {
-        width: 100%;
-        padding: 12px;
-        font-size: 1.1rem;
-        min-height: 44px;
-    }
-
-    .card-btn {
-        width: 100%;
-        padding: 14px;
-        min-height: 44px;
-        font-size: 1.1rem;
-    }
-
-    /* Stats grid */
-    .stats {
-        gap: 5px;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        width: 100%;
-    }
-
-    .stat-item {
-        padding: 4px;
-        min-width: 0;
-    }
-
-    .stat-label {
-        font-size: 0.6rem;
-    }
-
-    .stat-value {
-        font-size: 0.9rem;
+        font-size: 1rem;
+        padding: 0 5px;
     }
 }
 
