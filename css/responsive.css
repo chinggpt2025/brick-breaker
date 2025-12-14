@@ -204,6 +204,10 @@
    Mobile Landscape "Reference Desktop" Mode v1.6
    (1280x800 Standard - Safe for all devices)
    ========================================= */
+/* =========================================
+   Mobile Landscape "Reference Desktop" Mode v1.7
+   (1280x800 Standard)
+   ========================================= */
 @media screen and (max-width: 1280px) and (orientation: landscape) {
 
     /* Reset body */
@@ -212,17 +216,21 @@
         width: 100vw;
         overflow: hidden;
         display: flex;
-        align-items: flex-start;
-        /* Align to Top */
-        padding-top: 15px;
-        /* Small safe margin */
+        align-items: center;
         justify-content: center;
         background: #000;
         margin: 0;
+        position: fixed;
+        /* Prevent body scroll */
     }
 
     /* Force Container to STANDARD DESKTOP SIZE */
     .game-container {
+        position: fixed;
+        /* Absolute Centering */
+        top: 50%;
+        left: 50%;
+
         width: 1280px !important;
         /* Safe Standard Width */
         height: 800px !important;
@@ -238,29 +246,10 @@
         padding: 0 !important;
         margin: 0 !important;
 
-        /* Scaling Origin - anchor to top */
-        transform-origin: center top;
+        /* JS will append scale() to this transform */
+        transform: translate(-50%, -50%);
+        transform-origin: center center;
         box-sizing: border-box;
-    }
-
-    /* Ensure Stats are VISIBLE and Fixed Position inside scaled container */
-    .visitor-stats {
-        display: flex !important;
-        position: absolute !important;
-        left: 20px !important;
-        top: 100px !important;
-        width: 200px !important;
-        margin: 0 !important;
-        transform: scale(1.0);
-        z-index: 100;
-        background: rgba(0, 0, 0, 0.8) !important;
-        padding: 10px !important;
-        border-radius: 8px;
-        border: 1px solid #333;
-    }
-
-    #gameCanvas {
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
     }
 
     /* Minimalist Header for Landscape */
@@ -287,6 +276,7 @@
         display: none;
     }
 
+    /* Stats in Landscape */
     .stats {
         gap: 8px;
     }
@@ -323,7 +313,7 @@
 
     .game-controls p {
         display: none;
-        /* Hide hints, experienced players only */
+        /* Hide hints */
     }
 
     .control-buttons {
@@ -336,9 +326,12 @@
         padding: 6px 12px;
         font-size: 0.8rem;
         min-height: 30px;
-        /* Revert to smaller buttons for landscape */
         background: rgba(0, 0, 0, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #gameCanvas {
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
     }
 
     /* Overlay adjustments */
@@ -348,5 +341,25 @@
 
     .overlay-content p {
         font-size: 1rem;
+    }
+}
+
+/* =========================================
+   Small Height Landscape (Mobile Landscape)
+   Apply Compact UI to phones in landscape ONLY
+   ========================================= */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+
+    /* Even more compact header */
+    .game-header {
+        top: 2px;
+        left: 5px;
+        padding: 2px 5px;
+    }
+
+    .control-buttons button {
+        padding: 4px 8px;
+        min-height: 28px;
+        font-size: 0.75rem;
     }
 }
