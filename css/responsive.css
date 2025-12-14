@@ -228,7 +228,7 @@
     .game-container {
         position: fixed;
         /* Absolute Centering */
-        top: 50%;
+        top: 0;
         left: 50%;
 
         width: 1280px !important;
@@ -247,8 +247,8 @@
         margin: 0 !important;
 
         /* JS will append scale() to this transform */
-        transform: translate(-50%, -50%);
-        transform-origin: center center;
+        transform: translateX(-50%);
+        transform-origin: top center;
         box-sizing: border-box;
     }
 

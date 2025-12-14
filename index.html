@@ -398,9 +398,14 @@
             // Apply Scale if window is smaller than target
             // Use 1400 as threshold
             if (window.innerWidth < 1400) {
-                container.style.transform = `scale(${scale})`;
+                // FIXED CENTERING:
+                // We use top: 0, left: 50% in CSS.
+                // So we need to translate X back by 50%, but keeping Y at 0 (top anchor).
+                container.style.transform = `translateX(-50%) scale(${scale})`;
+                container.style.transformOrigin = 'top center';
             } else {
                 container.style.transform = '';
+                container.style.transformOrigin = '';
             }
         }
 
