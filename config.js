@@ -23,8 +23,8 @@ const CONFIG = {
     brickOffsetTop: 50,
     brickOffsetLeft: 24,
     // 生命與接關系統
-    lives: 5,
-    continueCost: 1000,
+    lives: 3,              // 初始生命（從 5 降至 3）
+    continueCost: 10000,   // 接關費用（從 1000 提升至 10000）
     continueCountdown: 9,
     initialCredits: 0
 };
@@ -255,16 +255,23 @@ const LANGUAGES = {
         messages: {
             title: '阿愷諾：輝光戰記',
             start: '按空格鍵開始遊戲',
+            startTouch: '點擊螢幕開始遊戲',
             paused: '暫停',
             pauseMsg: '按空格鍵繼續',
+            pauseMsgTouch: '點擊螢幕繼續',
             gameOver: '遊戲結束',
             gameOverMsg: '再接再厲！',
             win: '恭喜過關！',
             winMsg: '準備挑戰下一關',
             loseLife: '💔 失去一條生命',
             livesLeft: (n) => `剩餘 ${n} 條生命  按空格鍵繼續`,
+            livesLeftTouch: (n) => `剩餘 ${n} 條生命  點擊螢幕繼續`,
             copied: '✅ 已複製到剪貼板！',
-            saved: '✅ 成績已儲存！'
+            saved: '✅ 成績已儲存！',
+            eliteBricksSpawn: (count) => `⚠️ ${count} 個菁英磚塊出現！`,
+            reduceMotionOn: '已開啟減少動態效果',
+            reduceMotionOff: '已關閉減少動態效果',
+            gameComplete: '🎯 你征服了所有 Boss！遊戲完結！'
         },
         powerups: {
             expand: '擴大擋板',
@@ -360,16 +367,23 @@ const LANGUAGES = {
         messages: {
             title: 'Ar-Kai-noid: Chronicles of Hui',
             start: 'Press SPACE to start',
+            startTouch: 'Tap screen to start',
             paused: 'Paused',
             pauseMsg: 'Press SPACE to continue',
+            pauseMsgTouch: 'Tap screen to continue',
             gameOver: 'Game Over',
             gameOverMsg: 'Better luck next time!',
             win: 'Level Complete!',
             winMsg: 'Get ready for next level',
             loseLife: '💔 Life lost',
             livesLeft: (n) => `${n} lives left  Press SPACE`,
+            livesLeftTouch: (n) => `${n} lives left  Tap to continue`,
             copied: '✅ Copied to clipboard!',
-            saved: '✅ Score saved!'
+            saved: '✅ Score saved!',
+            eliteBricksSpawn: (count) => `⚠️ ${count} Elite Bricks appeared!`,
+            reduceMotionOn: 'Reduce motion enabled',
+            reduceMotionOff: 'Reduce motion disabled',
+            gameComplete: '🎯 You have conquered all Bosses! Game Complete!'
         },
         powerups: {
             expand: 'Expand Paddle',
@@ -445,11 +459,15 @@ const LANGUAGES = {
 let currentLang = localStorage.getItem('brickBreakerLang') || 'zh-TW';
 
 // 翻譯函數
-function t(key) {
+function t(key, ...args) {
     const keys = key.split('.');
     let value = LANGUAGES[currentLang];
     for (const k of keys) {
         value = value?.[k];
+    }
+    // If the value is a function (e.g., messages.livesLeft), call it with the provided arguments
+    if (typeof value === 'function') {
+        return value(...args);
     }
     return value || key;
 }

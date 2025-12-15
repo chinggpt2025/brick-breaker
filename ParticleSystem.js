@@ -4,7 +4,7 @@
  */
 
 class ParticlePool {
-    constructor(size = 200) {
+    constructor(size = 500) { // Increased from 200 to 500 for extreme scenarios (multiball + explosions)
         this.pool = [];
         this.activeParticles = [];
         this.size = size;

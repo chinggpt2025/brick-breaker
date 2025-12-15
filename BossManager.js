@@ -146,12 +146,26 @@ class Boss {
         if (this.hp <= 0) {
             this.hp = 0;
             this.isDead = true;
+
+            // ✅ FIX I1: Boss 死亡時主動觸發通關檢測
+            // 使用 setTimeout 確保狀態更新完成後再檢查
+            setTimeout(() => {
+                if (this.game && this.game.checkWin && this.game.checkWin()) {
+                    this.game.winGame();
+                }
+            }, 100);
         }
     }
 
     // 檢測球是否擊中 Boss
     checkBallCollision(ball) {
         if (this.isDead) return false;
+
+        // ✅ FIX M2: 防止多球同時擊中造成重複傷害
+        const now = Date.now();
+        if (this.lastDamageTime && now - this.lastDamageTime < 50) {
+            return false; // 50ms 冷卻時間
+        }
 
         const ballLeft = ball.x - ball.radius;
         const ballRight = ball.x + ball.radius;
@@ -166,6 +180,7 @@ class Boss {
         if (ballRight > bossLeft && ballLeft < bossRight &&
             ballBottom > bossTop && ballTop < bossBottom) {
             this.takeDamage(1);
+            this.lastDamageTime = now;
             return true; // 擊中
         }
         return false;

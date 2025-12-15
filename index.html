@@ -366,54 +366,10 @@
             });
         }
     </script>
-    <!-- Auto-Scaler (Landscape & Portrait) -->
+    <!-- Mobile Scaling Manager Initialization -->
     <script>
-        function handleMobileScaling() {
-            const container = document.querySelector('.game-container');
-            if (!container) return;
-
-            const isLandscape = window.innerWidth > window.innerHeight;
-
-            // Reference Desktop Target Dimensions (v1.6)
-            // 1280x800 is a safe standard. 
-            const landscapeTargetW = 1280;
-            const landscapeTargetH = 800;
-
-            // Portrait Target Dimensions
-            const portraitTargetW = 900;
-
-            let scale = 1;
-
-            if (isLandscape) {
-                // LANDSCAPE: Fit to Height primarily (Cinema Mode)
-                const scaleW = window.innerWidth / landscapeTargetW;
-                const scaleH = window.innerHeight / landscapeTargetH;
-                scale = Math.min(scaleW, scaleH) * 0.96; // 0.96 for minimal margins
-            } else {
-                // PORTRAIT: Fit to Width
-                scale = window.innerWidth / portraitTargetW;
-                scale = Math.max(scale, 0.35);
-            }
-
-            // Apply Scale if window is smaller than target
-            // Use 1400 as threshold
-            if (window.innerWidth < 1400) {
-                // FIXED CENTERING:
-                // We use top: 0, left: 50% in CSS.
-                // So we need to translate X back by 50%, but keeping Y at 0 (top anchor).
-                container.style.transform = `translateX(-50%) scale(${scale})`;
-                container.style.transformOrigin = 'top center';
-            } else {
-                container.style.transform = '';
-                container.style.transformOrigin = '';
-            }
-        }
-
-        window.addEventListener('resize', handleMobileScaling);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(handleMobileScaling, 200);
-        });
-        window.addEventListener('load', handleMobileScaling);
+        // Initialize mobile scaling manager (defined in game.js)
+        const mobileScaler = new MobileScalingManager();
     </script>
 </body>
 

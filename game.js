@@ -13,6 +13,72 @@ const SUPABASE_URL = 'https://ruqsvvefpemqptnsyymj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1cXN2dmVmcGVtcXB0bnN5eW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNDg5ODMsImV4cCI6MjA4MDgyNDk4M30.j9rRy7bgkKh50bhDdkil1UoP1kBAQFDTVgfkHnViH4Q';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ===========================
+// Mobile Scaling Manager
+// ===========================
+class MobileScalingManager {
+    constructor() {
+        this.container = document.querySelector('.game-container');
+        this.landscapeTargetW = 1280;
+        this.landscapeTargetH = 800;
+        this.portraitTargetW = 900;
+        this.scaleThreshold = 1400;
+
+        this._boundHandleResize = this.handleResize.bind(this);
+        this._boundHandleOrientationChange = this.handleOrientationChange.bind(this);
+
+        this.init();
+    }
+
+    init() {
+        if (!this.container) return;
+
+        window.addEventListener('resize', this._boundHandleResize);
+        window.addEventListener('orientationchange', this._boundHandleOrientationChange);
+        window.addEventListener('load', this._boundHandleResize);
+
+        // Initial scaling
+        this.handleResize();
+    }
+
+    handleResize() {
+        if (!this.container) return;
+
+        const isLandscape = window.innerWidth > window.innerHeight;
+        let scale = 1;
+
+        if (isLandscape) {
+            // LANDSCAPE: Fit to Height primarily (Cinema Mode)
+            const scaleW = window.innerWidth / this.landscapeTargetW;
+            const scaleH = window.innerHeight / this.landscapeTargetH;
+            scale = Math.min(scaleW, scaleH) * 0.96; // 0.96 for minimal margins
+        } else {
+            // PORTRAIT: Fit to Width
+            scale = window.innerWidth / this.portraitTargetW;
+            scale = Math.max(scale, 0.35);
+        }
+
+        // Apply Scale if window is smaller than target
+        if (window.innerWidth < this.scaleThreshold) {
+            this.container.style.transform = `translateX(-50%) scale(${scale})`;
+            this.container.style.transformOrigin = 'top center';
+        } else {
+            this.container.style.transform = '';
+            this.container.style.transformOrigin = '';
+        }
+    }
+
+    handleOrientationChange() {
+        // Delay to allow browser to complete orientation change
+        setTimeout(() => this.handleResize(), 200);
+    }
+
+    destroy() {
+        window.removeEventListener('resize', this._boundHandleResize);
+        window.removeEventListener('orientationchange', this._boundHandleOrientationChange);
+    }
+}
+
 // 种子随机数生成器 (Linear Congruential Generator)
 class SeededRNG {
     constructor(seed) {
@@ -531,7 +597,7 @@ class BrickBreakerGame {
 
         // 通知玩家
         if (eliteCount > 0) {
-            this.showToast(`⚠️ ${eliteCount} 個菁英磚塊出現！`, 'warning');
+            this.showToast(t('messages.eliteBricksSpawn', eliteCount), 'warning');
         }
     }
 
@@ -635,7 +701,7 @@ class BrickBreakerGame {
         localStorage.setItem('brickBreaker_reduceMotion', enabled.toString());
 
         // 可選：顯示 Toast 通知
-        const message = enabled ? '已開啟減少動態效果' : '已關閉減少動態效果';
+        const message = enabled ? t('messages.reduceMotionOn') : t('messages.reduceMotionOff');
         this.showToast(message, 'info');
     }
 
@@ -1072,10 +1138,12 @@ class BrickBreakerGame {
             // 根據當前遊戲狀態更新 overlay
             if (this.gameState === 'idle') {
                 overlayTitle.textContent = t('messages.title');
-                overlayMessage.textContent = t('messages.start');
+                const startKey = this._isTouchDevice ? 'messages.startTouch' : 'messages.start';
+                overlayMessage.textContent = t(startKey);
             } else if (this.gameState === 'paused') {
                 overlayTitle.textContent = t('messages.paused');
-                overlayMessage.textContent = t('messages.pauseMsg');
+                const pauseKey = this._isTouchDevice ? 'messages.pauseMsgTouch' : 'messages.pauseMsg';
+                overlayMessage.textContent = t(pauseKey);
             }
             // 其他狀態在各自的方法中處理
         }
@@ -1178,7 +1246,7 @@ class BrickBreakerGame {
         // 重置无尽模式计时器
         this.endlessTimer = 0;
 
-        // 重置遊戲通關狀態（修復通關後無法重新開始的問題）
+        // ✅ FIX: 重置遊戲通關狀態（修復通關後無法重新開始的問題）
         this.gameCompleted = false;
         this.bossDefeatedHandled = false;
         this.missCount = 0;
@@ -1517,16 +1585,8 @@ class BrickBreakerGame {
 
     // 更新手機觸控文字
     _updateMobileText() {
-        // Replace "Press Space" keys in config for future renders
-        if (LANGUAGES && LANGUAGES[this.language] && LANGUAGES[this.language].messages) {
-            LANGUAGES[this.language].messages.start = "點擊螢幕開始遊戲";
-            LANGUAGES[this.language].messages.pauseMsg = "點擊螢幕繼續";
-            LANGUAGES[this.language].messages.livesLeft = (n) => `剩餘 ${n} 條生命  點擊螢幕繼續`;
-        }
-
-        // Update currently visible elements if any
-        const overlayMsg = document.getElementById('overlayMessage');
-        if (overlayMsg) overlayMsg.textContent = "點擊螢幕開始遊戲";
+        // Set a flag indicating this is a touch device
+        this._isTouchDevice = true;
     }
 
     // 更新球位置（支持多球）
@@ -1588,7 +1648,8 @@ class BrickBreakerGame {
                         this.sound.playLoseLife();
                         this.resetBallAndPaddle();
                         this.gameState = 'paused';
-                        this.showOverlay(`💔 失去一条生命`, `剩余 ${this.lives} 条生命  按空格键继续`);
+                        const msgKey = this._isTouchDevice ? 'messages.livesLeftTouch' : 'messages.livesLeft';
+                        this.showOverlay(t('messages.loseLife'), t(msgKey, this.lives));
                     }
                 }
                 continue;
@@ -2230,7 +2291,14 @@ class BrickBreakerGame {
         this.currentRank = this.calculateRank(completedLevel, this.score, this.maxCombo, this.missCount);
         const isNewBest = this.saveBestRank(completedLevel, this.currentRank);
 
-        this.level++;
+        // ✅ FIX: 先檢查是否通關，避免關卡溢出到 29
+        const bossNum = Math.floor(completedLevel / 7);
+        const willComplete = (bossNum >= 4 && !this.endlessMode);
+
+        // 只有非通關情況才增加關卡
+        if (!willComplete) {
+            this.level++;
+        }
         this.updateHighScore();
 
         // 過關獎勵
@@ -2268,8 +2336,9 @@ class BrickBreakerGame {
                     }
                     this.score += 600;
                 } else if (bossNum >= 4) {
-                    // ⚡ Mecha Boss (L28)：+3 生命、+800 分、+1 代幣、遊戲通關！
+                    // ⚡ Mecha Boss (L28):獎勵和通關檢查
                     if (!this.endlessMode) {
+                        // ✅ 正常模式：通關！
                         const bonusLives = Math.min(3, maxLives - this.lives);
                         this.lives = Math.min(this.lives + 3, maxLives);
                         this.credits++;
@@ -2278,7 +2347,8 @@ class BrickBreakerGame {
                         // 🏆 遊戲通關！
                         this.gameCompleted = true;
                     } else {
-                        bonusMessage = `⚡ MECHA 擊敗！+800 分！`;
+                        // ✅ FIX I3: 無盡模式：L28 後繼續遊戲，不通關
+                        bonusMessage = `⚡ MECHA 擊敗！+800 分！遊戲繼續...`;
                     }
                     this.score += 800;
                 }
@@ -2306,20 +2376,27 @@ class BrickBreakerGame {
             }
         }
 
+
         // 🏆 遊戲通關檢查（打敗 3 個 Boss, L28）
         if (this.gameCompleted && !this.endlessMode) {
             this.gameState = 'gameover'; // 停止遊戲邏輯
             this.updateHighScore();
             this.sound.playWin();
 
+            // ✅ FIX M1: 清理 Boss 實例
+            if (this.bossManager) {
+                this.bossManager.currentBoss = null;
+            }
+
             // 顯示通關畫面
             const card = document.getElementById('scoreCard');
             const cardTitle = document.getElementById('cardTitle');
 
-            // 使用 innerHTML 顯示 HTML 內容
+            // ✅ FIX: 使用 i18n 翻譯，移除硬編碼中文
+            const completionMsg = t('messages.gameComplete') || '你征服了所有 Boss！';
             cardTitle.innerHTML = `
                 <div style="font-size: 2.5rem; margin-bottom: 10px;">🏆 CONGRATULATIONS! 🏆</div>
-                <div style="font-size: 1.2rem; color: #ffd700;">你征服了所有 Boss！</div>
+                <div style="font-size: 1.2rem; color: #ffd700;">${completionMsg}</div>
                 <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">
                     🐲 Fire Dragon ✓ | 🐙 Ice Kraken ✓ | ⚡ Thunder Mecha ✓
                 </div>
