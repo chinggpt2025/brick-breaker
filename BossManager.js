@@ -62,6 +62,7 @@ class Boss {
         this.x = (canvasWidth - config.width) / 2;
         this.y = 30;
         this.color = config.color;
+        this.emoji = config.emoji; // 保存不同 Boss 的 emoji
 
         // 攻擊設定
         this.attackInterval = config.attackInterval;
@@ -260,7 +261,7 @@ class Boss {
             ctx.fillStyle = '#fff';
             ctx.font = '50px Arial'; // 加大 emoji
             ctx.textAlign = 'center';
-            ctx.fillText('🐲', this.x + this.width / 2, this.y + this.height / 2 + 18);
+            ctx.fillText(this.emoji, this.x + this.width / 2, this.y + this.height / 2 + 18);
         }
 
         if (this.isHurt) {

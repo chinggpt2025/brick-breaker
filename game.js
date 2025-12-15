@@ -1159,6 +1159,12 @@ class BrickBreakerGame {
         // 重置无尽模式计时器
         this.endlessTimer = 0;
 
+        // 重置遊戲通關狀態（修復通關後無法重新開始的問題）
+        this.gameCompleted = false;
+        this.bossDefeatedHandled = false;
+        this.missCount = 0;
+        this.consecutiveLosses = 0;
+
         this.hideScoreCard();
         this.updateUI();
     }
