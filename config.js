@@ -192,6 +192,36 @@ const BGM_THEMES = {
             // 重低音結尾
             { freq: 82, dur: 4 }, { freq: 0, dur: 2 }, { freq: 65, dur: 4 }
         ]
+    },
+    // 🌙 神秘風格 - 適合中期關卡
+    mystic: {
+        bpm: 100,
+        notes: [
+            // 空靈開場
+            { freq: 220, dur: 8 }, { freq: 0, dur: 2 }, { freq: 277, dur: 4 }, { freq: 330, dur: 4 },
+            { freq: 440, dur: 8 }, { freq: 0, dur: 4 },
+            // 神秘旋律
+            { freq: 349, dur: 4 }, { freq: 392, dur: 2 }, { freq: 440, dur: 2 }, { freq: 523, dur: 8 },
+            { freq: 440, dur: 4 }, { freq: 349, dur: 4 }, { freq: 330, dur: 8 },
+            // 回旋段落
+            { freq: 262, dur: 2 }, { freq: 294, dur: 2 }, { freq: 330, dur: 2 }, { freq: 392, dur: 2 },
+            { freq: 440, dur: 4 }, { freq: 0, dur: 2 }, { freq: 330, dur: 6 }
+        ]
+    },
+    // 🏆 勝利凱旋 - 適合高分時刻
+    triumph: {
+        bpm: 140,
+        notes: [
+            // 凱旋號角
+            { freq: 392, dur: 2 }, { freq: 523, dur: 2 }, { freq: 659, dur: 4 }, { freq: 784, dur: 8 },
+            { freq: 659, dur: 4 }, { freq: 523, dur: 4 },
+            // 勝利主題
+            { freq: 440, dur: 2 }, { freq: 523, dur: 2 }, { freq: 659, dur: 2 }, { freq: 784, dur: 2 },
+            { freq: 880, dur: 8 }, { freq: 0, dur: 2 },
+            // 歡慶段落
+            { freq: 659, dur: 2 }, { freq: 784, dur: 2 }, { freq: 880, dur: 4 }, { freq: 784, dur: 2 },
+            { freq: 659, dur: 2 }, { freq: 523, dur: 8 }
+        ]
     }
 };
 

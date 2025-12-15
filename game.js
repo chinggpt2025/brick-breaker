@@ -418,9 +418,14 @@ class BrickBreakerGame {
         this.bricks = [];
         const pattern = this.getLevelPattern(this.level);
 
+        // Boss 關卡增加 2 層磚塊
+        const actualRowCount = this.isBossLevel(this.level)
+            ? CONFIG.brickRowCount + 2
+            : CONFIG.brickRowCount;
+
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
             this.bricks[c] = [];
-            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+            for (let r = 0; r < actualRowCount; r++) {
                 const x = c * (CONFIG.brickWidth + CONFIG.brickPadding) + CONFIG.brickOffsetLeft;
                 const y = r * (CONFIG.brickHeight + CONFIG.brickPadding) + CONFIG.brickOffsetTop;
 
@@ -1110,8 +1115,12 @@ class BrickBreakerGame {
 
         if (this.isBossLevel(this.level)) {
             theme = 'boss';
+        } else if (this.level >= 20) {
+            theme = 'triumph'; // 20關以後 - 勝利凱旋
+        } else if (this.level >= 15) {
+            theme = 'fast'; // 15-19關 - 快節奏
         } else if (this.level >= 10) {
-            theme = 'fast'; // 10關以後這麽快
+            theme = 'mystic'; // 10-14關 - 神秘風格
         } else {
             // 1-9 關循環：Normal -> Journey -> Adventure
             const cycle = ['normal', 'journey', 'adventure'];
@@ -1131,10 +1140,20 @@ class BrickBreakerGame {
         this.gameState = 'playing';
         this.hideOverlay();
 
-        // 恢復 BGM
+        // 恢復 BGM（與 startGame 邏輯一致）
         let theme = 'normal';
-        if (this.isBossLevel(this.level)) theme = 'boss';
-        else if (this.level >= 4) theme = 'fast';
+        if (this.isBossLevel(this.level)) {
+            theme = 'boss';
+        } else if (this.level >= 20) {
+            theme = 'triumph';
+        } else if (this.level >= 15) {
+            theme = 'fast';
+        } else if (this.level >= 10) {
+            theme = 'mystic';
+        } else {
+            const cycle = ['normal', 'journey', 'adventure'];
+            theme = cycle[(this.level - 1) % 3];
+        }
         this.sound.startBgm(theme);
     }
 
@@ -2042,7 +2061,8 @@ class BrickBreakerGame {
     checkWin() {
         // 檢查所有磚塊是否清除
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
-            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+            // 使用實際陣列長度（Boss 關卡可能有額外 2 層）
+            for (let r = 0; r < this.bricks[c].length; r++) {
                 if (this.bricks[c][r].status === 1) {
                     return false;
                 }
