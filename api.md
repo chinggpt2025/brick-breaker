@@ -197,6 +197,8 @@ new BrickBreakerGame()
 | `showGameOverScreen()` | 顯示失敗畫面 |
 | `showOverlay(title, message)` | 顯示覆蓋層 |
 | `updateAllUI()` | 更新所有 i18n 文字 |
+| `escapeHtml(text)` | 防止 XSS 的 HTML 轉義 |
+| `updateSoundButton()` | 更新音效按鈕文字狀態 |
 
 ---
 
