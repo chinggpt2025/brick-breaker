@@ -114,6 +114,7 @@ new Boss(type, canvasWidth)
 | `hp` | number | 當前血量 |
 | `maxHp` | number | 最大血量 |
 | `x`, `y` | number | 位置 |
+| `emoji` | string | Boss 表情符號 (🐲/🐙/⚡) |
 | `projectiles` | array | 投射物陣列 |
 
 ### 公開方法

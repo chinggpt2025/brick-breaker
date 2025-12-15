@@ -16,7 +16,7 @@
 | `ballRadius` | number | 10 | 球半徑 |
 | `ballSpeed` | number | 4.6 | 初始球速 |
 | `maxBallSpeed` | number | 7 | 最大球速 |
-| `brickRowCount` | number | 5 | 磚塊行數 |
+| `brickRowCount` | number | 5 | 磚塊行數（Boss 關 +2） |
 | `brickColumnCount` | number | 10 | 磚塊列數 |
 | `brickWidth` | number | 68 | 磚塊寬度 |
 | `brickHeight` | number | 25 | 磚塊高度 |
@@ -81,6 +81,20 @@ idle → playing ↔ paused → gameover / win
   { main: '#54a0ff', light: '#74b3ff', dark: '#2e86de' }  // 深藍
 ]
 ```
+
+---
+
+## BGM 主題 (BGM_THEMES)
+
+| 鍵 | BPM | 風格 | 使用關卡 |
+|----|-----|------|----------|
+| `normal` | 120 | 歡快 | 1-3, 7-9 |
+| `journey` | 125 | 冒險 | 2-4, 8 |
+| `adventure` | 130 | 探索 | 3-5, 9 |
+| `mystic` | 100 | 神秘空靈 | 10-14 |
+| `fast` | 150 | 快節奏 | 15-19 |
+| `triumph` | 140 | 勝利凱旋 | 20+ |
+| `boss` | 180 | 緊張威脅 | Boss 關卡 |
 
 ---
 
