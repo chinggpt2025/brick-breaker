@@ -23,8 +23,8 @@
 | `brickPadding` | number | 8 | 磚塊間距 |
 | `brickOffsetTop` | number | 50 | 磚塊上方偏移 |
 | `brickOffsetLeft` | number | 24 | 磚塊左方偏移 |
-| `lives` | number | 5 | 初始生命數 |
-| `continueCost` | number | 1000 | 接關所需分數 |
+| `lives` | number | 3 | 初始生命數（已從 5 降至 3）|
+| `continueCost` | number | 10000 | 接關所需分數（已從 1000 提升至 10000）|
 | `continueCountdown` | number | 9 | 接關倒數秒數 |
 | `initialCredits` | number | 0 | 初始代幣數 |
 
@@ -62,8 +62,8 @@ idle → playing ↔ paused → gameover / win
 
 | 條件 | 說明 |
 |------|------|
-| 觸發 | `lives === 0` 且 `score >= continueCost` 或 `credits > 0` |
-| 費用 | 扣除 1000 分數，或使用 1 代幣 |
+| 觸發 | `lives === 0` 且 `score >= 10000` 或 `credits > 0` |
+| 費用 | 優先扣除 10000 分數，其次使用 1 代幣 |
 | 倒數 | 9 秒內按空格鍵或點擊螢幕 |
 | 復活 | 恢復 3 條生命 + 3 秒無敵時間 |
 | 超時 | 顯示 Game Over 成績卡 |
@@ -186,6 +186,22 @@ idle → playing ↔ paused → gameover / win
   totalScore: number         // 累計總分
 }
 ```
+
+---
+
+## 多語言翻譯鍵 (i18n Messages)
+
+新增的翻譯鍵（v1.7）：
+
+| 鍵 | 類型 | 說明 |
+|----|------|------|
+| `messages.startTouch` | string | 手機端開始訊息 |
+| `messages.pauseMsgTouch` | string | 手機端暫停訊息 |
+| `messages.livesLeftTouch` | function(n) | 手機端生命提示 |
+| `messages.eliteBricksSpawn` | function(count) | 菁英磚塊警告 |
+| `messages.reduceMotionOn` | string | 動態效果開啟 |
+| `messages.reduceMotionOff` | string | 動態效果關閉 |
+| `messages.gameComplete` | string | 遊戲通關訊息（L28）|
 
 ---
 

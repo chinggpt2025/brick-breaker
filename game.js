@@ -1046,10 +1046,8 @@ class BrickBreakerGame {
         if (!this.sound.bgmEnabled) {
             this.sound.stopBgm();
         } else if (this.gameState === 'playing') {
-            // 如果開啟且正在遊戲中，重新開始 BGM
-            let theme = 'normal';
-            if (this.isBossLevel(this.level)) theme = 'boss';
-            else if (this.level >= 4) theme = 'fast';
+            // ✅ 使用統一的 BGM 選擇邏輯
+            let theme = this._getBgmThemeForLevel(this.level);
             this.sound.startBgm(theme);
         }
     }
@@ -1178,21 +1176,42 @@ class BrickBreakerGame {
         this.sound.init();
         this.sound.playStart();
 
-        // 播放 BGM
+        // 播放 BGM - 區間內不重複系統
         let theme = 'normal';
 
         if (this.isBossLevel(this.level)) {
             theme = 'boss';
-        } else if (this.level >= 20) {
-            theme = 'triumph'; // 20關以後 - 勝利凱旋
-        } else if (this.level >= 15) {
-            theme = 'fast'; // 15-19關 - 快節奏
-        } else if (this.level >= 10) {
-            theme = 'mystic'; // 10-14關 - 神秘風格
         } else {
-            // 1-9 關循環：Normal -> Journey -> Adventure
-            const cycle = ['normal', 'journey', 'adventure'];
-            theme = cycle[(this.level - 1) % 3];
+            // ✅ 新 BGM 系統：每區間 6 關使用不同順序的 6 種主題
+            // 前期 L1-6:  normal → journey → adventure → mystic → fast → triumph
+            // 中期 L8-13: triumph → fast → mystic → adventure → journey → normal
+            // 後期 L15-20: fast → triumph → journey → mystic → normal → adventure
+            // 終盤 L22-27: mystic → adventure → normal → triumph → journey → fast
+            const tierThemes = {
+                1: ['normal', 'journey', 'adventure', 'mystic', 'fast', 'triumph'],      // L1-6
+                2: ['triumph', 'fast', 'mystic', 'adventure', 'journey', 'normal'],      // L8-13
+                3: ['fast', 'triumph', 'journey', 'mystic', 'normal', 'adventure'],      // L15-20
+                4: ['mystic', 'adventure', 'normal', 'triumph', 'journey', 'fast']       // L22-27
+            };
+
+            let tier, indexInTier;
+            if (this.level <= 6) {
+                tier = 1;
+                indexInTier = this.level - 1;
+            } else if (this.level <= 13) {
+                tier = 2;
+                indexInTier = this.level - 8;
+            } else if (this.level <= 20) {
+                tier = 3;
+                indexInTier = this.level - 15;
+            } else {
+                tier = 4;
+                indexInTier = this.level - 22;
+            }
+
+            // 確保 index 在有效範圍內
+            indexInTier = Math.max(0, Math.min(5, indexInTier));
+            theme = tierThemes[tier][indexInTier];
         }
 
         this.sound.startBgm(theme);
@@ -1208,21 +1227,37 @@ class BrickBreakerGame {
         this.gameState = 'playing';
         this.hideOverlay();
 
-        // 恢復 BGM（與 startGame 邏輯一致）
-        let theme = 'normal';
-        if (this.isBossLevel(this.level)) {
-            theme = 'boss';
-        } else if (this.level >= 20) {
-            theme = 'triumph';
-        } else if (this.level >= 15) {
-            theme = 'fast';
-        } else if (this.level >= 10) {
-            theme = 'mystic';
-        } else {
-            const cycle = ['normal', 'journey', 'adventure'];
-            theme = cycle[(this.level - 1) % 3];
-        }
+        // 恢復 BGM - 區間內不重複系統（與 startGame 一致）
+        let theme = this._getBgmThemeForLevel(this.level);
         this.sound.startBgm(theme);
+    }
+
+    // ✅ 提取 BGM 主題選擇邏輯，供 startGame/resumeGame/toggleBgm 共用
+    _getBgmThemeForLevel(level) {
+        if (this.isBossLevel(level)) {
+            return 'boss';
+        }
+
+        const tierThemes = {
+            1: ['normal', 'journey', 'adventure', 'mystic', 'fast', 'triumph'],
+            2: ['triumph', 'fast', 'mystic', 'adventure', 'journey', 'normal'],
+            3: ['fast', 'triumph', 'journey', 'mystic', 'normal', 'adventure'],
+            4: ['mystic', 'adventure', 'normal', 'triumph', 'journey', 'fast']
+        };
+
+        let tier, indexInTier;
+        if (level <= 6) {
+            tier = 1; indexInTier = level - 1;
+        } else if (level <= 13) {
+            tier = 2; indexInTier = level - 8;
+        } else if (level <= 20) {
+            tier = 3; indexInTier = level - 15;
+        } else {
+            tier = 4; indexInTier = level - 22;
+        }
+
+        indexInTier = Math.max(0, Math.min(5, indexInTier));
+        return tierThemes[tier][indexInTier];
     }
 
     resetGame() {
@@ -2416,7 +2451,8 @@ class BrickBreakerGame {
                 this.gameCompleted = false; // 重置通關狀態
                 this.resetGame();
                 this.gameState = 'idle';
-                this.showOverlay('打磚塊', '按空格鍵開始遊戲');
+                // ✅ FIX N1: 使用 i18n 翻譯，移除硬編碼中文
+                this.showOverlay(t('messages.title'), t('messages.start'));
             };
 
             return; // 不繼續到下一關

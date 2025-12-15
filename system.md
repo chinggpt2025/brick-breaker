@@ -51,7 +51,10 @@ graph TB
     BOSS --> GAME
     
     GAME --> SUPABASE
+    SCALER -.responsive.-> GAME
 ```
+
+**新增（v1.7）：** `MobileScalingManager` - 管理響應式縮放邏輯，從 HTML 內聯腳本重構為獨立類別。
 
 ---
 
@@ -94,7 +97,9 @@ stateDiagram-v2
 - **L14+**：Dragon Boss 實體出現
 - **磚塊資源**：Boss 關卡磚塊行數 +2（從 5 行變 7 行）
 - **菁英磚塊**：Boss 關卡生成 1-3 個
-- **通關條件**：擊敗最終 Boss (L28 Mecha) 顯示通關畫面
+- **通關條件（v1.7）**：
+  - **正常模式**：擊敗最終 Boss (L28 Mecha) → `gameCompleted = true` → 顯示通關畫面
+  - **無盡模式**：L28 後繼續遊戲，不觸發通關
 
 ### 球速遞增
 
@@ -175,3 +180,20 @@ gameLoop() {
 - `manifest.json`：應用程式清單
 - `service-worker.js`：離線快取
 - 支援「安裝至桌面」
+
+---
+
+## PWA 支援
+
+- `manifest.json`：應用程式清單
+- `icon-192.png`, `icon-512.png`：應用圖示
+- 支援安裝至桌面
+- 支援離線遊玩
+
+---
+
+## 粒子系統優化（v1.7）
+
+- **粒子池容量**：從 200 提升至 500
+- **目的**：支援極限場景（無盡模式 + 多球 + 連環爆炸）
+- **記憶體影響**：每個粒子約 100 bytes，總增加 ~30KB

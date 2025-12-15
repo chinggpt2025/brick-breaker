@@ -46,7 +46,7 @@ const BRICK_COLORS = [
 const POWERUP_TYPES = {
     expand: { color: '#ff6b6b', emoji: '🔴', duration: 10000, name: '扩大挡板' },
     multiball: { color: '#48dbfb', emoji: '🔵', duration: 0, name: '多球' },
-    pierce: { color: '#feca57', emoji: '⚡', duration: 8000, name: '穿透球' },
+    pierce: { color: '#feca57', emoji: '💎', duration: 8000, name: '穿透球' },
     slow: { color: '#1dd1a1', emoji: '🐢', duration: 8000, name: '减速' },
     shrink: { color: '#9b59b6', emoji: '💀', duration: 5000, name: '缩小挡板' }
 };
@@ -100,8 +100,8 @@ const ELITE_BRICK_TYPES = {
         points: 400
     },
     magnetCore: {
-        name: '🧲 磁力核心',
-        emoji: '🧲',
+        name: '🔮 磁力核心',
+        emoji: '🔮',
         hp: 10,
         color: '#a855f7',
         glowColor: '#c084fc',
