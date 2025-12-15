@@ -1,6 +1,6 @@
 {
-  "name": "打磚塊遊戲",
-  "short_name": "打磚塊",
+  "name": "Ar-Kai-noid: Chronicles of Hui",
+  "short_name": "Ar-Kai-noid",
   "description": "一個復古風格的打磚塊遊戲，支援道具、成就與排行榜",
   "start_url": "./index.html",
   "display": "standalone",

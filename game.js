@@ -162,6 +162,13 @@ class BrickBreakerGame {
             this.keys.right = true;
         } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
             e.preventDefault();
+
+            // 接關畫面優先處理
+            if (this.isContinueActive) {
+                this.continueGame();
+                return;
+            }
+
             const scoreCard = document.getElementById('scoreCard');
             const settingsModal = document.getElementById('settingsModal');
             const helpModal = document.getElementById('helpModal');
@@ -755,6 +762,15 @@ class BrickBreakerGame {
             settingsBtn.addEventListener('click', () => this.showSettings());
         }
 
+        // 主界面音效切換按鈕
+        const soundToggle = document.getElementById('soundToggle');
+        if (soundToggle) {
+            soundToggle.addEventListener('click', () => {
+                this.sound.toggle();
+                this.updateSoundButton();
+            });
+        }
+
         // 关闭设置按钮点击事件
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
         if (closeSettingsBtn) {
@@ -936,6 +952,15 @@ class BrickBreakerGame {
             this.sound.toggle();
         }
         localStorage.setItem('brickBreakerSound', this.sound.enabled);
+        this.updateSoundButton();
+    }
+
+    // 更新音效按鈕文字
+    updateSoundButton() {
+        const btn = document.getElementById('soundToggle');
+        if (btn) {
+            btn.textContent = this.sound.enabled ? t('ui.soundOn') : t('ui.soundOff');
+        }
     }
 
     toggleBgm(enabled) {
@@ -2108,12 +2133,12 @@ class BrickBreakerGame {
             this.continueTimer--;
             this.updateContinueUIData();
 
-            if (this.continueTimer <= 3) {
+            if (this.continueTimer <= 3 && this.continueTimer > 0) {
                 this.sound.playBip(); // 倒數音效
                 document.getElementById('continueTimer').classList.add('urgent');
             }
 
-            if (this.continueTimer < 0) {
+            if (this.continueTimer <= 0) {
                 this.stopContinueCountdown();
                 this.showGameOverScreen();
             }
@@ -2164,6 +2189,9 @@ class BrickBreakerGame {
             }, 3000);
 
             this.sound.playPowerup(); // 復活音效
+        } else {
+            // 無法接關：分數不足且無代幣
+            this.showToast('分數不足，無法接關！', 'error');
         }
     }
 
@@ -2497,7 +2525,7 @@ class BrickBreakerGame {
             this.hideScoreCard();
             this.resetGame();
             this.gameState = 'idle';
-            this.showOverlay('打砖块', '按空格键开始游戏');
+            this.showOverlay(t('messages.title'), t('messages.start'));
         };
         document.getElementById('shareBtn').onclick = () => this.shareScore();
 
@@ -2553,7 +2581,7 @@ class BrickBreakerGame {
                 setTimeout(() => btn.innerHTML = originalText, 2000);
             } catch (err) {
                 console.error('Failed to copy image: ', err);
-                alert('複製失敗，請長按圖片保存');
+                this.showToast('複製失敗，請長按圖片保存', 'error');
             }
         };
 
@@ -2705,7 +2733,7 @@ class BrickBreakerGame {
             }, 2000);
         } catch (err) {
             console.error('保存失败:', err);
-            alert('保存失败，请检查网络连接');
+            this.showToast('保存失敗，請檢查網路連接', 'error');
         }
     }
 
@@ -2749,11 +2777,18 @@ class BrickBreakerGame {
             list.innerHTML = leaderboard.map((entry, index) => `
                 <li>
                     <span class="rank">${index + 1}.</span>
-                    <span class="name">${entry.player_name}</span>
+                    <span class="name">${this.escapeHtml(entry.player_name)}</span>
                     <span class="lb-score">${entry.score.toLocaleString()}</span>
                 </li>
             `).join('');
         }
+    }
+
+    // 防止 XSS 攻擊的 HTML 轉義
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // 隐藏排行榜

@@ -21,7 +21,12 @@ const CONFIG = {
     brickHeight: 25,
     brickPadding: 8,
     brickOffsetTop: 50,
-    brickOffsetLeft: 24
+    brickOffsetLeft: 24,
+    // 生命與接關系統
+    lives: 5,
+    continueCost: 1000,
+    continueCountdown: 9,
+    initialCredits: 0
 };
 
 // ============================
@@ -218,7 +223,7 @@ const LANGUAGES = {
             mute: '按 <kbd>M</kbd> 靜音'
         },
         messages: {
-            title: '打磚塊',
+            title: '阿愷諾：輝光戰記',
             start: '按空格鍵開始遊戲',
             paused: '暫停',
             pauseMsg: '按空格鍵繼續',
@@ -323,7 +328,7 @@ const LANGUAGES = {
             mute: 'Press <kbd>M</kbd> to mute'
         },
         messages: {
-            title: 'Brick Breaker',
+            title: 'Ar-Kai-noid: Chronicles of Hui',
             start: 'Press SPACE to start',
             paused: 'Paused',
             pauseMsg: 'Press SPACE to continue',

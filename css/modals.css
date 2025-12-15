@@ -376,18 +376,25 @@
 .leaderboard-content h2 {
     margin: 0;
     padding: 20px;
-    background: rgba(0, 0, 0, 0.2);
-    font-size: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.4);
+    /* Darker header bg for contrast */
+    font-size: 1.8rem;
+    /* Larger Title */
+    letter-spacing: 2px;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .leaderboard-seed {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    /* Brighter contrast */
+    font-size: 0.85rem;
     margin: 0;
-    padding-bottom: 10px;
-    font-family: monospace;
-    background: rgba(0, 0, 0, 0.2);
+    padding: 8px 0 16px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    background: rgba(0, 0, 0, 0.4);
+    letter-spacing: 1px;
 }
 
 .leaderboard-list {
@@ -435,22 +442,46 @@
 }
 
 .leaderboard-list li:nth-child(2) {
-    background: linear-gradient(90deg, rgba(192, 192, 192, 0.15), rgba(192, 192, 192, 0.05));
-    border-color: rgba(192, 192, 192, 0.3);
-    color: #c0c0c0;
+    background: linear-gradient(90deg, rgba(225, 225, 225, 0.15), rgba(225, 225, 225, 0.05));
+    border-color: rgba(225, 225, 225, 0.3);
+    color: #e2e8f0;
+    /* Brighter Silver */
     font-weight: bold;
 }
 
 .leaderboard-list li:nth-child(3) {
-    background: linear-gradient(90deg, rgba(205, 127, 50, 0.15), rgba(205, 127, 50, 0.05));
-    border-color: rgba(205, 127, 50, 0.3);
-    color: #cd7f32;
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+    /* Brighter Bronze/Orange */
     font-weight: bold;
 }
 
-.leaderboard-list li .score {
-    font-family: monospace;
+/* Specific column styling */
+.leaderboard-list li .rank {
+    width: 30px;
+    font-weight: 900;
+    opacity: 0.8;
+}
+
+.leaderboard-list li .name {
+    flex: 1;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.leaderboard-list li .lb-score {
+    font-family: 'Consolas', 'Monaco', monospace;
     font-weight: bold;
+    font-size: 1.1em;
+    width: 80px;
+    text-align: right;
+}
+
+.leaderboard-list li:nth-child(1) .lb-score {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
 }
 
 .leaderboard-content .card-btn.primary {
