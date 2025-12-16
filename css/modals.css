@@ -377,11 +377,10 @@
     margin: 0;
     padding: 20px;
     background: rgba(0, 0, 0, 0.4);
-    /* Darker header bg for contrast */
     font-size: 1.8rem;
-    /* Larger Title */
     letter-spacing: 2px;
     font-weight: 800;
+    color: var(--accent-gold);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
