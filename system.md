@@ -231,3 +231,39 @@ gameLoop() {
 - **DOM 安全**：`safeSetText` 防止 null 元素崩潰
 - **並行查詢**：`Promise.all` 提升效率
 - **漸進式降級**：有多少資料顯示多少
+
+---
+
+## 排行榜功能（v1.15-v1.19 重構）
+
+### v1.15 安全強化
+- **DOM 安全檢查**：`_safeGetEl`, `_safeSetText`, `_safeSetHtml` 輔助函式
+- **防重複提交**：`_isSavingScore` 旗標
+- **名稱驗證**：最多 12 字元，自動清理
+
+### v1.16 主選單按鈕
+- **新增 `#mainLeaderboardBtn`**：玩家可在主畫面直接查看排行榜
+
+### v1.18 關閉按鈕修復
+- **事件綁定移至建構子**：確保全域可用
+
+### v1.19 UX 改進
+- **Modal 背景關閉**：`_setupModalBackdropClose` 統一處理 5 個 Modal
+- **排行榜快取**：2 分鐘 TTL，減少 API 請求
+
+---
+
+## Modal 樣式統一（v1.20）
+
+- **標題顏色**：統一為金色 `--accent-gold`
+- **字體大小**：1.8rem
+- **文字陰影**：`text-shadow: 0 2px 4px rgba(0,0,0,0.5)`
+- **成就項目文字**：改為白色 `#fff`
+
+---
+
+## 行動版全螢幕（v1.21）
+
+- **直式方向鎖定**：`screen.orientation.lock('portrait')`
+- **PWA Manifest**：`orientation: portrait`
+- **退出全螢幕解鎖**：`screen.orientation.unlock()`

@@ -228,3 +228,46 @@ new BrickBreakerGame()
 | `today_visitors` | number | 今日訪客數 |
 | `online_players` | number | 在線人數 |
 | `today_challengers` | number | 今日挑戰者 |
+
+---
+
+## v1.15+ 新增方法
+
+### DOM 安全輔助函式
+
+| 方法 | 參數 | 回傳 | 說明 |
+|------|------|------|------|
+| `_safeGetEl(id)` | string | Element/null | 安全取得元素 |
+| `_safeSetText(id, text)` | string, string | void | 安全設定文字 |
+| `_safeSetHtml(id, html)` | string, string | void | 安全設定 HTML |
+| `_safeToggleClass(id, className, force)` | string, string, boolean | void | 安全切換 class |
+
+### Modal 統一關閉 (v1.19)
+
+| 方法 | 參數 | 說明 |
+|------|------|------|
+| `_setupModalBackdropClose(modalId, contentClass, hideCallback)` | string, string, Function | 設定點擊背景關閉 |
+| `hideHelp()` | - | 隱藏說明 Modal |
+| `hideShareModal()` | - | 隱藏分享 Modal |
+
+### 排行榜快取 (v1.19)
+
+| 方法 | 參數 | 說明 |
+|------|------|------|
+| `getLeaderboard(forceRefresh)` | boolean | 取得排行榜（預設使用快取）|
+
+**快取結構**：
+```javascript
+this._leaderboardCache = {
+    key: 'leaderboard_YYYYMMDD',
+    timestamp: Date.now(),
+    data: []
+}
+```
+**TTL**：2 分鐘
+
+### 全螢幕直式鎖定 (v1.21)
+
+| 方法 | 說明 |
+|------|------|
+| `toggleFullscreen()` | 進入全螢幕時鎖定直式，退出時解鎖 |

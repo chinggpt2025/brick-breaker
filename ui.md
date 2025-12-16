@@ -138,3 +138,29 @@ showToast(message, type, duration)
 | touchmove | window | _handleTouchMove |
 | mousedown | canvas | _handleMouseDown |
 | mousemove | canvas | _handleMouseMove |
+
+---
+
+## v1.16+ UI 更新
+
+### 控制按鈕新增 (v1.16)
+
+| ID | 文字 | class | 觸發方法 |
+|----|------|-------|----------|
+| `#mainLeaderboardBtn` | 🏆 排行榜 | `.leaderboard-toggle` | showLeaderboard() |
+
+### Modal 統一關閉 (v1.19)
+
+所有 5 個 Modal 現支援點擊背景關閉：
+- `#leaderboardModal`
+- `#settingsModal`
+- `#achievementsModal`
+- `#helpModal`
+- `#shareModal`
+
+### Modal 標題樣式 (v1.20)
+
+統一標題樣式：
+- **顏色**：`var(--accent-gold)` (金色)
+- **字體大小**：`1.8rem`
+- **陰影**：`text-shadow: 0 2px 4px rgba(0,0,0,0.5)`
