@@ -879,6 +879,12 @@ class BrickBreakerGame {
             });
         }
 
+        // 綁定排行榜關閉按鈕 (全局)
+        const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
+        if (closeLeaderboardBtn) {
+            closeLeaderboardBtn.onclick = () => this.hideLeaderboard();
+        }
+
         // 设置按钮点击事件
         const settingsBtn = document.getElementById('settingsBtn');
         if (settingsBtn) {
@@ -2793,7 +2799,7 @@ class BrickBreakerGame {
             this.saveToLeaderboard(name);
         };
         document.getElementById('viewLeaderboardBtn').onclick = () => this.showLeaderboard();
-        document.getElementById('closeLeaderboardBtn').onclick = () => this.hideLeaderboard();
+        document.getElementById('viewLeaderboardBtn').onclick = () => this.showLeaderboard();
 
         // 重置名字输入区域
         document.getElementById('nameInputSection').style.display = 'flex';
