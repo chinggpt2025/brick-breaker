@@ -266,8 +266,31 @@ this._leaderboardCache = {
 ```
 **TTL**：2 分鐘
 
-### 全螢幕直式鎖定 (v1.21)
+### 全螢幕直式鎖定 (v1.21-v1.22)
 
 | 方法 | 說明 |
 |------|------|
-| `toggleFullscreen()` | 進入全螢幕時鎖定直式，退出時解鎖 |
+| `toggleFullscreen()` | async 方法，使用遊戲容器進入全螢幕，前後雙重鎖定直式 |
+
+---
+
+## v1.23+ 新增方法
+
+### 成績卡片安全 (v1.23)
+- 所有按鈕綁定加 null 檢查
+- `playAgainBtn` 加防抖 (`_isResetting`)
+- `saveScoreBtn` 保存後禁用
+
+### 排行榜快取失效 (v1.24)
+- 保存成績後執行 `this._leaderboardCache = null`
+
+### 多標籤排行榜 (v1.25)
+
+| 方法 | 參數 | 說明 |
+|------|------|------|
+| `showLeaderboard(tabType)` | 'today'/'alltime'/'weekly'/'myhistory' | 顯示指定分頁 |
+| `_queryLeaderboard({ limit, weekStart })` | object | 通用查詢方法 |
+| `_queryMyHistory()` | - | 使用 localStorage 玩家名稱查詢 |
+
+### localStorage Key (v1.25)
+- `brickBreaker_playerName`：儲存玩家名稱供「我的歷史」使用
