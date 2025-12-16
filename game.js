@@ -1221,26 +1221,46 @@ class BrickBreakerGame {
         }
     }
 
-    // 全螢幕切換（v1.21: 修正手機直式佈局）
-    toggleFullscreen() {
+    // 全螢幕切換（v1.22: 修正自動轉橫問題）
+    async toggleFullscreen() {
+        const gameContainer = document.querySelector('.game-container');
+        const targetElement = gameContainer || document.documentElement;
+
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().then(() => {
-                // ✅ 鎖定直式方向（行動裝置）
+            try {
+                // ✅ 方法 1: 先嘗試鎖定方向（某些瀏覽器支援非全螢幕鎖定）
                 if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('portrait').catch(() => {
-                        // 忽略不支援的瀏覽器
-                    });
+                    try {
+                        await screen.orientation.lock('portrait');
+                    } catch (e) {
+                        // 忽略 - 可能需要先進入全螢幕
+                    }
                 }
-            }).catch((err) => {
-                console.log(`Error attempting to enable fullscreen: ${err.message} (${err.name})`);
-            });
+
+                // ✅ 進入全螢幕（使用遊戲容器而非整個文檔）
+                await targetElement.requestFullscreen();
+
+                // ✅ 方法 2: 全螢幕後再次鎖定（確保生效）
+                if (screen.orientation && screen.orientation.lock) {
+                    try {
+                        await screen.orientation.lock('portrait');
+                    } catch (e) {
+                        console.debug('方向鎖定不支援:', e.message);
+                    }
+                }
+            } catch (err) {
+                console.log(`全螢幕錯誤: ${err.message}`);
+            }
         } else {
+            // 退出全螢幕
             if (document.exitFullscreen) {
-                document.exitFullscreen();
-                // 退出全螢幕時解除方向鎖定
-                if (screen.orientation && screen.orientation.unlock) {
+                await document.exitFullscreen();
+            }
+            // 解除方向鎖定
+            if (screen.orientation && screen.orientation.unlock) {
+                try {
                     screen.orientation.unlock();
-                }
+                } catch (e) { }
             }
         }
     }
