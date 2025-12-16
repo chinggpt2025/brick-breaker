@@ -397,6 +397,39 @@
     letter-spacing: 1px;
 }
 
+/* Leaderboard Tabs (v1.25) */
+.leaderboard-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 10px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lb-tab {
+    flex: 1;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.lb-tab:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.lb-tab.active {
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+    border-color: rgba(255, 215, 0, 0.4);
+    color: var(--accent-gold);
+    font-weight: 600;
+}
+
 .leaderboard-list {
     list-style: none;
     padding: 10px;

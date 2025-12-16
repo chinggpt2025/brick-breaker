@@ -3130,6 +3130,9 @@ class BrickBreakerGame {
                 if (saveHint) saveHint.classList.add('hidden');
             }, 2000);
 
+            // ✅ 儲存玩家名稱供「我的歷史」使用
+            localStorage.setItem('brickBreaker_playerName', cleanName);
+
             this.showToast('成績已保存！', 'success');
         } catch (err) {
             console.error('保存失败:', err);
@@ -3182,16 +3185,13 @@ class BrickBreakerGame {
         }
     }
 
-    // 显示排行榜 (v1.15 重構)
-    async showLeaderboard() {
-        const today = new Date();
-        const seedStr = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-
-        // ✅ 安全的 DOM 更新
-        this._safeSetText('leaderboardSeed', seedStr);
-
-        const list = this._safeGetEl('leaderboardList');
+    // 显示排行榜 (v1.25 多標籤版)
+    async showLeaderboard(tabType = 'today') {
         const modal = this._safeGetEl('leaderboardModal');
+        const list = this._safeGetEl('leaderboardList');
+        const title = this._safeGetEl('leaderboardTitle');
+        const seed = this._safeGetEl('leaderboardSeed');
+        const tabs = document.getElementById('leaderboardTabs');
 
         if (!list || !modal) {
             console.error('排行榜 DOM 元素不存在');
@@ -3199,27 +3199,134 @@ class BrickBreakerGame {
             return;
         }
 
+        // ✅ 初始化分頁事件（僅首次）
+        if (tabs && !tabs._initialized) {
+            tabs._initialized = true;
+            tabs.addEventListener('click', (e) => {
+                const tab = e.target.closest('.lb-tab');
+                if (!tab) return;
+
+                // 更新 active 狀態
+                tabs.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // 載入對應分頁
+                this.showLeaderboard(tab.dataset.tab);
+            });
+        }
+
+        // ✅ 更新分頁 active 狀態
+        if (tabs) {
+            tabs.querySelectorAll('.lb-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tabType);
+            });
+        }
+
         // ✅ 顯示載入狀態
         list.innerHTML = '<li class="leaderboard-empty">加载中...</li>';
         modal.classList.remove('hidden');
 
-        const leaderboard = await this.getLeaderboard();
+        // ✅ 根據分頁類型查詢
+        const today = new Date();
+        let leaderboard = [];
+        let titleText = '🏆 排行榜';
+        let seedText = '';
 
+        switch (tabType) {
+            case 'today':
+                titleText = '📅 今日挑戰';
+                seedText = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+                leaderboard = await this.getLeaderboard();
+                break;
+
+            case 'alltime':
+                titleText = '🌟 全時段最高分';
+                seedText = '歷史最佳記錄';
+                leaderboard = await this._queryLeaderboard({ limit: 10 });
+                break;
+
+            case 'weekly':
+                titleText = '📆 本週排行';
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                const weekStartStr = `${weekStart.getFullYear()}${String(weekStart.getMonth() + 1).padStart(2, '0')}${String(weekStart.getDate()).padStart(2, '0')}`;
+                seedText = `本週起始 #${weekStartStr}`;
+                leaderboard = await this._queryLeaderboard({ weekStart: weekStartStr, limit: 10 });
+                break;
+
+            case 'myhistory':
+                titleText = '👤 我的歷史';
+                seedText = '個人最佳記錄';
+                leaderboard = await this._queryMyHistory();
+                break;
+        }
+
+        // ✅ 更新標題
+        if (title) title.textContent = titleText;
+        if (seed) seed.textContent = seedText;
+
+        // ✅ 渲染列表
         if (leaderboard.length === 0) {
             list.innerHTML = '<li class="leaderboard-empty">暂无记录，成为第一名吧！</li>';
         } else {
             list.innerHTML = leaderboard.map((entry, index) => {
-                // ✅ 安全的數值處理
                 const score = typeof entry.score === 'number' ? entry.score : 0;
                 const name = this.escapeHtml(entry.player_name || '匿名');
+                const dateStr = entry.seed ? ` (${entry.seed})` : '';
                 return `
                     <li>
                         <span class="rank">${index + 1}.</span>
-                        <span class="name">${name}</span>
+                        <span class="name">${name}${tabType === 'myhistory' ? dateStr : ''}</span>
                         <span class="lb-score">${score.toLocaleString()}</span>
                     </li>
                 `;
             }).join('');
+        }
+    }
+
+    // ✅ 通用查詢方法
+    async _queryLeaderboard({ limit = 10, weekStart = null } = {}) {
+        try {
+            let query = supabase
+                .from('scores')
+                .select('player_name, score, max_combo, seed')
+                .order('score', { ascending: false })
+                .limit(limit);
+
+            if (weekStart) {
+                query = query.gte('seed', weekStart);
+            }
+
+            const { data, error } = await query;
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error('查詢失敗:', err);
+            return [];
+        }
+    }
+
+    // ✅ 查詢我的歷史（使用 localStorage 儲存的名字）
+    async _queryMyHistory() {
+        const savedName = localStorage.getItem('brickBreaker_playerName');
+        if (!savedName) {
+            this.showToast('請先儲存一次成績', 'info');
+            return [];
+        }
+
+        try {
+            const { data, error } = await supabase
+                .from('scores')
+                .select('player_name, score, max_combo, seed')
+                .eq('player_name', savedName)
+                .order('score', { ascending: false })
+                .limit(10);
+
+            if (error) throw error;
+            return data || [];
+        } catch (err) {
+            console.error('查詢失敗:', err);
+            return [];
         }
     }
 
