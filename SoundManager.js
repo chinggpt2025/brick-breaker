@@ -171,6 +171,16 @@ class SoundManager {
         });
     }
 
+    // ✅ FIX: 添加缺失的 playWin 方法（遊戲通關音效）
+    playWin() {
+        this.stopBgm();
+        // 勝利凱旋音效
+        const notes = [523, 659, 784, 880, 1047];
+        notes.forEach((freq, i) => {
+            setTimeout(() => this.playTone(freq, 0.2, 'sine', 0.7), i * 120);
+        });
+    }
+
     playStart() {
         this.playTone(440, 0.1, 'sine', 0.5);
         setTimeout(() => this.playTone(554, 0.1, 'sine', 0.5), 100);
