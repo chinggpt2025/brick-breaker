@@ -63,9 +63,17 @@ class MobileScalingManager {
             // Fix: Remove translateX(-50%) because Flexbox handles centering
             this.container.style.transform = `scale(${scale})`;
             this.container.style.transformOrigin = 'top center';
+
+            // ✅ v1.21: Add body class for portrait mode control zone
+            if (!isLandscape) {
+                document.body.classList.add('mobile-portrait');
+            } else {
+                document.body.classList.remove('mobile-portrait');
+            }
         } else {
             this.container.style.transform = '';
             this.container.style.transformOrigin = '';
+            document.body.classList.remove('mobile-portrait');
         }
     }
 
