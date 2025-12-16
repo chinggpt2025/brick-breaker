@@ -879,7 +879,15 @@ class BrickBreakerGame {
             });
         }
 
-        // 綁定排行榜關閉按鈕 (全局)
+        // ========== 統一 Modal 關閉行為 (v1.19) ==========
+        // 點擊背景遮罩關閉 Modal
+        this._setupModalBackdropClose('leaderboardModal', 'leaderboard-content', () => this.hideLeaderboard());
+        this._setupModalBackdropClose('settingsModal', 'settings-content', () => this.hideSettings());
+        this._setupModalBackdropClose('achievementsModal', 'achievements-content', () => this.hideAchievements());
+        this._setupModalBackdropClose('helpModal', 'help-content', () => this.hideHelp());
+        this._setupModalBackdropClose('shareModal', 'share-content', () => this.hideShareModal());
+
+        // 排行榜關閉按鈕
         const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
         if (closeLeaderboardBtn) {
             closeLeaderboardBtn.onclick = () => this.hideLeaderboard();
@@ -956,20 +964,6 @@ class BrickBreakerGame {
         if (endlessCheck) {
             endlessCheck.addEventListener('change', (e) => this.toggleEndlessMode(e.target.checked));
         }
-
-        // v1.18: 通用 Modal 點擊背景關閉
-        // 點擊 Modal 本身（overlay）時關閉，點擊內容不關閉
-        const modals = ['leaderboardModal', 'settingsModal', 'helpModal', 'shareModal'];
-        modals.forEach(id => {
-            const modal = document.getElementById(id);
-            if (modal) {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        modal.classList.add('hidden');
-                    }
-                });
-            }
-        });
 
         // 減少動態效果開關監聽
         const reduceMotionCheck = document.getElementById('settingReduceMotionCheck');
@@ -1113,6 +1107,31 @@ class BrickBreakerGame {
         if (modal) {
             modal.classList.add('hidden');
         }
+    }
+
+    // ========== Modal 背景關閉輔助方法 (v1.19) ==========
+    _setupModalBackdropClose(modalId, contentClass, hideCallback) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        modal.addEventListener('click', (e) => {
+            // 只有點在 Modal 背景（非內容區）才關閉
+            if (e.target === modal || !e.target.closest(`.${contentClass}`)) {
+                hideCallback();
+            }
+        });
+    }
+
+    // 隱藏說明 Modal
+    hideHelp() {
+        const modal = document.getElementById('helpModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    // 隱藏分享 Modal
+    hideShareModal() {
+        const modal = document.getElementById('shareModal');
+        if (modal) modal.classList.add('hidden');
     }
 
     toggleSound(enabled) {
@@ -3055,20 +3074,20 @@ class BrickBreakerGame {
         }
     }
 
-    // 获取排行榜 (v1.15 重構 + v1.18 Cache)
-    async getLeaderboard() {
+    // 获取排行榜 (v1.19 加入快取機制)
+    async getLeaderboard(forceRefresh = false) {
         const today = new Date();
         const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
 
-        // ✅ 快取機制 (60秒)
-        const CACHE_DURATION = 60 * 1000;
-        const now = Date.now();
+        // ✅ 快取檢查 (2 分鐘 TTL)
+        const cacheKey = `leaderboard_${seedStr}`;
+        const cacheTTL = 2 * 60 * 1000; // 2 分鐘
 
-        if (this._leaderboardCache &&
-            this._leaderboardCache.seed === seedStr &&
-            (now - this._leaderboardCache.timestamp < CACHE_DURATION)) {
-            console.debug('Using cached leaderboard data');
-            return this._leaderboardCache.data;
+        if (!forceRefresh && this._leaderboardCache && this._leaderboardCache.key === cacheKey) {
+            if (Date.now() - this._leaderboardCache.timestamp < cacheTTL) {
+                console.debug('使用排行榜快取');
+                return this._leaderboardCache.data;
+            }
         }
 
         try {
@@ -3081,20 +3100,20 @@ class BrickBreakerGame {
 
             if (error) {
                 console.debug('排行榜查詢失敗:', error);
-                return [];
+                return this._leaderboardCache?.data || [];
             }
 
-            // 更新快取
+            // ✅ 更新快取
             this._leaderboardCache = {
-                seed: seedStr,
-                timestamp: now,
+                key: cacheKey,
+                timestamp: Date.now(),
                 data: data || []
             };
 
             return data || [];
         } catch (err) {
             console.error('获取排行榜失败:', err);
-            return [];
+            return this._leaderboardCache?.data || [];
         }
     }
 
@@ -3115,13 +3134,8 @@ class BrickBreakerGame {
             return;
         }
 
-        // ✅ 顯示載入狀態 (Spinner)
-        list.innerHTML = `
-            <div class="spinner-container">
-                <div class="spinner"></div>
-                <div class="loading-text">Loading...</div>
-            </div>
-        `;
+        // ✅ 顯示載入狀態
+        list.innerHTML = '<li class="leaderboard-empty">加载中...</li>';
         modal.classList.remove('hidden');
 
         const leaderboard = await this.getLeaderboard();
