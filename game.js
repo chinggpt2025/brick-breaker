@@ -488,10 +488,10 @@ class BrickBreakerGame {
         this.bricks = [];
         const pattern = this.getLevelPattern(this.level);
 
-        // Boss 關卡增加 2 層磚塊
+        // ✅ FIX: 一般關卡 6 行（5 行圖案 + 1 行給隨機磚塊），Boss 關卡 8 行（6 + 2）
         const actualRowCount = this.isBossLevel(this.level)
-            ? CONFIG.brickRowCount + 2
-            : CONFIG.brickRowCount;
+            ? CONFIG.brickRowCount + 3  // Boss 關 = 5 + 3 = 8 行
+            : CONFIG.brickRowCount + 1; // 一般關 = 5 + 1 = 6 行
 
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
             this.bricks[c] = [];
