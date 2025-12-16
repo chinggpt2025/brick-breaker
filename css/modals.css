@@ -525,6 +525,8 @@
 .help-content h2 {
     color: var(--accent-gold);
     margin-bottom: 20px;
+    font-size: 1.8rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .help-content li {
@@ -699,10 +701,10 @@ input:checked+.slider:before {
 
 .achievements-content h2 {
     text-align: center;
-    color: var(--text-primary);
-    font-size: 2rem;
+    color: var(--accent-gold);
+    font-size: 1.8rem;
     margin-bottom: 20px;
-    text-shadow: 0 0 10px var(--accent-cyan);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     flex-shrink: 0;
 }
 
@@ -814,7 +816,7 @@ input:checked+.slider:before {
 
 .ach-view-title {
     font-weight: bold;
-    color: var(--text-primary);
+    color: #fff;
     font-size: 1rem;
     margin-bottom: 4px;
 }
