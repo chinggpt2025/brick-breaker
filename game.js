@@ -1670,23 +1670,11 @@ class BrickBreakerGame {
                     continue;
                 }
 
-                this.balls.splice(i, 1);
-
-                // 如果没有球了，失去生命
-                if (this.balls.length === 0) {
-                    this.lives--;
-                    this.updateUI();
-
-                    if (this.lives <= 0) {
-                        this.gameOver();
-                    } else {
-                        this.sound.playLoseLife();
-                        this.resetBallAndPaddle();
-                        this.gameState = 'paused';
-                        const msgKey = this._isTouchDevice ? 'messages.livesLeftTouch' : 'messages.livesLeft';
-                        this.showOverlay(t('messages.loseLife'), t(msgKey, this.lives));
-                    }
+                // ✅ FIX L5: 標記要移除的球，稍後統一處理
+                if (!this.ballsToRemoveThisFrame) {
+                    this.ballsToRemoveThisFrame = [];
                 }
+                this.ballsToRemoveThisFrame.push(i);
                 continue;
             }
 
@@ -1729,6 +1717,9 @@ class BrickBreakerGame {
                 }
             }
         }
+
+        // ✅ FIX L5: 批次處理落地球
+        this._processFallenBalls();
 
         // 更新 this.ball 引用（指向第一个球）
         this.ball = this.balls[0] || null;
@@ -2037,6 +2028,39 @@ class BrickBreakerGame {
         this.createParticles(ball.x, ball.y, '#9b59b6', 15);
 
         this.sound.playTeleport();
+    }
+
+    // ✅ FIX L5: 批次處理所有落地的球（確保只扣 1 命）
+    _processFallenBalls() {
+        if (this.ballsToRemoveThisFrame && this.ballsToRemoveThisFrame.length > 0) {
+            // 從後往前刪除，避免索引錯誤
+            for (let i = this.ballsToRemoveThisFrame.length - 1; i >= 0; i--) {
+                const index = this.ballsToRemoveThisFrame[i];
+                if (index < this.balls.length) {
+                    this.balls.splice(index, 1);
+                }
+            }
+
+            // 如果沒有球了，失去生命
+            if (this.balls.length === 0) {
+                // ✅ FIX L7: 確保生命不會變負數
+                this.lives = Math.max(0, this.lives - 1);
+                this.updateUI();
+
+                if (this.lives <= 0) {
+                    this.gameOver();
+                } else {
+                    this.sound.playLoseLife();
+                    this.resetBallAndPaddle();
+                    this.gameState = 'paused';
+                    const msgKey = this._isTouchDevice ? 'messages.livesLeftTouch' : 'messages.livesLeft';
+                    this.showOverlay(t('messages.loseLife'), t(msgKey, this.lives));
+                }
+            }
+
+            // 清空標記
+            this.ballsToRemoveThisFrame = [];
+        }
     }
 
     // 🎲 隨機道具磚：掉落隨機道具

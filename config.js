@@ -23,10 +23,10 @@ const CONFIG = {
     brickOffsetTop: 50,
     brickOffsetLeft: 24,
     // 生命與接關系統
-    lives: 3,              // 初始生命（從 5 降至 3）
-    continueCost: 10000,   // 接關費用（從 1000 提升至 10000）
-    continueCountdown: 9,
-    initialCredits: 0
+    lives: 3,            // 初始生命數（已從 5 降至 3）
+    continueCost: 15000, // 接關所需分數（已從 10000 提升至 15000）
+    continueCountdown: 5,// 接關倒數秒數（已從 9 降至 5）
+    initialCredits: 0    // 初始代幣數
 };
 
 // ============================

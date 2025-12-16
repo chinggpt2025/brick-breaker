@@ -4,6 +4,24 @@
 
 ---
 
+### 4. Lives System (生命系統)
+
+| Parameter | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `lives` | number | 3 | 玩家初始生命值 |
+| `maxLives` | number | 10 | 生命值上限 |
+| `continueCost` | number | 15000 | 接關所需分數 |
+| `continueCountdown` | number | 5 | 接關倒數秒數 |
+| `continueLives` | number | 3 | 接關後恢復的生命值 |
+| `continueInvincible` | number | 3 | 接關後的無敵時間(秒) |
+| `ballRadius` | number | 10 | 球半徑 |
+| `ballSpeed` | number | 4.6 | 初始球速 |
+| `maxBallSpeed` | number | 7 | 最大球速 |
+| `brickRowCount` | number | 5 | 磚塊行數（Boss 關 +2） |
+| `brickColumnCount` | number | 10 | 磚塊列數 |
+
+---
+
 ## 遊戲核心常數 (CONFIG)
 
 | 鍵 | 型別 | 值 | 說明 |
@@ -13,11 +31,6 @@
 | `paddleWidth` | number | 120 | 擋板寬度 |
 | `paddleHeight` | number | 15 | 擋板高度 |
 | `paddleSpeed` | number | 10 | 擋板移動速度 |
-| `ballRadius` | number | 10 | 球半徑 |
-| `ballSpeed` | number | 4.6 | 初始球速 |
-| `maxBallSpeed` | number | 7 | 最大球速 |
-| `brickRowCount` | number | 5 | 磚塊行數（Boss 關 +2） |
-| `brickColumnCount` | number | 10 | 磚塊列數 |
 | `brickWidth` | number | 68 | 磚塊寬度 |
 | `brickHeight` | number | 25 | 磚塊高度 |
 | `brickPadding` | number | 8 | 磚塊間距 |
