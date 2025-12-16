@@ -60,7 +60,8 @@ class MobileScalingManager {
 
         // Apply Scale if window is smaller than target
         if (window.innerWidth < this.scaleThreshold) {
-            this.container.style.transform = `translateX(-50%) scale(${scale})`;
+            // Fix: Remove translateX(-50%) because Flexbox handles centering
+            this.container.style.transform = `scale(${scale})`;
             this.container.style.transformOrigin = 'top center';
         } else {
             this.container.style.transform = '';
