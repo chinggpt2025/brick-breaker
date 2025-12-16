@@ -396,37 +396,41 @@
     letter-spacing: 1px;
 }
 
-/* Leaderboard Tabs (v1.25) */
+/* Leaderboard Tabs (v1.28 重新設計) */
 .leaderboard-tabs {
     display: flex;
-    gap: 4px;
-    padding: 10px 15px;
+    gap: 6px;
+    padding: 12px 15px;
     background: rgba(0, 0, 0, 0.3);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .lb-tab {
     flex: 1;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 10px 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 8px;
-    color: #ccc;
-    font-size: 0.85rem;
+    color: #ddd;
+    font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .lb-tab:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
+    border-color: rgba(255, 255, 255, 0.25);
 }
 
 .lb-tab.active {
-    background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
-    border-color: rgba(255, 215, 0, 0.4);
-    color: var(--accent-gold);
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.5);
+    color: #ffd700;
     font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
 }
 
 .leaderboard-list {
