@@ -44,6 +44,8 @@ system.md → ui.md
 | `playExplosion()` | - | void | 爆炸音 |
 | `playPowerup()` | - | void | 道具獲取音 |
 | `playLevelComplete()` | - | void | 過關音 |
+| `playWin()` | - | void | 遊戲通關音 (v1.12+) |
+| `playBossHit()` | - | void | Boss 擊中擋板音 (v1.9+) |
 | `playGameOver()` | - | void | 遊戲結束音 |
 
 ---
@@ -104,7 +106,7 @@ new PlayerStats(game)
 ### 建構子
 
 ```javascript
-new Boss(type, canvasWidth)
+new Boss(type, canvasWidth, game)  // v1.11+: 需傳入 game 引用
 ```
 
 ### 屬性
@@ -115,6 +117,8 @@ new Boss(type, canvasWidth)
 | `maxHp` | number | 最大血量 |
 | `x`, `y` | number | 位置 |
 | `emoji` | string | Boss 表情符號 (🐲/🐙/⚡) |
+| `projectileEmoji` | string | 投射物表情符號 (🔥/❄️/🔋) |
+| `game` | object | 遊戲實例引用 (v1.11+) |
 | `projectiles` | array | 投射物陣列 |
 
 ### 公開方法

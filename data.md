@@ -161,11 +161,13 @@ idle → playing ↔ paused → gameover / win
 
 ## Boss 類型 (BOSS_TYPES)
 
-| 鍵 | 名稱 | HP | 攻擊間隔 | 攻擊類型 | 出現關卡 |
-|----|------|-----|----------|----------|----------|
-| `dragon` | 🐲 Fire Dragon | 10 | 3s | fire | L14 |
-| `kraken` | 🐙 Ice Kraken | 12 | 2.5s | ice（減速） | L21 |
-| `mecha` | ⚡ Thunder Mecha | 15 | 2s | lightning（閃屏） | L28+ |
+| 鍵 | 名稱 | HP | 攻擊間隔 | 投射物 Emoji | 出現關卡 |
+|----|------|-----|----------|--------------|----------|
+| `dragon` | 🐲 Fire Dragon | 10 | 3s | 🔥 | L14 |
+| `kraken` | 🐙 Ice Kraken | 12 | 2.5s | ❄️ | L21 |
+| `mecha` | ⚡ Thunder Mecha | 15 | 2s | 🔋 | L28+ |
+
+> **v1.9 變更**：每個 Boss 有獨特的投射物 Emoji，統一紫色外光 (#9b59b6)。
 
 ---
 
