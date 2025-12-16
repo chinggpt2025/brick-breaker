@@ -112,7 +112,7 @@ class BrickBreakerGame {
         this.combo = 0; // 当前连击数
         this.maxCombo = 0; // 本局最高连击
         this.score = 0;
-        this.lives = 5;
+        this.lives = CONFIG.lives;
         this.consecutiveLosses = 0; // 追蹤連續失敗次數
         this.highScore = parseInt(localStorage.getItem('brickBreakerHighScore')) || 0;
 
