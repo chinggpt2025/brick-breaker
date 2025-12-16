@@ -2848,26 +2848,57 @@ class BrickBreakerGame {
 
         card.classList.remove('hidden');
 
-        // 绑定按钮
-        document.getElementById('playAgainBtn').onclick = () => {
-            this.hideScoreCard();
-            this.resetGame();
-            this.gameState = 'idle';
-            this.showOverlay(t('messages.title'), t('messages.start'));
-        };
-        document.getElementById('shareBtn').onclick = () => this.shareScore();
+        // ========== 按鈕綁定 (v1.23 安全重寫) ==========
 
-        // 排行榜相关按钮
-        document.getElementById('saveScoreBtn').onclick = () => {
-            const name = document.getElementById('playerName').value;
-            this.saveToLeaderboard(name);
-        };
-        document.getElementById('viewLeaderboardBtn').onclick = () => this.showLeaderboard();
-        document.getElementById('viewLeaderboardBtn').onclick = () => this.showLeaderboard();
+        // ✅ 再玩一次（加防抖）
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        if (playAgainBtn) {
+            playAgainBtn.onclick = () => {
+                if (this._isResetting) return;
+                this._isResetting = true;
+                this.hideScoreCard();
+                this.resetGame();
+                this.gameState = 'idle';
+                this.showOverlay(t('messages.title'), t('messages.start'));
+                setTimeout(() => { this._isResetting = false; }, 500);
+            };
+        }
 
-        // 重置名字输入区域
-        document.getElementById('nameInputSection').style.display = 'flex';
-        document.getElementById('playerName').value = '';
+        // ✅ 複製成績（加錯誤處理）
+        const shareBtn = document.getElementById('shareBtn');
+        if (shareBtn) {
+            shareBtn.onclick = () => {
+                try {
+                    this.shareScore();
+                } catch (err) {
+                    console.error('分享失敗:', err);
+                    this.showToast('分享失敗', 'error');
+                }
+            };
+        }
+
+        // ✅ 儲存成績（禁用按鈕防重複）
+        const saveScoreBtn = document.getElementById('saveScoreBtn');
+        const playerNameInput = document.getElementById('playerName');
+        if (saveScoreBtn && playerNameInput) {
+            saveScoreBtn.onclick = async () => {
+                saveScoreBtn.disabled = true;
+                await this.saveToLeaderboard(playerNameInput.value);
+                // 保存後不恢復按鈕，防止重複提交
+            };
+        }
+
+        // ✅ 查看排行榜（移除重複綁定）
+        const viewLeaderboardBtn = document.getElementById('viewLeaderboardBtn');
+        if (viewLeaderboardBtn) {
+            viewLeaderboardBtn.onclick = () => this.showLeaderboard();
+        }
+
+        // ✅ 重置名字输入区域（加 null 檢查）
+        const nameInputSection = document.getElementById('nameInputSection');
+        if (nameInputSection) nameInputSection.style.display = 'flex';
+        if (playerNameInput) playerNameInput.value = '';
+        if (saveScoreBtn) saveScoreBtn.disabled = false; // 重置禁用狀態
     }
 
     // 隐藏成绩卡片
