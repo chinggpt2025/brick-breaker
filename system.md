@@ -45,6 +45,7 @@
     - 🔮 磁力核心 (Magnet Elite)
     - ⚡ 雷電系 (Thunder Elite / Mecha Boss)
     - 🔥 火焰系 (Fireball / Flame Elite)
+  - 磁力特效 (`MagnetEffects`)：磁力核心的脈動光環與吸附光束。
 
 ### 3.4 存檔與排行榜
 - 使用 `localStorage` 儲存：

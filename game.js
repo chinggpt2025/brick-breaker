@@ -3688,6 +3688,11 @@ class BrickBreakerGame {
         const brickCx = brick.x + CONFIG.brickWidth / 2;
         const brickCy = brick.y + CONFIG.brickHeight / 2;
 
+        // 儲存磁力連線資訊供視覺效果使用
+        if (!this.magnetVisualData) {
+            this.magnetVisualData = [];
+        }
+
         for (const ball of this.balls) {
             if (ball.held) continue;
 
@@ -3699,8 +3704,134 @@ class BrickBreakerGame {
                 const force = eliteType.pullStrength * (1 - dist / 200);
                 ball.x += (dx / dist) * force;
                 ball.y += (dy / dist) * force;
+
+                // 記錄連線資訊
+                this.magnetVisualData.push({
+                    fromX: brickCx,
+                    fromY: brickCy,
+                    toX: ball.x,
+                    toY: ball.y,
+                    strength: 1 - dist / 200
+                });
             }
         }
+
+        // 儲存磁力核心位置供光環繪製
+        if (!this.activeMagnetBricks) {
+            this.activeMagnetBricks = [];
+        }
+        this.activeMagnetBricks.push({
+            x: brickCx,
+            y: brickCy,
+            color: eliteType.color,
+            glowColor: eliteType.glowColor
+        });
+    }
+
+    // 繪製磁力視覺效果
+    drawMagnetEffects() {
+        const now = performance.now();
+
+        // === 繪製磁力場光環 ===
+        if (this.activeMagnetBricks && this.activeMagnetBricks.length > 0) {
+            for (const magnet of this.activeMagnetBricks) {
+                this.ctx.save();
+
+                // 脈動效果計算
+                const pulse = Math.sin(now / 300) * 0.3 + 0.7; // 0.4 ~ 1.0
+                const radius = 200 * pulse;
+
+                // 外圈光環（漸變）
+                const gradient = this.ctx.createRadialGradient(
+                    magnet.x, magnet.y, 20,
+                    magnet.x, magnet.y, radius
+                );
+                gradient.addColorStop(0, 'rgba(168, 85, 247, 0.4)');
+                gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.15)');
+                gradient.addColorStop(1, 'rgba(168, 85, 247, 0)');
+
+                this.ctx.beginPath();
+                this.ctx.arc(magnet.x, magnet.y, radius, 0, Math.PI * 2);
+                this.ctx.fillStyle = gradient;
+                this.ctx.fill();
+
+                // 內圈能量環
+                const innerRadius = 40 + Math.sin(now / 150) * 10;
+                this.ctx.beginPath();
+                this.ctx.arc(magnet.x, magnet.y, innerRadius, 0, Math.PI * 2);
+                this.ctx.strokeStyle = `rgba(192, 132, 252, ${0.5 + pulse * 0.3})`;
+                this.ctx.lineWidth = 3;
+                this.ctx.stroke();
+
+                // 旋轉能量線
+                for (let i = 0; i < 6; i++) {
+                    const angle = (now / 1000 + i * Math.PI / 3) % (Math.PI * 2);
+                    const lineLength = 60 + Math.sin(now / 200 + i) * 20;
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(
+                        magnet.x + Math.cos(angle) * 25,
+                        magnet.y + Math.sin(angle) * 25
+                    );
+                    this.ctx.lineTo(
+                        magnet.x + Math.cos(angle) * lineLength,
+                        magnet.y + Math.sin(angle) * lineLength
+                    );
+                    this.ctx.strokeStyle = `rgba(192, 132, 252, ${0.3 + Math.sin(now / 100 + i) * 0.2})`;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.stroke();
+                }
+
+                this.ctx.restore();
+            }
+        }
+
+        // === 繪製吸引光束 ===
+        if (this.magnetVisualData && this.magnetVisualData.length > 0) {
+            for (const beam of this.magnetVisualData) {
+                this.ctx.save();
+
+                // 閃爍效果
+                const flicker = 0.5 + Math.sin(now / 50) * 0.3;
+
+                // 主光束
+                const gradient = this.ctx.createLinearGradient(
+                    beam.fromX, beam.fromY,
+                    beam.toX, beam.toY
+                );
+                gradient.addColorStop(0, `rgba(168, 85, 247, ${beam.strength * flicker})`);
+                gradient.addColorStop(0.5, `rgba(236, 72, 153, ${beam.strength * flicker * 0.8})`);
+                gradient.addColorStop(1, `rgba(168, 85, 247, ${beam.strength * flicker * 0.5})`);
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(beam.fromX, beam.fromY);
+                this.ctx.lineTo(beam.toX, beam.toY);
+                this.ctx.strokeStyle = gradient;
+                this.ctx.lineWidth = 2 + beam.strength * 3;
+                this.ctx.shadowColor = '#a855f7';
+                this.ctx.shadowBlur = 10;
+                this.ctx.stroke();
+
+                // 能量粒子沿光束移動
+                const particleCount = 3;
+                for (let i = 0; i < particleCount; i++) {
+                    const t = ((now / 500 + i / particleCount) % 1);
+                    const px = beam.fromX + (beam.toX - beam.fromX) * t;
+                    const py = beam.fromY + (beam.toY - beam.fromY) * t;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(px, py, 3 + beam.strength * 2, 0, Math.PI * 2);
+                    this.ctx.fillStyle = `rgba(236, 72, 153, ${0.8 * beam.strength})`;
+                    this.ctx.fill();
+                }
+
+                this.ctx.restore();
+            }
+        }
+
+        // 清空臨時資料（每幀重新計算）
+        this.magnetVisualData = [];
+        this.activeMagnetBricks = [];
     }
 
     // 更新菁英投射物
@@ -4038,6 +4169,7 @@ class BrickBreakerGame {
 
         // 绘制游戏对象
         this.drawBricks();
+        this.drawMagnetEffects(); // 繪製磁力視覺效果
         this.drawPaddle();
         this.drawBall();
         this.drawPowerups(); // 绘制道具
