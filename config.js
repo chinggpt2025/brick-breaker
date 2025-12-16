@@ -244,7 +244,8 @@ const LANGUAGES = {
             language: '🌐 語言',
             help: '❓ 說明',
             settings: '⚙️ 設定',
-            achievements: '🏅 成就'
+            achievements: '🏅 成就',
+            leaderboard: '🏆 排行榜'
         },
         controls: {
             arrows: '⬅️ ➡️ 方向鍵控制擋板',
@@ -356,7 +357,8 @@ const LANGUAGES = {
             language: '🌐 Language',
             help: '❓ Help',
             settings: '⚙️ Settings',
-            achievements: '🏅 Achievements'
+            achievements: '🏅 Achievements',
+            leaderboard: '🏆 Leaderboard'
         },
         controls: {
             arrows: '⬅️ ➡️ Arrow keys to move paddle',
