@@ -221,6 +221,22 @@ class BrickBreakerGame {
         this.gameLoop();
     }
 
+    // ========== 輔助方法：檢查 Modal 狀態 (v1.29) ==========
+    isAnyModalOpen() {
+        const modals = [
+            'scoreCard',
+            'settingsModal',
+            'helpModal',
+            'leaderboardModal',
+            'shareModal',
+            'achievementsModal'
+        ];
+        return modals.some(id => {
+            const el = document.getElementById(id);
+            return el && !el.classList.contains('hidden');
+        });
+    }
+
     // ========== 私有事件處理器（可移除）==========
     _handleKeyDown(e) {
         if (e.key === 'ArrowLeft' || e.key === 'Left') {
@@ -237,16 +253,8 @@ class BrickBreakerGame {
                 return;
             }
 
-            const scoreCard = document.getElementById('scoreCard');
-            const settingsModal = document.getElementById('settingsModal');
-            const helpModal = document.getElementById('helpModal');
-            const isAnyModalVisible =
-                (scoreCard && !scoreCard.classList.contains('hidden')) ||
-                (settingsModal && !settingsModal.classList.contains('hidden')) ||
-                (helpModal && !helpModal.classList.contains('hidden'));
-            if (!isAnyModalVisible) {
-                this.toggleGame();
-            }
+            if (this.isAnyModalOpen()) return;
+            this.toggleGame();
         } else if (e.key === 'm' || e.key === 'M') {
             this.toggleSound();
         }
@@ -274,6 +282,9 @@ class BrickBreakerGame {
             this.continueGame();
             return;
         }
+
+        // ✅ 如果有任何 Modal 開啟，這是一次 UI 操作，不觸發遊戲邏輯
+        if (this.isAnyModalOpen()) return;
 
         if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
             this.startGame();
