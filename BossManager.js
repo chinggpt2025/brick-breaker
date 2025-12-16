@@ -54,9 +54,10 @@ const BOSS_TYPES = {
 };
 
 class Boss {
-    constructor(type, canvasWidth) {
+    constructor(type, canvasWidth, game) {  // ✅ FIX: 接收 game 引用
         const config = BOSS_TYPES[type];
         this.type = type;
+        this.game = game;  // ✅ 儲存 game 引用，用於 takeDamage 回調
         this.name = config.name;
         this.maxHp = config.hp;
         this.hp = config.hp;
@@ -364,7 +365,7 @@ class BossManager {
             return;
         }
 
-        this.currentBoss = new Boss(type, CONFIG.canvasWidth);
+        this.currentBoss = new Boss(type, CONFIG.canvasWidth, this.game);  // ✅ FIX: 傳遞 game 引用
 
         // 應用難度降低
         if (this.difficultyReduction > 0) {
