@@ -3116,6 +3116,9 @@ class BrickBreakerGame {
 
             if (error) throw error;
 
+            // ✅ 保存成功後清除快取，確保排行榜顯示最新資料
+            this._leaderboardCache = null;
+
             // ✅ 安全的 DOM 更新
             const saveHint = this._safeGetEl('saveHint');
             const nameSection = this._safeGetEl('nameInputSection');
