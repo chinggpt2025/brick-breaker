@@ -63,17 +63,9 @@ class MobileScalingManager {
             // Fix: Remove translateX(-50%) because Flexbox handles centering
             this.container.style.transform = `scale(${scale})`;
             this.container.style.transformOrigin = 'top center';
-
-            // ✅ v1.21: Add body class for portrait mode control zone
-            if (!isLandscape) {
-                document.body.classList.add('mobile-portrait');
-            } else {
-                document.body.classList.remove('mobile-portrait');
-            }
         } else {
             this.container.style.transform = '';
             this.container.style.transformOrigin = '';
-            document.body.classList.remove('mobile-portrait');
         }
     }
 
@@ -1229,15 +1221,26 @@ class BrickBreakerGame {
         }
     }
 
-    // 全螢幕切換
+    // 全螢幕切換（v1.21: 修正手機直式佈局）
     toggleFullscreen() {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch((err) => {
+            document.documentElement.requestFullscreen().then(() => {
+                // ✅ 鎖定直式方向（行動裝置）
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('portrait').catch(() => {
+                        // 忽略不支援的瀏覽器
+                    });
+                }
+            }).catch((err) => {
                 console.log(`Error attempting to enable fullscreen: ${err.message} (${err.name})`);
             });
         } else {
             if (document.exitFullscreen) {
                 document.exitFullscreen();
+                // 退出全螢幕時解除方向鎖定
+                if (screen.orientation && screen.orientation.unlock) {
+                    screen.orientation.unlock();
+                }
             }
         }
     }

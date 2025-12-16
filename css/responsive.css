@@ -12,19 +12,6 @@
         display: flex;
     }
 
-    /* ✅ v1.21: Explicit portrait mode control zone */
-    body.mobile-portrait {
-        justify-content: flex-start !important;
-        padding-bottom: 120px;
-        /* Reserve space for swipe control */
-    }
-
-    body.mobile-portrait .game-container {
-        margin-top: 0;
-        margin-bottom: auto;
-        /* Push content to top */
-    }
-
     .visitor-stats {
         display: none !important;
         /* Hide visitor stats on mobile to save space */

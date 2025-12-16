@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#1a1a2e",
   "theme_color": "#4ade80",
-  "orientation": "any",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "assets/rank_s.png",
