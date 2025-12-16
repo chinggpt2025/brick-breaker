@@ -3946,13 +3946,21 @@ async function initVisitorStats() {
             if (e.code === '400' || e.status === 400 || e.message?.includes('400')) {
                 supabaseActive = false; // Stop trying
             }
-            updateOfflineUI();
+            updateOfflineUI(e);
         }
     }
 
-    function updateOfflineUI() {
-        if (document.getElementById('statTotalVisitors').textContent !== '離線') {
-            document.getElementById('statTotalVisitors').textContent = '離線';
+    function updateOfflineUI(error = null) {
+        let statusText = '離線';
+        if (error) {
+            // 嘗試提取錯誤代碼
+            if (error.code) statusText += ` (${error.code})`;
+            else if (error.status) statusText += ` (${error.status})`;
+            else if (error.message && error.message.includes('Network')) statusText += ' (網路)';
+        }
+
+        if (document.getElementById('statTotalVisitors').textContent !== statusText) {
+            document.getElementById('statTotalVisitors').textContent = statusText;
             document.getElementById('statTodayVisitors').textContent = '-';
             document.getElementById('statOnlinePlayers').textContent = '-';
             document.getElementById('statTodayChallengers').textContent = '-';
