@@ -537,15 +537,62 @@ class BrickBreakerGame {
             }
         }
 
-        // 初始化 Dragon Boss（僅在第 14 關以後的 Boss 關卡）
+        // Initialize Dragon Boss (only after L14)
         if (this.bossManager) {
             if (this.isDragonBossLevel(this.level)) {
                 this.bossManager.initBoss(this.level);
-                this.bossDefeatedHandled = false; // 重置旗標，允許新 Boss 擊敗 Toast
+                this.bossDefeatedHandled = false;
             } else {
-                // 非 Dragon 關卡：清除上一關的 Boss 實例
                 this.bossManager.currentBoss = null;
             }
+        }
+
+        // === L8+ 隨機增生磚塊機制 ===
+        // 從 L8 開始，除了 Boss 關外，隨機在空位增加 5 個磚塊
+        if (this.level >= 8 && !this.isBossLevel(this.level)) {
+            const emptyPositions = [];
+            for (let c = 0; c < CONFIG.brickColumnCount; c++) {
+                // 一般關卡磚塊行數固定為 CONFIG.brickRowCount (5)
+                for (let r = 0; r < CONFIG.brickRowCount; r++) {
+                    if (this.bricks[c][r].status === 0) {
+                        emptyPositions.push({ c, r });
+                    }
+                }
+            }
+
+            // 洗牌並選取最多 5 個空位
+            for (let i = emptyPositions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [emptyPositions[i], emptyPositions[j]] = [emptyPositions[j], emptyPositions[i]];
+            }
+            const bricksToAdd = Math.min(emptyPositions.length, 5);
+
+            for (let i = 0; i < bricksToAdd; i++) {
+                const pos = emptyPositions[i];
+                const brick = this.bricks[pos.c][pos.r];
+
+                // 激活磚塊
+                brick.status = 1;
+                // 使用該行的標準顏色
+                brick.color = BRICK_COLORS[pos.r % BRICK_COLORS.length];
+
+                // 血量邏輯：比照該行標準 (前兩行1血, 中間2血, 後面隨機)
+                let maxHits = 1;
+                if (pos.r >= 2 && pos.r < 4) {
+                    maxHits = 2;
+                } else if (pos.r >= 4) {
+                    maxHits = Math.random() < 0.5 ? 3 : 1;
+                }
+                brick.maxHits = maxHits;
+                brick.hits = maxHits;
+
+                // 隨機磚塊不賦予特殊能力 (保持單純)
+                brick.specialType = null;
+                brick.isBomb = false;
+            }
+
+            // 可選：發出 Toast 通知
+            // this.showToast('⚠️ 額外磚塊出現！', 'info');
         }
 
         // === 菁英磚塊初始化 ===
