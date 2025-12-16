@@ -3839,71 +3839,105 @@ window.addEventListener('load', () => {
     initVisitorStats();
 });
 
-// ===== 訪客統計系統 =====
-// ===== 訪客統計系統 =====
+// ===== 訪客統計系統 (v1.14 重構版) =====
 async function initVisitorStats() {
-    let supabaseActive = true; // Circuit breaker
+    // ✅ 配置
+    const HEARTBEAT_INTERVAL = 30000;  // 30 秒
+    const STATS_INTERVAL = 60000;      // 60 秒
+    const MAX_RETRIES = 3;
 
-    // 1. 生成或讀取訪客 ID
+    let supabaseActive = true;
+    let retryCount = 0;
+
+    // ✅ 安全的 DOM 更新
+    function safeSetText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    }
+
+    // ✅ 格式化數字
+    function formatNumber(num) {
+        if (typeof num !== 'number' || isNaN(num)) return '-';
+        if (num >= 10000) return (num / 1000).toFixed(1) + 'k';
+        return num.toLocaleString();
+    }
+
+    // ✅ 安全的查詢包裝器（獨立容錯）
+    async function safeQuery(queryFn, fallback = null, label = '') {
+        try {
+            const result = await queryFn();
+            if (result.error) {
+                console.debug(`查詢失敗 [${label}]:`, result.error);
+                return fallback;
+            }
+            return result;
+        } catch (e) {
+            console.debug(`查詢異常 [${label}]:`, e);
+            return fallback;
+        }
+    }
+
+    // ✅ 顯示離線狀態
+    function showOffline(error = null) {
+        let status = '離線';
+        if (error?.code) status += ` (${error.code})`;
+        else if (error?.status) status += ` (${error.status})`;
+
+        safeSetText('statTotalVisitors', status);
+        safeSetText('statTodayVisitors', '-');
+        safeSetText('statOnlinePlayers', '-');
+        safeSetText('statTodayChallengers', '-');
+    }
+
+    // ===== 1. 生成訪客 ID =====
     let visitorId = localStorage.getItem('brick_visitor_id');
     if (!visitorId) {
         visitorId = 'v_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
         localStorage.setItem('brick_visitor_id', visitorId);
     }
 
-    // 2. 記錄訪問
-    if (supabaseActive) {
-        try {
-            const { error } = await supabase.from('visits').insert({ visitor_id: visitorId });
-            if (error) throw error;
-        } catch (e) {
-            console.debug('記錄訪問失敗 (後端可能未連接):', e);
-            supabaseActive = false; // Disable further requests
-        }
+    // ===== 2. 記錄訪問（容錯） =====
+    const visitResult = await safeQuery(
+        () => supabase.from('visits').insert({ visitor_id: visitorId }),
+        null, 'recordVisit'
+    );
+    if (!visitResult) {
+        supabaseActive = false;
+        showOffline();
     }
 
-    // 3. 更新在線狀態（心跳）
+    // ===== 3. 心跳更新 =====
     async function updateHeartbeat() {
         if (!supabaseActive) return;
-        try {
-            const { error } = await supabase.from('active_users').upsert(
+        await safeQuery(
+            () => supabase.from('active_users').upsert(
                 { visitor_id: visitorId, last_seen: new Date().toISOString() },
                 { onConflict: 'visitor_id' }
-            );
-            if (error) throw error;
-        } catch (e) {
-            console.debug('心跳更新失敗:', e);
-            // Don't disable on heartbeat fail immediately, but maybe count errors?
-            // For now, simple approach: if it fails continuously, user won't notice much.
-            // But if 400, it's permanent.
-            if (e.code === '400' || e.status === 400) supabaseActive = false;
-        }
+            ),
+            null, 'heartbeat'
+        );
     }
 
-    // 首次心跳
+    // 首次心跳 + 定時器
     if (supabaseActive) updateHeartbeat();
-
-    // 每 30 秒心跳一次
-    const heartbeatInterval = setInterval(() => {
+    const heartbeatTimer = setInterval(() => {
         if (supabaseActive) updateHeartbeat();
-        else clearInterval(heartbeatInterval);
-    }, 30000);
+    }, HEARTBEAT_INTERVAL);
 
-    // 4. 離開頁面時清理
-    window.addEventListener('beforeunload', async () => {
-        if (!supabaseActive) return;
-        clearInterval(heartbeatInterval);
-        try {
-            await supabase.from('active_users').delete().eq('visitor_id', visitorId);
-        } catch (e) {
-            // 忽略錯誤
+    // ===== 4. 離開頁面清理 =====
+    window.addEventListener('beforeunload', () => {
+        clearInterval(heartbeatTimer);
+        if (supabaseActive) {
+            // 使用 sendBeacon 或 fetch keepalive
+            navigator.sendBeacon?.(`${SUPABASE_URL}/rest/v1/rpc/cleanup_user`,
+                JSON.stringify({ visitor_id: visitorId }));
         }
     });
 
-    // 5. 查詢並顯示統計數據
+    // ===== 5. 更新統計（獨立容錯） =====
     async function updateStats() {
         if (!supabaseActive) {
-            updateOfflineUI();
+            showOffline();
             return;
         }
 
@@ -3912,86 +3946,40 @@ async function initVisitorStats() {
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
         const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
 
-        try {
-            // 總訪客數（不重複）
-            const { count: totalVisitors, error: err1 } = await supabase
-                .from('visits')
-                .select('visitor_id', { count: 'exact', head: true });
-            if (err1) throw err1;
+        // ✅ 每個查詢獨立，一個失敗不影響其他
+        const [totalResult, todayResult, onlineResult, challengersResult] = await Promise.all([
+            // 總訪客數
+            safeQuery(() => supabase.from('visits').select('*', { count: 'exact', head: true }),
+                { count: null }, 'totalVisitors'),
+            // 今日訪客
+            safeQuery(() => supabase.from('visits').select('visitor_id').gte('visited_at', todayStart),
+                { data: [] }, 'todayVisitors'),
+            // 在線人數
+            safeQuery(() => supabase.from('active_users').select('*', { count: 'exact', head: true }).gte('last_seen', fiveMinutesAgo),
+                { count: null }, 'onlinePlayers'),
+            // 今日挑戰者
+            safeQuery(() => supabase.from('scores').select('*', { count: 'exact', head: true }).eq('seed', seedStr),
+                { count: null }, 'todayChallengers')
+        ]);
 
-            // 今日訪客數（不重複）
-            const { data: todayData, error: err2 } = await supabase
-                .from('visits')
-                .select('visitor_id')
-                .gte('visited_at', todayStart);
-            if (err2) throw err2;
-            const todayVisitors = todayData ? new Set(todayData.map(v => v.visitor_id)).size : 0;
+        // 計算今日訪客不重複數
+        const todayVisitors = todayResult?.data
+            ? new Set(todayResult.data.map(v => v.visitor_id)).size
+            : 0;
 
-            // 正在遊玩人數
-            const { count: onlinePlayers, error: err3 } = await supabase
-                .from('active_users')
-                .select('visitor_id', { count: 'exact', head: true })
-                .gte('last_seen', fiveMinutesAgo);
-            if (err3) throw err3;
+        // ✅ 漸進式更新 UI（有多少顯示多少）
+        safeSetText('statTotalVisitors', formatNumber(totalResult?.count ?? 0));
+        safeSetText('statTodayVisitors', formatNumber(todayVisitors));
+        safeSetText('statOnlinePlayers', formatNumber(onlineResult?.count ?? 0));
+        safeSetText('statTodayChallengers', formatNumber(challengersResult?.count ?? 0));
 
-            // 今日挑戰者（提交過成績的）- 容錯處理
-            let todayChallengers = 0;
-            try {
-                const { count: challengers, error: err4 } = await supabase
-                    .from('scores')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('seed', seedStr);
-                if (!err4) todayChallengers = challengers || 0;
-            } catch (e) {
-                console.debug('挑戰者查詢失敗（忽略）:', e);
-            }
-
-            // 更新 UI
-            document.getElementById('statTotalVisitors').textContent = formatNumber(totalVisitors || 0);
-            document.getElementById('statTodayVisitors').textContent = formatNumber(todayVisitors);
-            document.getElementById('statOnlinePlayers').textContent = formatNumber(onlinePlayers || 0);
-            document.getElementById('statTodayChallengers').textContent = formatNumber(todayChallengers || 0);
-
-        } catch (e) {
-            console.debug('統計查詢失敗:', e);
-            if (e.code === '400' || e.status === 400 || e.message?.includes('400')) {
-                supabaseActive = false; // Stop trying
-            }
-            updateOfflineUI(e);
-        }
+        // ✅ 成功則重置重試計數
+        retryCount = 0;
     }
 
-    function updateOfflineUI(error = null) {
-        let statusText = '離線';
-        if (error) {
-            // 嘗試提取錯誤代碼
-            if (error.code) statusText += ` (${error.code})`;
-            else if (error.status) statusText += ` (${error.status})`;
-            else if (error.message && error.message.includes('Network')) statusText += ' (網路)';
-        }
-
-        if (document.getElementById('statTotalVisitors').textContent !== statusText) {
-            document.getElementById('statTotalVisitors').textContent = statusText;
-            document.getElementById('statTodayVisitors').textContent = '-';
-            document.getElementById('statOnlinePlayers').textContent = '-';
-            document.getElementById('statTodayChallengers').textContent = '-';
-        }
-    }
-
-    // 格式化數字
-    function formatNumber(num) {
-        if (num >= 10000) {
-            return (num / 1000).toFixed(1) + 'k';
-        }
-        return num.toLocaleString();
-    }
-
-    // 首次載入統計
+    // 首次載入 + 定時器
     if (supabaseActive) updateStats();
-
-    // 每 60 秒更新一次統計
-    const statsInterval = setInterval(() => {
+    const statsTimer = setInterval(() => {
         if (supabaseActive) updateStats();
-        else clearInterval(statsInterval);
-    }, 60000);
+    }, STATS_INTERVAL);
 }
