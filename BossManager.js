@@ -18,6 +18,7 @@ const BOSS_TYPES = {
         projectileSize: 45,
         color: '#ff4444',
         emoji: '🐲',
+        projectileEmoji: '🔥', // ✅ 火焰彈
         attackType: 'fire' // 火焰攻擊
     },
     kraken: {
@@ -32,6 +33,7 @@ const BOSS_TYPES = {
         projectileSize: 40,
         color: '#4fc3f7',
         emoji: '🐙',
+        projectileEmoji: '❄️', // ✅ 冰凍彈
         attackType: 'ice' // 冰凍攻擊（減速玩家）
     },
     mecha: {
@@ -46,6 +48,7 @@ const BOSS_TYPES = {
         projectileSize: 35,
         color: '#ffeb3b',
         emoji: '⚡',
+        projectileEmoji: '🔋', // ✅ 雷電彈 (電池 emoji 替代)
         attackType: 'lightning' // 雷電攻擊（閃屏）
     }
 };
@@ -70,6 +73,7 @@ class Boss {
         this.projectiles = [];
         this.projectileSpeed = config.projectileSpeed;
         this.projectileSize = config.projectileSize;
+        this.projectileEmoji = config.projectileEmoji || '☄️'; // ✅ 儲存投射物 emoji
 
         // 狀態
         this.isHurt = false;
@@ -308,14 +312,14 @@ class Boss {
             if (this.projectileSprite.complete && this.projectileSprite.naturalWidth > 0) {
                 ctx.drawImage(this.projectileSprite, p.x, p.y, p.size, p.size);
             } else {
-                // 備用：彗星效果 (區別於普通火球)
+                // ✅ FIX: 每種 Boss 使用不同的 emoji，統一紫色外光
                 ctx.save();
-                ctx.shadowColor = '#ff4500'; // 深橘紅色
-                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#9b59b6'; // ✅ 紫色外光
+                ctx.shadowBlur = 15;
 
                 ctx.beginPath();
                 ctx.arc(p.x + p.size / 2, p.y + p.size / 2, p.size / 2, 0, Math.PI * 2);
-                ctx.fillStyle = '#ff4500';
+                ctx.fillStyle = '#9b59b6'; // ✅ 紫色填充
                 ctx.fill();
 
                 ctx.shadowBlur = 0;
@@ -323,7 +327,7 @@ class Boss {
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#ffffff';
-                ctx.fillText('☄️', p.x + p.size / 2, p.y + p.size / 2); // 使用彗星 emoji
+                ctx.fillText(this.projectileEmoji, p.x + p.size / 2, p.y + p.size / 2); // ✅ 使用 Boss 專屬 emoji
 
                 ctx.restore();
             }

@@ -244,6 +244,16 @@ class SoundManager {
         setTimeout(() => this.playTone(100, 0.15, 'sawtooth', 0.4), 100);
     }
 
+    // ✅ Boss 擊中玩家音效 (明顯的死亡音效)
+    playBossHit() {
+        // 戲劇性的下降音階 + 爆炸感
+        this.playTone(400, 0.1, 'sawtooth', 0.8);
+        setTimeout(() => this.playTone(300, 0.1, 'sawtooth', 0.7), 80);
+        setTimeout(() => this.playTone(200, 0.15, 'sawtooth', 0.6), 160);
+        setTimeout(() => this.playTone(100, 0.25, 'square', 0.8), 280);
+        setTimeout(() => this.playTone(50, 0.3, 'sawtooth', 0.5), 400);
+    }
+
     // 磁力嗡嗡聲
     playEliteMagnet() {
         this.playTone(120, 0.3, 'sine', 0.2);

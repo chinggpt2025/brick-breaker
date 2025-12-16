@@ -613,7 +613,8 @@ class BrickBreakerGame {
         // 隨機選擇位置（從可用磚塊中選）
         const availablePositions = [];
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
-            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+            // ✅ FIX: 使用實際陣列長度，確保 Boss 關卡額外 2 層磚塊也能被選為菁英
+            for (let r = 0; r < this.bricks[c].length; r++) {
                 if (this.bricks[c][r].status === 1) {
                     availablePositions.push({ c, r });
                 }
@@ -1419,7 +1420,8 @@ class BrickBreakerGame {
         // 計算剩餘磚塊數量
         let remainingBricks = 0;
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
-            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+            // ✅ FIX: 使用實際陣列長度，確保 Boss 關卡額外 2 層磚塊也被計入
+            for (let r = 0; r < this.bricks[c].length; r++) {
                 if (this.bricks[c][r].status === 1) {
                     remainingBricks++;
                 }
@@ -1812,7 +1814,8 @@ class BrickBreakerGame {
             if (ball.held) continue;
 
             for (let c = 0; c < CONFIG.brickColumnCount; c++) {
-                for (let r = 0; r < CONFIG.brickRowCount; r++) {
+                // ✅ FIX: 使用實際陣列長度，確保 Boss 關卡額外 2 層磚塊也能被擊中
+                for (let r = 0; r < this.bricks[c].length; r++) {
                     const brick = this.bricks[c][r];
                     if (brick.status === 1) {
                         if (ball.x > brick.x &&
@@ -2222,9 +2225,9 @@ class BrickBreakerGame {
                 const nc = c + i;
                 const nr = r + j;
 
-                // 边界检查
+                // 边界检查 (✅ FIX: 使用實際陣列長度，確保 Boss 關卡額外 2 層磚塊也能被炸到)
                 if (nc >= 0 && nc < CONFIG.brickColumnCount &&
-                    nr >= 0 && nr < CONFIG.brickRowCount) {
+                    nr >= 0 && nr < this.bricks[nc].length) {
 
                     const neighbor = this.bricks[nc][nr];
                     if (neighbor.status === 1) {
@@ -2307,7 +2310,8 @@ class BrickBreakerGame {
         // 計算剩餘磚塊
         let remainingBricks = 0;
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
-            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+            // ✅ FIX: 使用實際陣列長度，確保 Boss 關卡額外 2 層磚塊也被計入
+            for (let r = 0; r < this.bricks[c].length; r++) {
                 if (this.bricks[c][r].status === 1) {
                     remainingBricks++;
                 }
@@ -2563,8 +2567,8 @@ class BrickBreakerGame {
             return; // 不繼續到下一關
         }
 
-        // 增加难度：每过一关速度增加 0.2，上限為 7
-        this.currentBallSpeed = Math.min(this.currentBallSpeed + 0.2, CONFIG.maxBallSpeed);
+        // ✅ FIX: 球速每過一關增加 0.26，上限為 7
+        this.currentBallSpeed = Math.min(this.currentBallSpeed + 0.26, CONFIG.maxBallSpeed);
 
         // 进入下一关
         this.initBricks();
@@ -3125,7 +3129,8 @@ class BrickBreakerGame {
     // 绘制砖块
     drawBricks() {
         for (let c = 0; c < CONFIG.brickColumnCount; c++) {
-            for (let r = 0; r < CONFIG.brickRowCount; r++) {
+            // ✅ FIX: 使用實際陣列長度，確保 Boss 關卡額外 2 層磚塊也能被繪製
+            for (let r = 0; r < this.bricks[c].length; r++) {
                 const brick = this.bricks[c][r];
                 if (brick.status === 1) {
                     // 砖块渐变
@@ -3445,14 +3450,14 @@ class BrickBreakerGame {
         for (const p of this.eliteProjectiles) {
             this.ctx.save();
 
-            // 發光效果
-            this.ctx.shadowColor = p.color;
+            // ✅ FIX: 統一使用紫色外光
+            this.ctx.shadowColor = '#9b59b6';
             this.ctx.shadowBlur = 15;
 
             // 火球
             this.ctx.beginPath();
             this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            this.ctx.fillStyle = p.color;
+            this.ctx.fillStyle = '#9b59b6'; // ✅ 紫色填充
             this.ctx.fill();
 
             // Emoji
@@ -3460,7 +3465,7 @@ class BrickBreakerGame {
             this.ctx.font = '16px Arial';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
-            this.ctx.fillText('☄️', p.x, p.y);
+            this.ctx.fillText('🔥', p.x, p.y); // ✅ 使用火焰 emoji
 
             this.ctx.restore();
         }
@@ -3777,6 +3782,7 @@ class BrickBreakerGame {
                 if (bossResult.paddleHit) {
                     this.lives--;
                     this.updateUI();
+                    this.sound.playBossHit(); // ✅ 播放 Boss 擊中音效
 
                     // 根據 Boss 類型顯示不同的擊中訊息
                     const attackMessages = {
