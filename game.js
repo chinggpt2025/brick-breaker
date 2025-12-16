@@ -885,6 +885,16 @@ class BrickBreakerGame {
             settingsBtn.addEventListener('click', () => this.showSettings());
         }
 
+        // 主選單排行榜按鈕
+        const mainLeaderboardBtn = document.getElementById('mainLeaderboardBtn');
+        if (mainLeaderboardBtn) {
+            mainLeaderboardBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showLeaderboard();
+                mainLeaderboardBtn.blur();
+            });
+        }
+
         // 主界面音效切換按鈕
         const soundToggle = document.getElementById('soundToggle');
         if (soundToggle) {
