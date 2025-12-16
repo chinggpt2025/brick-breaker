@@ -3934,12 +3934,17 @@ async function initVisitorStats() {
                 .gte('last_seen', fiveMinutesAgo);
             if (err3) throw err3;
 
-            // 今日挑戰者（提交過成績的）
-            const { count: todayChallengers, error: err4 } = await supabase
-                .from('scores')
-                .select('id', { count: 'exact', head: true })
-                .eq('seed', seedStr);
-            if (err4) throw err4;
+            // 今日挑戰者（提交過成績的）- 容錯處理
+            let todayChallengers = 0;
+            try {
+                const { count: challengers, error: err4 } = await supabase
+                    .from('scores')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('seed', seedStr);
+                if (!err4) todayChallengers = challengers || 0;
+            } catch (e) {
+                console.debug('挑戰者查詢失敗（忽略）:', e);
+            }
 
             // 更新 UI
             document.getElementById('statTotalVisitors').textContent = formatNumber(totalVisitors || 0);
