@@ -2956,16 +2956,48 @@ class BrickBreakerGame {
         this.showShareModal();
     }
 
-    // 保存成绩到排行榜 (Supabase)
+    // ===== 排行榜系統 (v1.15 重構) =====
+
+    // ✅ 安全的 DOM 操作
+    _safeGetEl(id) {
+        return document.getElementById(id);
+    }
+
+    _safeSetText(id, text) {
+        const el = this._safeGetEl(id);
+        if (el) el.textContent = text;
+    }
+
+    _safeSetHtml(id, html) {
+        const el = this._safeGetEl(id);
+        if (el) el.innerHTML = html;
+    }
+
+    _safeToggleClass(id, className, add) {
+        const el = this._safeGetEl(id);
+        if (el) el.classList[add ? 'remove' : 'add'](className);
+    }
+
+    // 保存成绩到排行榜 (v1.15 重構)
     async saveToLeaderboard(name) {
+        // ✅ 防重複提交
+        if (this._isSavingScore) {
+            this.showToast('正在保存中...', 'info');
+            return;
+        }
+        this._isSavingScore = true;
+
         const today = new Date();
         const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
+        // ✅ 名稱驗證與清理
+        const cleanName = (name || '').trim().substring(0, 12) || '匿名玩家';
 
         try {
             const { error } = await supabase
                 .from('scores')
                 .insert({
-                    player_name: name.trim() || '匿名玩家',
+                    player_name: cleanName,
                     score: Math.floor(this.score),
                     max_combo: this.maxCombo,
                     seed: seedStr
@@ -2973,19 +3005,27 @@ class BrickBreakerGame {
 
             if (error) throw error;
 
-            // 显示提示
-            document.getElementById('saveHint').classList.remove('hidden');
-            document.getElementById('nameInputSection').style.display = 'none';
+            // ✅ 安全的 DOM 更新
+            const saveHint = this._safeGetEl('saveHint');
+            const nameSection = this._safeGetEl('nameInputSection');
+
+            if (saveHint) saveHint.classList.remove('hidden');
+            if (nameSection) nameSection.style.display = 'none';
+
             setTimeout(() => {
-                document.getElementById('saveHint').classList.add('hidden');
+                if (saveHint) saveHint.classList.add('hidden');
             }, 2000);
+
+            this.showToast('成績已保存！', 'success');
         } catch (err) {
             console.error('保存失败:', err);
             this.showToast('保存失敗，請檢查網路連接', 'error');
+        } finally {
+            this._isSavingScore = false;
         }
     }
 
-    // 获取排行榜 (Supabase)
+    // 获取排行榜 (v1.15 重構)
     async getLeaderboard() {
         const today = new Date();
         const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
@@ -2998,7 +3038,10 @@ class BrickBreakerGame {
                 .order('score', { ascending: false })
                 .limit(10);
 
-            if (error) throw error;
+            if (error) {
+                console.debug('排行榜查詢失敗:', error);
+                return [];
+            }
             return data || [];
         } catch (err) {
             console.error('获取排行榜失败:', err);
@@ -3006,29 +3049,44 @@ class BrickBreakerGame {
         }
     }
 
-    // 显示排行榜 (async)
+    // 显示排行榜 (v1.15 重構)
     async showLeaderboard() {
         const today = new Date();
         const seedStr = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
 
-        document.getElementById('leaderboardSeed').textContent = seedStr;
+        // ✅ 安全的 DOM 更新
+        this._safeSetText('leaderboardSeed', seedStr);
 
-        const list = document.getElementById('leaderboardList');
+        const list = this._safeGetEl('leaderboardList');
+        const modal = this._safeGetEl('leaderboardModal');
+
+        if (!list || !modal) {
+            console.error('排行榜 DOM 元素不存在');
+            this.showToast('排行榜載入失敗', 'error');
+            return;
+        }
+
+        // ✅ 顯示載入狀態
         list.innerHTML = '<li class="leaderboard-empty">加载中...</li>';
-        document.getElementById('leaderboardModal').classList.remove('hidden');
+        modal.classList.remove('hidden');
 
         const leaderboard = await this.getLeaderboard();
 
         if (leaderboard.length === 0) {
             list.innerHTML = '<li class="leaderboard-empty">暂无记录，成为第一名吧！</li>';
         } else {
-            list.innerHTML = leaderboard.map((entry, index) => `
-                <li>
-                    <span class="rank">${index + 1}.</span>
-                    <span class="name">${this.escapeHtml(entry.player_name)}</span>
-                    <span class="lb-score">${entry.score.toLocaleString()}</span>
-                </li>
-            `).join('');
+            list.innerHTML = leaderboard.map((entry, index) => {
+                // ✅ 安全的數值處理
+                const score = typeof entry.score === 'number' ? entry.score : 0;
+                const name = this.escapeHtml(entry.player_name || '匿名');
+                return `
+                    <li>
+                        <span class="rank">${index + 1}.</span>
+                        <span class="name">${name}</span>
+                        <span class="lb-score">${score.toLocaleString()}</span>
+                    </li>
+                `;
+            }).join('');
         }
     }
 
@@ -3041,7 +3099,8 @@ class BrickBreakerGame {
 
     // 隐藏排行榜
     hideLeaderboard() {
-        document.getElementById('leaderboardModal').classList.add('hidden');
+        const modal = this._safeGetEl('leaderboardModal');
+        if (modal) modal.classList.add('hidden');
     }
 
     // 绘制挡板
