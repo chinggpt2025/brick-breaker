@@ -60,6 +60,7 @@ body
 | ID | 文字 | data-i18n | 觸發方法 |
 |----|------|-----------|----------|
 | `#soundToggle` | 🔊 音效 | ui.soundOn | toggleSound() |
+| `#fullscreenBtn` | 📺 全螢幕 | - | toggleFullscreen() |
 | `#settingsBtn` | ⚙️ 設定 | ui.settings | showSettings() |
 | `#viewAchievementsBtn` | 🏅 成就 | ui.achievements | showAchievements() |
 | `#helpBtn` | ❓ 說明 | ui.help | showHelp() |

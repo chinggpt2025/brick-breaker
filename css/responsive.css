@@ -2,6 +2,16 @@
 
 /* Mobile Optimization (Johari P1) - Max Width 600px (Portrait mostly) */
 @media (max-width: 600px) {
+    body {
+        /* TOP ALIGNMENT for larger bottom control zone */
+        align-items: flex-start !important;
+        padding-top: 10px;
+        /* Safe margin from status bar */
+        height: 100vh;
+        /* Ensure full height availability */
+        display: flex;
+    }
+
     .visitor-stats {
         display: none !important;
         /* Hide visitor stats on mobile to save space */
@@ -10,7 +20,8 @@
     /* Compact Header */
     .game-header {
         margin-bottom: 5px;
-        padding: 5px;
+        padding: 2px 5px;
+        /* Thinner padding */
     }
 
     .game-header h1 {
@@ -73,12 +84,16 @@
         width: 100%;
         justify-content: center;
         margin-top: 5px;
+        padding-bottom: env(safe-area-inset-bottom);
+        /* Safe Area */
     }
 
     .control-buttons button {
-        font-size: 0.85rem;
-        padding: 8px 12px;
-        min-height: 36px;
+        font-size: 0.9rem;
+        /* Slightly larger text */
+        padding: 8px 16px;
+        min-height: 48px;
+        /* Touch Target Optimization: min 48px */
         /* Smaller but still tappable */
         flex: 1 1 40%;
         max-width: 140px;
@@ -93,6 +108,8 @@
         padding: 15px;
         font-size: 1.3rem;
         margin: 15px auto;
+        min-height: 56px;
+        /* Easier to tap */
     }
 
     /* Modals Readability */
@@ -112,6 +129,8 @@
 @media (max-width: 850px) and (min-width: 601px) {
     body {
         padding: 10px;
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
         align-items: flex-start;
         overflow-y: auto;
     }
@@ -130,7 +149,8 @@
 
     .control-buttons button {
         padding: 10px 16px;
-        min-height: 40px;
+        min-height: 48px;
+        /* Consistent touch target */
     }
 }
 

@@ -228,6 +228,7 @@ class BrickBreakerGame {
             this.keys.right = true;
         } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
             e.preventDefault();
+            this.sound.init(); // ✅ 確保使用者互動解鎖音效
 
             // 接關畫面優先處理
             if (this.isContinueActive) {
@@ -263,6 +264,7 @@ class BrickBreakerGame {
         // 為了防止畫面捲動，我們在 style.css 中對 canvas 使用了 touch-action: none
 
         this._isTouching = true;
+        this.sound.init(); // ✅ 確保觸控解鎖音效
         const touch = e.touches[0];
         const rect = this.canvas.getBoundingClientRect();
         this.touchX = touch.clientX - rect.left;
@@ -302,6 +304,7 @@ class BrickBreakerGame {
 
     _handleMouseDown(e) {
         this._isMouseDown = true;
+        this.sound.init(); // ✅ 確保滑鼠點擊解鎖音效
         if (this.gameState === 'idle' || this.gameState === 'gameover' || this.gameState === 'win') {
             this.toggleGame();
         } else if (this.gameState === 'playing') {
@@ -836,9 +839,26 @@ class BrickBreakerGame {
         // 主界面音效切換按鈕
         const soundToggle = document.getElementById('soundToggle');
         if (soundToggle) {
-            soundToggle.addEventListener('click', () => {
-                this.sound.toggle();
-                this.updateSoundButton();
+            soundToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // 强制解锁音频上下文（针对移动端）
+                this.sound.init();
+                this.toggleSound();
+                // 更新按鈕文字
+                soundToggle.textContent = this.sound.enabled ? t('ui.soundOn') : t('ui.soundOff');
+                // 讓按鈕失去焦點，避免按空白鍵時觸發
+                soundToggle.blur();
+            });
+        }
+
+        // 全螢幕按鈕
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.sound.init(); // 同步解鎖音效
+                this.toggleFullscreen();
+                fullscreenBtn.blur();
             });
         }
 
@@ -1100,6 +1120,19 @@ class BrickBreakerGame {
         const helpModal = document.getElementById('helpModal');
         if (helpModal) {
             helpModal.classList.add('hidden');
+        }
+    }
+
+    // 全螢幕切換
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                console.log(`Error attempting to enable fullscreen: ${err.message} (${err.name})`);
+            });
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
         }
     }
 

@@ -35,6 +35,8 @@
   - 支援 Web Audio API。
   - BGM 播放與循環（支援 7 種主題：normal, journey, adventure, mystic, fast, triumph, boss）。
   - 各種遊戲音效（擊打、得分、GameOver 等）。
+  - **移動端優化**：
+    - 強制音效解鎖：使用者首次互動時呼叫 `sound.init()` 以恢復 AudioContext。
 - **視覺效果**：
   - 粒子系統 (`ParticleSystem`)：擊破磚塊、Boss 攻擊特效。
   - 畫面震動 (`ScreenShake`)：受到傷害或強力撞擊時觸發。
@@ -77,7 +79,9 @@ subgraph 外部服務
 
 **新增（v1.7）：** `MobileScalingManager` - 管理響應式縮放邏輯，從 HTML 內聯腳本重構為獨立類別。
 
----
+**新增（v1.8）：** 移動端優化
+- **全螢幕模式**：`requestFullscreen` 整合。
+- **直式佈局**：Top Alignment + Bottom Control Zone (CSS)。
 
 ## 遊戲狀態機
 
