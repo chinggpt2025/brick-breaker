@@ -957,6 +957,20 @@ class BrickBreakerGame {
             endlessCheck.addEventListener('change', (e) => this.toggleEndlessMode(e.target.checked));
         }
 
+        // v1.18: 通用 Modal 點擊背景關閉
+        // 點擊 Modal 本身（overlay）時關閉，點擊內容不關閉
+        const modals = ['leaderboardModal', 'settingsModal', 'helpModal', 'shareModal'];
+        modals.forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        });
+
         // 減少動態效果開關監聽
         const reduceMotionCheck = document.getElementById('settingReduceMotionCheck');
         if (reduceMotionCheck) {
@@ -3041,10 +3055,21 @@ class BrickBreakerGame {
         }
     }
 
-    // 获取排行榜 (v1.15 重構)
+    // 获取排行榜 (v1.15 重構 + v1.18 Cache)
     async getLeaderboard() {
         const today = new Date();
         const seedStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+
+        // ✅ 快取機制 (60秒)
+        const CACHE_DURATION = 60 * 1000;
+        const now = Date.now();
+
+        if (this._leaderboardCache &&
+            this._leaderboardCache.seed === seedStr &&
+            (now - this._leaderboardCache.timestamp < CACHE_DURATION)) {
+            console.debug('Using cached leaderboard data');
+            return this._leaderboardCache.data;
+        }
 
         try {
             const { data, error } = await supabase
@@ -3058,6 +3083,14 @@ class BrickBreakerGame {
                 console.debug('排行榜查詢失敗:', error);
                 return [];
             }
+
+            // 更新快取
+            this._leaderboardCache = {
+                seed: seedStr,
+                timestamp: now,
+                data: data || []
+            };
+
             return data || [];
         } catch (err) {
             console.error('获取排行榜失败:', err);
@@ -3082,8 +3115,13 @@ class BrickBreakerGame {
             return;
         }
 
-        // ✅ 顯示載入狀態
-        list.innerHTML = '<li class="leaderboard-empty">加载中...</li>';
+        // ✅ 顯示載入狀態 (Spinner)
+        list.innerHTML = `
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <div class="loading-text">Loading...</div>
+            </div>
+        `;
         modal.classList.remove('hidden');
 
         const leaderboard = await this.getLeaderboard();
