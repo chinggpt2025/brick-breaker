@@ -11,7 +11,7 @@
 // Supabase 配置
 const SUPABASE_URL = 'https://ruqsvvefpemqptnsyymj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1cXN2dmVmcGVtcXB0bnN5eW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyNDg5ODMsImV4cCI6MjA4MDgyNDk4M30.j9rRy7bgkKh50bhDdkil1UoP1kBAQFDTVgfkHnViH4Q';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ===========================
 // Mobile Scaling Manager
@@ -3116,7 +3116,7 @@ class BrickBreakerGame {
         const cleanName = (name || '').trim().substring(0, 12) || '匿名玩家';
 
         try {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('scores')
                 .insert({
                     player_name: cleanName,
@@ -3170,7 +3170,7 @@ class BrickBreakerGame {
         }
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('scores')
                 .select('player_name, score, max_combo')
                 .eq('seed', seedStr)
@@ -3298,7 +3298,7 @@ class BrickBreakerGame {
     // ✅ 通用查詢方法
     async _queryLeaderboard({ limit = 10, weekStart = null } = {}) {
         try {
-            let query = supabase
+            let query = supabaseClient
                 .from('scores')
                 .select('player_name, score, max_combo, seed')
                 .order('score', { ascending: false })
@@ -3326,7 +3326,7 @@ class BrickBreakerGame {
         }
 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('scores')
                 .select('player_name, score, max_combo, seed')
                 .eq('player_name', savedName)
@@ -4340,7 +4340,7 @@ async function initVisitorStats() {
 
     // ===== 2. 記錄訪問（容錯） =====
     const visitResult = await safeQuery(
-        () => supabase.from('visits').insert({ visitor_id: visitorId }),
+        () => supabaseClient.from('visits').insert({ visitor_id: visitorId }),
         null, 'recordVisit'
     );
     if (!visitResult) {
@@ -4352,7 +4352,7 @@ async function initVisitorStats() {
     async function updateHeartbeat() {
         if (!supabaseActive) return;
         await safeQuery(
-            () => supabase.from('active_users').upsert(
+            () => supabaseClient.from('active_users').upsert(
                 { visitor_id: visitorId, last_seen: new Date().toISOString() },
                 { onConflict: 'visitor_id' }
             ),
@@ -4391,16 +4391,16 @@ async function initVisitorStats() {
         // ✅ 每個查詢獨立，一個失敗不影響其他
         const [totalResult, todayResult, onlineResult, challengersResult] = await Promise.all([
             // 總訪客數
-            safeQuery(() => supabase.from('visits').select('*', { count: 'exact', head: true }),
+            safeQuery(() => supabaseClient.from('visits').select('*', { count: 'exact', head: true }),
                 { count: null }, 'totalVisitors'),
             // 今日訪客
-            safeQuery(() => supabase.from('visits').select('visitor_id').gte('visited_at', todayStart),
+            safeQuery(() => supabaseClient.from('visits').select('visitor_id').gte('visited_at', todayStart),
                 { data: [] }, 'todayVisitors'),
             // 在線人數
-            safeQuery(() => supabase.from('active_users').select('*', { count: 'exact', head: true }).gte('last_seen', fiveMinutesAgo),
+            safeQuery(() => supabaseClient.from('active_users').select('*', { count: 'exact', head: true }).gte('last_seen', fiveMinutesAgo),
                 { count: null }, 'onlinePlayers'),
             // 今日挑戰者
-            safeQuery(() => supabase.from('scores').select('*', { count: 'exact', head: true }).eq('seed', seedStr),
+            safeQuery(() => supabaseClient.from('scores').select('*', { count: 'exact', head: true }).eq('seed', seedStr),
                 { count: null }, 'todayChallengers')
         ]);
 
