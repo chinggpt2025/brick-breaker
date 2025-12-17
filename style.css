@@ -217,12 +217,14 @@ body {
     color: #ef4444;
 }
 
-/* 控制按钮容器 */
+/* 控制按钮容器 - 確保在 overlay 之上可點擊 */
 .control-buttons {
     display: flex;
     gap: 10px;
     justify-content: center;
     margin-top: 10px;
+    position: relative;
+    z-index: 100;
 }
 
 /* 設定按鈕 */
@@ -2013,7 +2015,4 @@ input:checked+.slider:before {
         top: -15px;
         right: -15px;
     }
-}
-
-border: 1px solid rgba(255, 255, 255, 0.1);
 }
