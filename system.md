@@ -318,3 +318,24 @@ gameLoop() {
 - 更大間距：`padding: 10px`
 - 更高對比度：inactive `#ddd`, active `#ffd700`
 - 發光效果：`box-shadow: 0 2px 8px rgba(255,215,0,0.2)`
+
+---
+
+## v1.30 新玩家 UX 改進
+
+### Canvas Wrapper 架構
+- **問題**：overlay 覆蓋整個 game-container，導致控制按鈕無法點擊
+- **解決方案**：新增 `.canvas-wrapper` 作為 overlay 的定位父元素
+- **效果**：overlay 只覆蓋 canvas 區域，控制按鈕始終可用
+
+### ScoreCard 按鈕統一綁定
+- **新增方法**：`_bindScoreCardButtons(isGameComplete)`
+- **呼叫位置**：`winGame()` 和 `showScoreCard()`
+- **功能**：
+  - 統一防抖邏輯
+  - 錯誤恢復機制
+  - 按鈕狀態重置
+
+### 分享圖片文字修復
+- **標題顏色**：`#ffffff` → `white`
+- **日期顏色**：`#94a3b8` → `#cbd5e1`

@@ -11,11 +11,12 @@ body
 ├── .game-container
 │   ├── #portrait-warning         // 直立模式警告
 │   ├── .game-header              // 標題與統計
-│   ├── #gameCanvas               // 遊戲畫布
+│   ├── .canvas-wrapper           // v1.30 新增 - overlay 定位容器
+│   │   ├── #gameCanvas           // 遊戲畫布
+│   │   └── #overlay              // 開始/暫停覆蓋層
 │   ├── .game-controls            // 控制按鈕
 │   ├── #visitorStats             // 訪客統計
 │   └── #powerupTimers            // 道具時間條
-├── #overlay                      // 開始/暫停覆蓋層
 ├── #scoreCard                    // 成績卡片
 ├── #leaderboardModal             // 排行榜
 ├── #continueOverlay              // 續關畫面
@@ -192,3 +193,32 @@ showToast(message, type, duration)
 - **脈動光環**：磚塊周圍顯示紫色脈動磁場 (`rgba(168, 85, 247, 0.4)`)
 - **吸引光束**：當球進入 200px 範圍內，顯示連接球與磚塊的能量光束
 - **動態粒子**：能量粒子沿光束流動，強度隨距離增加
+
+---
+
+## v1.30 新玩家 UX 改進
+
+### Canvas Wrapper 架構
+
+解決新玩家開始前無法點擊控制按鈕的問題。
+
+```
+[game-container]
+├── [canvas-wrapper] ← 新增 (position: relative)
+│   ├── [canvas]
+│   └── [overlay] ← 只覆蓋 canvas 區域
+└── [game-controls] ← 不再被遮住
+```
+
+**修改文件**：
+- `index.html`：新增 `.canvas-wrapper` 包裹 canvas 和 overlay
+- `css/layout.css`：新增 `.canvas-wrapper` 樣式
+
+### ScoreCard 按鈕統一綁定
+
+**新增方法**：`_bindScoreCardButtons(isGameComplete)`
+
+統一處理所有成績卡片按鈕事件：
+- 防抖機制
+- 錯誤恢復
+- 按鈕狀態重置
