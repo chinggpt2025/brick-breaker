@@ -48,19 +48,22 @@
             </div>
         </div>
 
-        <canvas id="gameCanvas"></canvas>
+        <!-- Canvas Wrapper - overlay 只覆蓋這個區域 -->
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas id="gameCanvas"></canvas>
 
-        <!-- Overlay (在 game-container 內，只覆蓋 canvas 區域) -->
-        <div class="overlay" id="overlay">
-            <div class="overlay-content">
-                <h2 id="overlayTitle" data-i18n="messages.title">打磚塊</h2>
-                <p id="overlayMessage" data-i18n="messages.start">按空格鍵開始遊戲</p>
-                <button class="start-btn" id="startBtn">
-                    <span class="btn-icon">▶️</span>
-                    <span data-i18n="messages.start">點擊開始</span>
-                </button>
-                <div class="high-score">
-                    <span data-i18n="ui.highScore">最高分</span>: <span id="highScore">0</span>
+            <!-- Overlay (只覆蓋 canvas 區域) -->
+            <div class="overlay" id="overlay">
+                <div class="overlay-content">
+                    <h2 id="overlayTitle" data-i18n="messages.title">打磚塊</h2>
+                    <p id="overlayMessage" data-i18n="messages.start">按空格鍵開始遊戲</p>
+                    <button class="start-btn" id="startBtn">
+                        <span class="btn-icon">▶️</span>
+                        <span data-i18n="messages.start">點擊開始</span>
+                    </button>
+                    <div class="high-score">
+                        <span data-i18n="ui.highScore">最高分</span>: <span id="highScore">0</span>
+                    </div>
                 </div>
             </div>
         </div>

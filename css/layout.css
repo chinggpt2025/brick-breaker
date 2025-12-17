@@ -63,15 +63,23 @@
     text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
+/* Canvas Wrapper - overlay 的定位父元素 */
+.canvas-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
 /* Game Canvas */
 #gameCanvas {
+    display: block;
     border-radius: 16px;
     box-shadow:
         0 0 0 3px rgba(255, 255, 255, 0.1),
         var(--shadow-md),
         inset 0 0 60px rgba(0, 0, 0, 0.3);
     background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-canvas) 100%);
-    touch-action: none; /* 防止觸控捲動 */
+    touch-action: none;
+    /* 防止觸控捲動 */
 }
 
 /* Control Hints */
