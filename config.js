@@ -239,6 +239,7 @@ const LANGUAGES = {
             highScore: '最高分',
             soundOn: '🔊 音效',
             soundOff: '🔇 靜音',
+            fullscreen: '📺 全螢幕',
             endlessOn: '♾️ 無盡模式: 開',
             endlessOff: '♾️ 無盡模式: 關',
             language: '🌐 語言',
@@ -246,6 +247,12 @@ const LANGUAGES = {
             settings: '⚙️ 設定',
             achievements: '🏅 成就',
             leaderboard: '🏆 排行榜'
+        },
+        stats: {
+            totalVisitors: '總訪客',
+            todayVisitors: '今日訪客',
+            onlinePlayers: '正在遊玩',
+            todayChallengers: '今日挑戰者'
         },
         controls: {
             arrows: '⬅️ ➡️ 方向鍵控制擋板',
@@ -352,6 +359,7 @@ const LANGUAGES = {
             highScore: 'High Score',
             soundOn: '🔊 Sound',
             soundOff: '🔇 Muted',
+            fullscreen: '📺 Fullscreen',
             endlessOn: '♾️ Endless: ON',
             endlessOff: '♾️ Endless: OFF',
             language: '🌐 Language',
@@ -359,6 +367,12 @@ const LANGUAGES = {
             settings: '⚙️ Settings',
             achievements: '🏅 Achievements',
             leaderboard: '🏆 Leaderboard'
+        },
+        stats: {
+            totalVisitors: 'Total Visitors',
+            todayVisitors: 'Today',
+            onlinePlayers: 'Playing',
+            todayChallengers: 'Challengers'
         },
         controls: {
             arrows: '⬅️ ➡️ Arrow keys to move paddle',
