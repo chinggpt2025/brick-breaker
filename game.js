@@ -1032,6 +1032,33 @@ class BrickBreakerGame {
         if (closeAchievementsBtn) {
             closeAchievementsBtn.addEventListener('click', () => this.hideAchievements());
         }
+
+        // 訪客統計 Toggle 按鈕 (Mobile)
+        const visitorStatsToggle = document.getElementById('visitorStatsToggle');
+        const visitorStats = document.getElementById('visitorStats');
+        if (visitorStatsToggle && visitorStats) {
+            // 初始化：手機版預設收起
+            const isMobile = window.innerWidth <= 600 || 
+                            (window.innerWidth <= 1280 && window.matchMedia('(orientation: landscape)').matches);
+            if (isMobile) {
+                visitorStats.classList.add('collapsed');
+            }
+
+            visitorStatsToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isCollapsed = visitorStats.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    visitorStats.classList.remove('collapsed');
+                    visitorStats.classList.add('expanded');
+                    visitorStatsToggle.classList.add('active');
+                } else {
+                    visitorStats.classList.add('collapsed');
+                    visitorStats.classList.remove('expanded');
+                    visitorStatsToggle.classList.remove('active');
+                }
+            });
+        }
     }
 
     showSettings() {

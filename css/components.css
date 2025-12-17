@@ -67,6 +67,49 @@
     text-align: right;
 }
 
+/* Visitor Stats Toggle Button (Mobile Only) */
+.visitor-stats-toggle {
+    display: none; /* Hidden on desktop */
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 250;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.visitor-stats-toggle:hover {
+    background: rgba(0, 0, 0, 0.85);
+    transform: scale(1.1);
+}
+
+.visitor-stats-toggle.active {
+    background: rgba(74, 222, 128, 0.3);
+    border-color: var(--accent-green);
+}
+
+/* Visitor Stats Collapsed State (Mobile) */
+.visitor-stats.collapsed {
+    transform: translateX(-120%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.visitor-stats.expanded {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
 /* Start Button */
 .start-btn {
     display: block;

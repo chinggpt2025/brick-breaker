@@ -12,9 +12,28 @@
         display: flex;
     }
 
+    /* Mobile Toggle Button */
+    .visitor-stats-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Visitor stats: collapsible on mobile */
     .visitor-stats {
-        display: none !important;
-        /* Hide visitor stats on mobile to save space */
+        position: fixed;
+        top: 55px;
+        left: 10px;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        font-size: 0.75rem;
+        padding: 8px 12px;
+        min-width: 120px;
+    }
+
+    .visitor-stats.collapsed {
+        transform: translateX(-120%);
+        opacity: 0;
+        pointer-events: none;
     }
 
     /* Compact Header */
@@ -316,9 +335,33 @@
         font-size: 0.9rem;
     }
 
+    /* Mobile Toggle Button in Landscape */
+    .visitor-stats-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        top: 5px;
+        left: 5px;
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+
+    /* Visitor stats: collapsible in landscape */
     .visitor-stats {
-        display: none !important;
-        /* Hide visitor stats to save space */
+        position: fixed;
+        top: 42px;
+        left: 5px;
+        font-size: 0.7rem;
+        padding: 6px 10px;
+        min-width: 100px;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .visitor-stats.collapsed {
+        transform: translateX(-120%);
+        opacity: 0;
+        pointer-events: none;
     }
 
     /* Floating Controls */
