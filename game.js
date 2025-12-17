@@ -3052,15 +3052,15 @@ class BrickBreakerGame {
         ctx.fill();
         ctx.restore();
 
-        // 3. 标题
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 48px "Segoe UI", Roboto, sans-serif';
+        // 3. 标题 - 使用明確的白色確保可見
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 48px "Segoe UI", Roboto, Arial, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('Brick Breaker', canvas.width / 2, 80);
 
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '24px "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = '#cbd5e1'; // 更亮的灰色
+        ctx.font = '24px "Segoe UI", Roboto, Arial, sans-serif';
         const today = new Date();
         const dateStr = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
         ctx.fillText(dateStr, canvas.width / 2, 130);
