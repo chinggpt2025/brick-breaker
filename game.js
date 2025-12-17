@@ -2645,15 +2645,33 @@ class BrickBreakerGame {
             // 顯示卡片
             card.classList.remove('hidden');
 
-            // 綁定重玩按鈕
-            document.getElementById('playAgainBtn').onclick = () => {
-                document.getElementById('scoreCard').classList.add('hidden');
-                this.gameCompleted = false; // 重置通關狀態
-                this.resetGame();
-                this.gameState = 'idle';
-                // ✅ FIX N1: 使用 i18n 翻譯，移除硬編碼中文
-                this.showOverlay(t('messages.title'), t('messages.start'));
-            };
+            // ✅ Johari Fix K1: 使用統一按鈕綁定方法
+            this._bindScoreCardButtons(true);
+
+            // ✅ 通關專屬：計算並顯示評級和反饋
+            const rank = this.calculateRank();
+            const rankBadge = document.getElementById('cardRankBadge');
+            if (rankBadge) {
+                rankBadge.src = `assets/rank_${rank}.png`;
+                rankBadge.alt = `Rank ${rank.toUpperCase()}`;
+                rankBadge.classList.remove('hidden');
+            }
+
+            const feedbackEl = document.getElementById('cardFeedback');
+            if (feedbackEl) {
+                feedbackEl.className = 'card-feedback';
+                feedbackEl.textContent = '🎉 恭喜通關！太厲害了！';
+                feedbackEl.classList.add('new-record');
+            }
+
+            // ✅ H3 Fix: 連擊高亮（之前只在 showScoreCard 有）
+            const comboStat = document.getElementById('comboStat');
+            if (comboStat) {
+                comboStat.className = 'card-stat combo-highlight';
+                if (this.maxCombo >= 8) {
+                    comboStat.classList.add('awesome');
+                }
+            }
 
             return; // 不繼續到下一關
         }
@@ -2859,23 +2877,52 @@ class BrickBreakerGame {
 
         card.classList.remove('hidden');
 
-        // ========== 按鈕綁定 (v1.23 安全重寫) ==========
+        // ✅ Johari Fix K1: 使用統一按鈕綁定方法
+        this._bindScoreCardButtons(false);
+    }
 
-        // ✅ 再玩一次（加防抖）
+    // 隐藏成绩卡片
+    hideScoreCard() {
+        document.getElementById('scoreCard').classList.add('hidden');
+        document.getElementById('shareHint').classList.add('hidden');
+        document.getElementById('saveHint').classList.add('hidden');
+
+        // ✅ FIX B3: 重置按鈕狀態
+        const saveScoreBtn = document.getElementById('saveScoreBtn');
+        if (saveScoreBtn) saveScoreBtn.disabled = false;
+        this._isSavingScore = false;
+        this._isResetting = false;
+    }
+
+    // ========== 統一按鈕綁定方法 (Johari Fix) ==========
+    /**
+     * 統一綁定 scoreCard 所有按鈕事件
+     * @param {boolean} isGameComplete - 是否為通關畫面（影響 playAgainBtn 行為）
+     */
+    _bindScoreCardButtons(isGameComplete = false) {
+        // ===== 1. 再玩一次（加防抖）=====
         const playAgainBtn = document.getElementById('playAgainBtn');
         if (playAgainBtn) {
             playAgainBtn.onclick = () => {
+                // ✅ FIX K4: 統一防抖邏輯
                 if (this._isResetting) return;
                 this._isResetting = true;
+
                 this.hideScoreCard();
+
+                if (isGameComplete) {
+                    this.gameCompleted = false; // 重置通關狀態
+                }
+
                 this.resetGame();
                 this.gameState = 'idle';
                 this.showOverlay(t('messages.title'), t('messages.start'));
+
                 setTimeout(() => { this._isResetting = false; }, 500);
             };
         }
 
-        // ✅ 複製成績（加錯誤處理）
+        // ===== 2. 複製成績（加錯誤處理）=====
         const shareBtn = document.getElementById('shareBtn');
         if (shareBtn) {
             shareBtn.onclick = () => {
@@ -2888,35 +2935,45 @@ class BrickBreakerGame {
             };
         }
 
-        // ✅ 儲存成績（禁用按鈕防重複）
+        // ===== 3. 儲存成績（防重複 + 錯誤恢復）=====
         const saveScoreBtn = document.getElementById('saveScoreBtn');
         const playerNameInput = document.getElementById('playerName');
         if (saveScoreBtn && playerNameInput) {
             saveScoreBtn.onclick = async () => {
+                // ✅ FIX U1: 防重複點擊
+                if (this._isSavingScore || saveScoreBtn.disabled) return;
+
                 saveScoreBtn.disabled = true;
-                await this.saveToLeaderboard(playerNameInput.value);
-                // 保存後不恢復按鈕，防止重複提交
+
+                try {
+                    await this.saveToLeaderboard(playerNameInput.value);
+                    // 保存成功後保持禁用，防止重複提交
+                } catch (err) {
+                    // ✅ FIX U2: 錯誤時恢復按鈕
+                    console.error('儲存失敗:', err);
+                    saveScoreBtn.disabled = false;
+                    this.showToast('儲存失敗，請重試', 'error');
+                }
             };
         }
 
-        // ✅ 查看排行榜（移除重複綁定）
+        // ===== 4. 查看排行榜 =====
         const viewLeaderboardBtn = document.getElementById('viewLeaderboardBtn');
         if (viewLeaderboardBtn) {
             viewLeaderboardBtn.onclick = () => this.showLeaderboard();
         }
 
-        // ✅ 重置名字输入区域（加 null 檢查）
+        // ===== 5. 重置名字輸入區域 =====
         const nameInputSection = document.getElementById('nameInputSection');
         if (nameInputSection) nameInputSection.style.display = 'flex';
         if (playerNameInput) playerNameInput.value = '';
-        if (saveScoreBtn) saveScoreBtn.disabled = false; // 重置禁用狀態
-    }
+        if (saveScoreBtn) saveScoreBtn.disabled = false;
 
-    // 隐藏成绩卡片
-    hideScoreCard() {
-        document.getElementById('scoreCard').classList.add('hidden');
-        document.getElementById('shareHint').classList.add('hidden');
-        document.getElementById('saveHint').classList.add('hidden');
+        // ===== 6. 顯示種子日期 =====
+        const today = new Date();
+        const seedStr = `#${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        const cardSeed = document.getElementById('cardSeed');
+        if (cardSeed) cardSeed.textContent = seedStr;
     }
 
     // 显示分享模态框
