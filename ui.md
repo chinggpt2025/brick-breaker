@@ -61,7 +61,7 @@ body
 | ID | 文字 | data-i18n | 觸發方法 |
 |----|------|-----------|----------|
 | `#soundToggle` | 🔊 音效 | ui.soundOn | toggleSound() |
-| `#fullscreenBtn` | 📺 全螢幕 | - | toggleFullscreen() |
+| `#fullscreenBtn` | 📺 全螢幕 | ui.fullscreen | toggleFullscreen() |
 | `#settingsBtn` | ⚙️ 設定 | ui.settings | showSettings() |
 | `#viewAchievementsBtn` | 🏅 成就 | ui.achievements | showAchievements() |
 | `#helpBtn` | ❓ 說明 | ui.help | showHelp() |
@@ -91,6 +91,16 @@ body
 | `data-i18n-html` | HTML 內容 | `<p data-i18n-html="controls.spaceStart">按 <kbd>空格</kbd></p>` |
 | `data-i18n-prefix` | 帶前綴 | `<h1 data-i18n-prefix="messages.title">🎮 打磚塊</h1>` |
 | `data-i18n-placeholder` | 輸入框佔位符 | `<input data-i18n-placeholder="scoreCard.enterName">` |
+
+### v1.31 新增 i18n 鍵值
+
+| Category | Key | Default (zh-TW) |
+|----------|-----|-----------------|
+| ui | `ui.fullscreen` | 📺 全螢幕 |
+| stats | `stats.totalVisitors` | 總訪客 |
+| stats | `stats.todayVisitors` | 今日訪客 |
+| stats | `stats.onlinePlayers` | 正在遊玩 |
+| stats | `stats.todayChallengers` | 今日挑戰者 |
 
 ---
 
@@ -222,3 +232,17 @@ showToast(message, type, duration)
 - 防抖機制
 - 錯誤恢復
 - 按鈕狀態重置
+
+---
+
+## v1.31 i18n 補完
+
+修復英文介面中殘留的中文問題。
+
+### 新增 i18n 支援
+- **全螢幕按鈕**：`#fullscreenBtn` → `ui.fullscreen`
+- **訪客統計**：
+  - 總訪客 → `stats.totalVisitors`
+  - 今日訪客 → `stats.todayVisitors`
+  - 正在遊玩 → `stats.onlinePlayers`
+  - 今日挑戰者 → `stats.todayChallengers`
