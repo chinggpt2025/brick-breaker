@@ -50,6 +50,21 @@
 
         <canvas id="gameCanvas"></canvas>
 
+        <!-- Overlay (在 game-container 內，只覆蓋 canvas 區域) -->
+        <div class="overlay" id="overlay">
+            <div class="overlay-content">
+                <h2 id="overlayTitle" data-i18n="messages.title">打磚塊</h2>
+                <p id="overlayMessage" data-i18n="messages.start">按空格鍵開始遊戲</p>
+                <button class="start-btn" id="startBtn">
+                    <span class="btn-icon">▶️</span>
+                    <span data-i18n="messages.start">點擊開始</span>
+                </button>
+                <div class="high-score">
+                    <span data-i18n="ui.highScore">最高分</span>: <span id="highScore">0</span>
+                </div>
+            </div>
+        </div>
+
         <div class="game-controls">
             <p data-i18n="controls.arrows">⬅️ ➡️ 方向鍵控制擋板</p>
             <p class="touch-hint" data-i18n="controls.touch">👆 觸控：點擊開始，滑動移動擋板</p>
@@ -106,21 +121,6 @@
 
         <!-- Powerup 時間條顯示 -->
         <div class="powerup-timers" id="powerupTimers"></div>
-    </div>
-
-    <!-- MOVED MODALS -->
-    <div class="overlay" id="overlay">
-        <div class="overlay-content">
-            <h2 id="overlayTitle" data-i18n="messages.title">打磚塊</h2>
-            <p id="overlayMessage" data-i18n="messages.start">按空格鍵開始遊戲</p>
-            <button class="start-btn" id="startBtn">
-                <span class="btn-icon">▶️</span>
-                <span data-i18n="messages.start">點擊開始</span>
-            </button>
-            <div class="high-score">
-                <span data-i18n="ui.highScore">最高分</span>: <span id="highScore">0</span>
-            </div>
-        </div>
     </div>
 
     <!-- Score Card (Game Over / Level Complete) -->
